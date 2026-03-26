@@ -710,6 +710,42 @@ adminRoutes.post('/email-templates/:id/preview', async (c) => {
   return c.json({ html: rendered })
 })
 
+/**
+ * POST /api/admin/email-templates/:id/send-test
+ * Send a test email using Brevo with sample data
+ */
+adminRoutes.post(
+  '/email-templates/:id/send-test',
+  zValidator('json', z.object({ to: z.string().email() })),
+  async (c) => {
+    const id = c.req.param('id')
+    const { to } = c.req.valid('json')
+
+    // Get the template slug
+    const template = await c.env.DB.prepare(
+      'SELECT slug FROM email_templates WHERE id = ?'
+    )
+      .bind(id)
+      .first<{ slug: string }>()
+
+    if (!template) {
+      return c.json({ error: 'Template not found' }, 404)
+    }
+
+    const result = await sendTestEmail(c.env.DB, to, template.slug)
+
+    if (!result.success) {
+      return c.json({ error: result.error ?? 'Failed to send test email' }, 400)
+    }
+
+    return c.json({
+      success: true,
+      message: `Test email sent to ${to}`,
+      subject: result.renderedSubject,
+    })
+  }
+)
+
 // ─── Workspaces Overview ────────────────────────────────────────────────────
 
 /**

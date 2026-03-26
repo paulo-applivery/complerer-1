@@ -248,6 +248,17 @@ export function usePreviewEmailTemplate() {
   })
 }
 
+export function useSendTestEmail() {
+  return useMutation<
+    { success: boolean; message: string; subject?: string },
+    Error,
+    { id: string; to: string }
+  >({
+    mutationFn: ({ id, to }) =>
+      api.post(`/admin/email-templates/${id}/send-test`, { to }),
+  })
+}
+
 // ─── Workspaces ─────────────────────────────────────────────────────────────
 
 export function useAdminWorkspaces() {

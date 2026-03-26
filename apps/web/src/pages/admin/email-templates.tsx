@@ -11,7 +11,9 @@ import {
   useAdminEmailTemplate,
   useUpdateEmailTemplate,
   usePreviewEmailTemplate,
+  useSendTestEmail,
 } from '@/hooks/use-admin'
+import { useAuth } from '@/hooks/use-auth'
 
 const categories = [
   { label: 'All', value: undefined },
@@ -27,7 +29,10 @@ export function AdminEmailTemplatesPage() {
   const { data: detailData } = useAdminEmailTemplate(selectedId)
   const updateTemplate = useUpdateEmailTemplate()
   const previewTemplate = usePreviewEmailTemplate()
+  const sendTest = useSendTestEmail()
+  const { user } = useAuth()
   const [previewHtml, setPreviewHtml] = useState<string | null>(null)
+  const [testResult, setTestResult] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
   const [editSubject, setEditSubject] = useState('')
   const [editBodyHtml, setEditBodyHtml] = useState('')
   const [hasChanges, setHasChanges] = useState(false)
@@ -213,7 +218,40 @@ export function AdminEmailTemplatesPage() {
                 <HugeiconsIcon icon={ViewIcon} size={14} />
                 Preview
               </button>
+              <button
+                onClick={() => {
+                  if (!selectedId || !user?.email) return
+                  setTestResult(null)
+                  sendTest.mutate(
+                    { id: selectedId, to: user.email },
+                    {
+                      onSuccess: (data) =>
+                        setTestResult({ type: 'success', message: data.message }),
+                      onError: (err) =>
+                        setTestResult({ type: 'error', message: err.message }),
+                    }
+                  )
+                }}
+                disabled={sendTest.isPending}
+                className="flex items-center gap-1.5 rounded-xl border border-zinc-800 px-4 py-2 text-sm font-medium text-zinc-300 transition-colors hover:bg-zinc-800 disabled:opacity-50"
+              >
+                <HugeiconsIcon icon={Mail01Icon} size={14} />
+                {sendTest.isPending ? 'Sending...' : `Send Test to ${user?.email ?? 'me'}`}
+              </button>
             </div>
+
+            {/* Test result feedback */}
+            {testResult && (
+              <div
+                className={`rounded-xl px-4 py-2.5 text-sm ${
+                  testResult.type === 'success'
+                    ? 'bg-primary-400/10 text-primary-400'
+                    : 'bg-red-500/10 text-red-400'
+                }`}
+              >
+                {testResult.message}
+              </div>
+            )}
 
             {/* Preview panel */}
             {previewHtml && (
