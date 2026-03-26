@@ -28,6 +28,13 @@ interface Setting {
   updated_at: string
 }
 
+interface AIProvider {
+  id: string
+  slug: string
+  name: string
+  enabled: boolean
+}
+
 function useSettings(workspaceId: string | undefined) {
   return useQuery<{ settings: Setting[] }>({
     queryKey: ['settings', workspaceId],
@@ -44,6 +51,18 @@ function useUpdateSetting(workspaceId: string | undefined) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['settings', workspaceId] })
     },
+  })
+}
+
+function useAIProviders(workspaceId: string | undefined) {
+  return useQuery<{
+    providers: AIProvider[]
+    activeProviders: AIProvider[]
+    hasActiveProvider: boolean
+  }>({
+    queryKey: ['ai-providers', workspaceId],
+    queryFn: () => api.get(`/workspaces/${workspaceId}/settings/ai-providers`),
+    enabled: !!workspaceId,
   })
 }
 
@@ -89,6 +108,7 @@ export function SettingsPage() {
   const workspaceId = params.workspaceId
   const { workspace } = useWorkspace(workspaceId)
   const { data: settingsData, isLoading } = useSettings(workspaceId)
+  const { data: aiProvidersData } = useAIProviders(workspaceId)
   const updateSetting = useUpdateSetting(workspaceId)
 
   const [activeTab, setActiveTab] = useState<'general' | 'ai' | 'members'>('ai')
@@ -108,6 +128,24 @@ export function SettingsPage() {
 
   const getValue = (key: string, defaultValue: string) =>
     localValues[key] ?? defaultValue
+
+  const activeAIProviders = aiProvidersData?.activeProviders ?? []
+  const hasActiveAIProvider = aiProvidersData?.hasActiveProvider ?? false
+
+  const modelOptions: string[] = []
+  if (activeAIProviders.some((p) => p.slug === 'anthropic')) {
+    modelOptions.push(
+      'claude-sonnet-4-20250514',
+      'claude-haiku-4-5-20251001',
+      'claude-opus-4-20250514'
+    )
+  }
+  if (activeAIProviders.some((p) => p.slug === 'google-gemini')) {
+    modelOptions.push('gemini-2.5-pro', 'gemini-2.5-flash')
+  }
+  if (activeAIProviders.some((p) => p.slug === 'openai')) {
+    modelOptions.push('gpt-5', 'gpt-5-mini')
+  }
 
   const handleSave = async (key: string, value: string) => {
     await updateSetting.mutateAsync({ key, value })
@@ -171,6 +209,8 @@ export function SettingsPage() {
                 {AI_SETTINGS.map((setting) => {
                   const currentValue = getValue(setting.key, setting.default)
                   const isSaved = savedKeys.has(setting.key)
+                  const effectiveOptions =
+                    (setting.key === 'ai.model' ? modelOptions : setting.options) ?? []
 
                   return (
                     <div key={setting.key} className="border-b border-zinc-800 pb-6 last:border-0 last:pb-0">
@@ -194,9 +234,10 @@ export function SettingsPage() {
                             onChange={(e) =>
                               setLocalValues((prev) => ({ ...prev, [setting.key]: e.target.value }))
                             }
+                            disabled={!hasActiveAIProvider || effectiveOptions.length === 0}
                             className="flex-1 rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 focus:border-primary-400 focus:outline-none"
                           >
-                            {setting.options?.map((opt) => (
+                            {effectiveOptions?.map((opt) => (
                               <option key={opt} value={opt}>
                                 {opt}
                               </option>
@@ -208,6 +249,7 @@ export function SettingsPage() {
                             onChange={(e) =>
                               setLocalValues((prev) => ({ ...prev, [setting.key]: e.target.value }))
                             }
+                            disabled={!hasActiveAIProvider}
                             rows={6}
                             placeholder="Leave empty to use the default system prompt. Workspace context is always appended."
                             className="flex-1 rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 placeholder-zinc-600 focus:border-primary-400 focus:outline-none"
@@ -219,13 +261,14 @@ export function SettingsPage() {
                             onChange={(e) =>
                               setLocalValues((prev) => ({ ...prev, [setting.key]: e.target.value }))
                             }
+                            disabled={!hasActiveAIProvider}
                             className="w-32 rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 focus:border-primary-400 focus:outline-none"
                           />
                         )}
 
                         <button
                           onClick={() => handleSave(setting.key, currentValue)}
-                          disabled={updateSetting.isPending}
+                          disabled={updateSetting.isPending || !hasActiveAIProvider}
                           className="shrink-0 rounded-lg bg-primary-400 px-4 py-2 text-sm font-medium text-zinc-950 transition-colors hover:bg-primary-300 disabled:opacity-50"
                         >
                           Save
@@ -248,11 +291,22 @@ export function SettingsPage() {
             <div className="flex items-start gap-3">
               <HugeiconsIcon icon={Alert02Icon} size={16} className="mt-0.5 shrink-0 text-amber-400" />
               <div>
-                <p className="text-sm font-medium text-amber-400">API Keys</p>
-                <p className="mt-1 text-xs text-zinc-400">
-                  API keys (ANTHROPIC_API_KEY, GEMINI_API_KEY) are configured as environment secrets
-                  and cannot be changed from this UI. Contact your system administrator to update them.
-                </p>
+                <p className="text-sm font-medium text-amber-400">API Key Source</p>
+                {hasActiveAIProvider ? (
+                  <p className="mt-1 text-xs text-zinc-400">
+                    AI settings are enabled because these providers are active in Admin
+                    {' > '}
+                    Providers:
+                    {' '}
+                    {activeAIProviders.map((p) => p.name).join(', ')}.
+                  </p>
+                ) : (
+                  <p className="mt-1 text-xs text-zinc-400">
+                    AI settings are disabled because no AI provider is active in Admin
+                    {' > '}
+                    Providers. Enable at least one provider there first.
+                  </p>
+                )}
               </div>
             </div>
           </div>

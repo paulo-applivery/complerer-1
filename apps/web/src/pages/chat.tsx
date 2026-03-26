@@ -532,7 +532,7 @@ export function ChatPage() {
             <div className="flex h-full flex-col items-center justify-center px-4">
               <div className="mb-8 flex flex-col items-center gap-4">
                 <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-400/20 to-primary-400/5 shadow-lg shadow-primary-400/5">
-                  <img src="/icon-color.svg" alt="Complirer" className="h-8 w-8" />
+                  <img src="/icon-color.svg" alt="Complerer" className="h-8 w-8" />
                 </div>
                 <div className="text-center">
                   <h2 className="text-xl font-semibold text-zinc-100">Compliance Assistant</h2>

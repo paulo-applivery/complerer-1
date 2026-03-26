@@ -2895,6 +2895,34 @@ complianceRoutes.get('/snapshots/:snapshotId', async (c) => {
 // ─── Workspace Settings ───────────────────────────────────────────────
 
 /**
+ * GET /api/workspaces/:workspaceId/settings/ai-providers
+ * List active AI providers configured by super admins.
+ */
+complianceRoutes.get('/settings/ai-providers', async (c) => {
+  const { results } = await c.env.DB.prepare(
+    `SELECT id, slug, name, enabled
+     FROM platform_providers
+     WHERE category = 'ai'
+     ORDER BY name ASC`
+  ).all<{ id: string; slug: string; name: string; enabled: number }>()
+
+  const providers = results.map((p) => ({
+    id: p.id,
+    slug: p.slug,
+    name: p.name,
+    enabled: p.enabled === 1,
+  }))
+
+  const activeProviders = providers.filter((p) => p.enabled)
+
+  return c.json({
+    providers,
+    activeProviders,
+    hasActiveProvider: activeProviders.length > 0,
+  })
+})
+
+/**
  * GET /api/workspaces/:workspaceId/settings
  * List all workspace settings.
  */

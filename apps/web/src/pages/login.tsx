@@ -224,7 +224,7 @@ export function LoginPage() {
       {/* Left — Branding panel */}
       <div className="hidden w-1/2 flex-col justify-between bg-gradient-to-br from-zinc-900 via-zinc-900 to-zinc-950 p-12 lg:flex">
         <div>
-          <img src="/logo-white.svg" alt="Complirer" className="h-8" />
+          <img src="/logo-white.svg" alt="Complerer" className="h-8" />
         </div>
 
         <div className="max-w-md">
@@ -312,7 +312,7 @@ export function LoginPage() {
         <div className="mb-8 text-center lg:hidden">
           <img
             src="/logo-white.svg"
-            alt="Complirer"
+            alt="Complerer"
             className="mx-auto mb-3 h-9"
           />
           <p className="text-sm text-zinc-500">

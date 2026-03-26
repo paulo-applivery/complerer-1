@@ -97,9 +97,9 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <div className="flex h-10 items-center px-2">
               {state === 'expanded' ? (
-                <img src="/logo-color.svg" alt="Complirer" className="h-5" />
+                <img src="/logo-color.svg" alt="Complerer" className="h-5" />
               ) : (
-                <img src="/icon-color.svg" alt="Complirer" className="h-6 w-6" />
+                <img src="/icon-color.svg" alt="Complerer" className="h-6 w-6" />
               )}
             </div>
           </SidebarMenuItem>
