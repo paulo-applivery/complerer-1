@@ -7,6 +7,7 @@ import {
   Mail01Icon,
   Flag01Icon,
   Building06Icon,
+  UserGroupIcon,
   Logout01Icon,
   ArrowDown01Icon,
   ArrowLeft01Icon,
@@ -39,6 +40,7 @@ const adminItems: NavItem[] = [
   { label: 'Email Templates', icon: Mail01Icon, path: '/admin/email-templates' },
   { label: 'Feature Flags', icon: Flag01Icon, path: '/admin/feature-flags' },
   { label: 'Workspaces', icon: Building06Icon, path: '/admin/workspaces' },
+  { label: 'Members', icon: UserGroupIcon, path: '/admin/members' },
 ]
 
 function AdminNavItem({ item }: { item: NavItem }) {

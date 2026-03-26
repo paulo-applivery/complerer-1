@@ -274,3 +274,37 @@ export function useAdminStats() {
     queryFn: () => api.get('/admin/stats'),
   })
 }
+
+// ─── Super Admin Members ────────────────────────────────────────────────────
+
+interface AdminMember {
+  id: string
+  email: string
+  name: string
+  isSuperAdmin: boolean
+  lastLoginAt: string | null
+  createdAt: string
+}
+
+export function useAdminMembers() {
+  return useQuery<{ members: AdminMember[] }>({
+    queryKey: ['admin', 'members'],
+    queryFn: () => api.get('/admin/members'),
+  })
+}
+
+export function usePromoteMember() {
+  const qc = useQueryClient()
+  return useMutation<{ success: boolean; message: string }, Error, string>({
+    mutationFn: (userId) => api.post(`/admin/members/${userId}/promote`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'members'] }),
+  })
+}
+
+export function useDemoteMember() {
+  const qc = useQueryClient()
+  return useMutation<{ success: boolean; message: string }, Error, string>({
+    mutationFn: (userId) => api.post(`/admin/members/${userId}/demote`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'members'] }),
+  })
+}

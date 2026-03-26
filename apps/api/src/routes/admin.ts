@@ -655,7 +655,7 @@ adminRoutes.post('/email-templates/:id/preview', async (c) => {
         sampleData[v] = '123456'
         break
       case 'logoUrl':
-        sampleData[v] = 'https://placehold.co/120x32/18181b/34d399?text=Complerer'
+        sampleData[v] = 'https://complerer.com/logo-color.svg'
         break
       case 'workspaceName':
         sampleData[v] = 'Acme Corp'
@@ -898,6 +898,84 @@ adminRoutes.get('/stats', async (c) => {
       totalControls: totalControls?.count ?? 0,
     },
   })
+})
+
+// ─── Super Admin Members ────────────────────────────────────────────────────
+
+/**
+ * GET /api/admin/members
+ * List all super admins
+ */
+adminRoutes.get('/members', async (c) => {
+  const { results } = await c.env.DB.prepare(
+    `SELECT id, email, name, is_super_admin, last_login_at, created_at
+     FROM auth_users
+     ORDER BY is_super_admin DESC, created_at ASC`
+  ).all<{
+    id: string
+    email: string
+    name: string
+    is_super_admin: number
+    last_login_at: string | null
+    created_at: string
+  }>()
+
+  return c.json({
+    members: results.map((u) => ({
+      id: u.id,
+      email: u.email,
+      name: u.name,
+      isSuperAdmin: u.is_super_admin === 1,
+      lastLoginAt: u.last_login_at,
+      createdAt: u.created_at,
+    })),
+  })
+})
+
+/**
+ * POST /api/admin/members/:userId/promote
+ * Grant super admin access to a user
+ */
+adminRoutes.post('/members/:userId/promote', async (c) => {
+  const userId = c.req.param('userId')
+
+  const user = await c.env.DB.prepare(
+    'SELECT id, email FROM auth_users WHERE id = ?'
+  ).bind(userId).first<{ id: string; email: string }>()
+
+  if (!user) return c.json({ error: 'User not found' }, 404)
+
+  await c.env.DB.prepare(
+    'UPDATE auth_users SET is_super_admin = 1 WHERE id = ?'
+  ).bind(userId).run()
+
+  return c.json({ success: true, message: `${user.email} is now a super admin` })
+})
+
+/**
+ * POST /api/admin/members/:userId/demote
+ * Remove super admin access from a user
+ */
+adminRoutes.post('/members/:userId/demote', async (c) => {
+  const userId = c.req.param('userId')
+  const currentUserId = c.get('userId')
+
+  // Prevent self-demotion
+  if (userId === currentUserId) {
+    return c.json({ error: 'Cannot remove your own super admin access' }, 400)
+  }
+
+  const user = await c.env.DB.prepare(
+    'SELECT id, email FROM auth_users WHERE id = ?'
+  ).bind(userId).first<{ id: string; email: string }>()
+
+  if (!user) return c.json({ error: 'User not found' }, 404)
+
+  await c.env.DB.prepare(
+    'UPDATE auth_users SET is_super_admin = 0 WHERE id = ?'
+  ).bind(userId).run()
+
+  return c.json({ success: true, message: `${user.email} is no longer a super admin` })
 })
 
 export { adminRoutes }
