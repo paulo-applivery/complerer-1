@@ -1,0 +1,2870 @@
+{
+  "crosswalks": [
+    {
+      "source": { "framework": "soc2", "controlId": "CC6.1" },
+      "target": { "framework": "iso27001", "controlId": "A.5.15" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "Both address access control and authorization; CC6.1 broader covering infrastructure security"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC6.1" },
+      "target": { "framework": "iso27001", "controlId": "A.8.3" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "CC6.1 logical access security maps to A.8.3 information access restriction"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC6.1" },
+      "target": { "framework": "iso27001", "controlId": "A.8.5" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "CC6.1 authentication mechanisms overlap with A.8.5 secure authentication"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC6.1" },
+      "target": { "framework": "nist-csf", "controlId": "PR.AA-01" },
+      "mappingType": "partial",
+      "confidence": 0.8,
+      "notes": "Both address identity management and access control provisioning"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC6.1" },
+      "target": { "framework": "nist-csf", "controlId": "PR.AA-03" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "CC6.1 covers authentication which maps to PR.AA-03 authentication and access"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC6.1" },
+      "target": { "framework": "cis-v8", "controlId": "5.1" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "CC6.1 logical access maps to CIS 5.1 account management establishment"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC6.1" },
+      "target": { "framework": "cis-v8", "controlId": "6.1" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "CC6.1 access security architecture maps to CIS 6.1 access control management"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC6.1" },
+      "target": { "framework": "pci-dss", "controlId": "7.2.1" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "Both address logical access controls and authorization mechanisms"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC6.1" },
+      "target": { "framework": "pci-dss", "controlId": "7.2.2" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "CC6.1 access provisioning overlaps with PCI 7.2.2 access assignment"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.5.15" },
+      "target": { "framework": "soc2", "controlId": "CC6.1" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "A.5.15 access control policy maps to CC6.1 logical access security"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.5.15" },
+      "target": { "framework": "nist-csf", "controlId": "PR.AA-01" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both directly address identity and access management policies"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.5.15" },
+      "target": { "framework": "cis-v8", "controlId": "5.1" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "A.5.15 access control maps to CIS 5.1 account management process"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.8.3" },
+      "target": { "framework": "soc2", "controlId": "CC6.3" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address restricting information access based on roles and least privilege"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.8.3" },
+      "target": { "framework": "nist-csf", "controlId": "PR.AA-05" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "A.8.3 information access restriction relates to PR.AA-05 access permissions management"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.8.5" },
+      "target": { "framework": "soc2", "controlId": "CC6.1" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "A.8.5 secure authentication maps to CC6.1 authentication mechanisms"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.8.5" },
+      "target": { "framework": "soc2", "controlId": "CC6.2" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address user authentication credentials and management"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.8.5" },
+      "target": { "framework": "nist-csf", "controlId": "PR.AA-03" },
+      "mappingType": "equivalent",
+      "confidence": 0.9,
+      "notes": "Both directly address authentication mechanism requirements"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.8.5" },
+      "target": { "framework": "pci-dss", "controlId": "8.3.1" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both require strong authentication for user access"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "PR.AA-01" },
+      "target": { "framework": "soc2", "controlId": "CC6.1" },
+      "mappingType": "partial",
+      "confidence": 0.8,
+      "notes": "PR.AA-01 identity management maps to CC6.1 logical access security"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "PR.AA-01" },
+      "target": { "framework": "soc2", "controlId": "CC6.3" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "PR.AA-01 identities and credentials map to CC6.3 role-based access"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "PR.AA-01" },
+      "target": { "framework": "iso27001", "controlId": "A.5.15" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address access control policy and identity management"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "PR.AA-01" },
+      "target": { "framework": "cis-v8", "controlId": "5.1" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address establishing and managing account identities"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "PR.AA-03" },
+      "target": { "framework": "soc2", "controlId": "CC6.2" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address user authentication and credential management"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "PR.AA-03" },
+      "target": { "framework": "iso27001", "controlId": "A.8.5" },
+      "mappingType": "equivalent",
+      "confidence": 0.9,
+      "notes": "Both directly address authentication requirements"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "PR.AA-03" },
+      "target": { "framework": "cis-v8", "controlId": "5.2" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "PR.AA-03 authentication maps to CIS 5.2 use of unique passwords"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "PR.AA-03" },
+      "target": { "framework": "pci-dss", "controlId": "8.3.1" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both require strong authentication mechanisms"
+    },
+    {
+      "source": { "framework": "cis-v8", "controlId": "5.1" },
+      "target": { "framework": "soc2", "controlId": "CC6.1" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "CIS 5.1 account management maps to CC6.1 logical access security"
+    },
+    {
+      "source": { "framework": "cis-v8", "controlId": "5.1" },
+      "target": { "framework": "iso27001", "controlId": "A.5.15" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "CIS 5.1 account establishment maps to A.5.15 access control"
+    },
+    {
+      "source": { "framework": "cis-v8", "controlId": "5.1" },
+      "target": { "framework": "nist-csf", "controlId": "PR.AA-01" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address establishing and managing identity accounts"
+    },
+    {
+      "source": { "framework": "cis-v8", "controlId": "5.2" },
+      "target": { "framework": "soc2", "controlId": "CC6.2" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "CIS 5.2 unique passwords maps to CC6.2 user authentication credentials"
+    },
+    {
+      "source": { "framework": "cis-v8", "controlId": "5.2" },
+      "target": { "framework": "pci-dss", "controlId": "8.3.6" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "Both address password complexity and uniqueness requirements"
+    },
+    {
+      "source": { "framework": "cis-v8", "controlId": "5.3" },
+      "target": { "framework": "soc2", "controlId": "CC6.3" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address disabling dormant accounts and access deprovisioning"
+    },
+    {
+      "source": { "framework": "cis-v8", "controlId": "5.3" },
+      "target": { "framework": "iso27001", "controlId": "A.5.18" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "CIS 5.3 account lifecycle maps to A.5.18 access rights management"
+    },
+    {
+      "source": { "framework": "cis-v8", "controlId": "6.1" },
+      "target": { "framework": "soc2", "controlId": "CC6.1" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "CIS 6.1 access control management maps to CC6.1 logical access security"
+    },
+    {
+      "source": { "framework": "cis-v8", "controlId": "6.1" },
+      "target": { "framework": "nist-csf", "controlId": "PR.AA-05" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "Both address establishing access control processes"
+    },
+    {
+      "source": { "framework": "pci-dss", "controlId": "7.2.1" },
+      "target": { "framework": "soc2", "controlId": "CC6.1" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "PCI 7.2.1 access control system maps to CC6.1 logical access security"
+    },
+    {
+      "source": { "framework": "pci-dss", "controlId": "7.2.1" },
+      "target": { "framework": "iso27001", "controlId": "A.5.15" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "Both address access control systems and restriction policies"
+    },
+    {
+      "source": { "framework": "pci-dss", "controlId": "8.3.1" },
+      "target": { "framework": "soc2", "controlId": "CC6.2" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both require strong authentication for all user access"
+    },
+    {
+      "source": { "framework": "pci-dss", "controlId": "8.3.1" },
+      "target": { "framework": "iso27001", "controlId": "A.8.5" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both require secure authentication mechanisms"
+    },
+    {
+      "source": { "framework": "pci-dss", "controlId": "8.3.1" },
+      "target": { "framework": "nist-csf", "controlId": "PR.AA-03" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address strong authentication requirements"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC6.2" },
+      "target": { "framework": "iso27001", "controlId": "A.8.5" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address user credential management and authentication"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC6.2" },
+      "target": { "framework": "nist-csf", "controlId": "PR.AA-03" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both cover user authentication and credential lifecycle"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC6.2" },
+      "target": { "framework": "cis-v8", "controlId": "5.2" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "CC6.2 credential management maps to CIS 5.2 unique password usage"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC6.2" },
+      "target": { "framework": "pci-dss", "controlId": "8.3.1" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both require authentication for all system access"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC6.3" },
+      "target": { "framework": "iso27001", "controlId": "A.5.15" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "CC6.3 RBAC and least privilege maps to A.5.15 access control policy"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC6.3" },
+      "target": { "framework": "iso27001", "controlId": "A.5.18" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address access rights provisioning, modification, and removal"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC6.3" },
+      "target": { "framework": "nist-csf", "controlId": "PR.AA-01" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "CC6.3 role-based access overlaps with PR.AA-01 identity management"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC6.3" },
+      "target": { "framework": "cis-v8", "controlId": "5.3" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address access deprovisioning and dormant account management"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC6.3" },
+      "target": { "framework": "cis-v8", "controlId": "5.4" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "CC6.3 least privilege maps to CIS 5.4 restricting admin privileges"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC6.3" },
+      "target": { "framework": "pci-dss", "controlId": "7.2.1" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both restrict access based on business need-to-know and roles"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.5.18" },
+      "target": { "framework": "soc2", "controlId": "CC6.3" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address access rights lifecycle management"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.5.18" },
+      "target": { "framework": "cis-v8", "controlId": "5.3" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "A.5.18 access rights management maps to CIS 5.3 account lifecycle"
+    },
+
+    {
+      "source": { "framework": "soc2", "controlId": "CC8.1" },
+      "target": { "framework": "iso27001", "controlId": "A.8.32" },
+      "mappingType": "equivalent",
+      "confidence": 0.9,
+      "notes": "Both address formal change management processes for systems"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC8.1" },
+      "target": { "framework": "nist-csf", "controlId": "PR.DS-10" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "CC8.1 change management maps to PR.DS-10 data integrity checking including change verification"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC8.1" },
+      "target": { "framework": "cis-v8", "controlId": "2.5" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "CC8.1 change management maps to CIS 2.5 allowlisting authorized software"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC8.1" },
+      "target": { "framework": "pci-dss", "controlId": "6.5.1" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both require formal change control procedures for system changes"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.8.32" },
+      "target": { "framework": "soc2", "controlId": "CC8.1" },
+      "mappingType": "equivalent",
+      "confidence": 0.9,
+      "notes": "Both address change management procedures for information systems"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.8.32" },
+      "target": { "framework": "nist-csf", "controlId": "PR.DS-10" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "A.8.32 change management relates to PR.DS-10 data integrity in changes"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.8.32" },
+      "target": { "framework": "pci-dss", "controlId": "6.5.1" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both require formal change control for production systems"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "PR.DS-10" },
+      "target": { "framework": "soc2", "controlId": "CC8.1" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "PR.DS-10 integrity checking relates to CC8.1 change management controls"
+    },
+    {
+      "source": { "framework": "pci-dss", "controlId": "6.5.1" },
+      "target": { "framework": "soc2", "controlId": "CC8.1" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both require formal change control procedures"
+    },
+    {
+      "source": { "framework": "pci-dss", "controlId": "6.5.1" },
+      "target": { "framework": "iso27001", "controlId": "A.8.32" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address formal change management requirements"
+    },
+
+    {
+      "source": { "framework": "soc2", "controlId": "CC7.1" },
+      "target": { "framework": "iso27001", "controlId": "A.8.15" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address security monitoring and logging activities"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC7.1" },
+      "target": { "framework": "iso27001", "controlId": "A.8.16" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "CC7.1 vulnerability detection maps to A.8.16 monitoring activities"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC7.1" },
+      "target": { "framework": "nist-csf", "controlId": "DE.CM-01" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address continuous monitoring for security events"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC7.1" },
+      "target": { "framework": "cis-v8", "controlId": "8.1" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "CC7.1 monitoring maps to CIS 8.1 audit log management process"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC7.1" },
+      "target": { "framework": "cis-v8", "controlId": "8.2" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "CC7.1 detection procedures map to CIS 8.2 audit log collection"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC7.1" },
+      "target": { "framework": "pci-dss", "controlId": "10.1.1" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "CC7.1 monitoring maps to PCI 10.1.1 audit log policies"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC7.1" },
+      "target": { "framework": "pci-dss", "controlId": "10.2.1" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "CC7.1 vulnerability detection maps to PCI 10.2.1 audit log content"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC7.2" },
+      "target": { "framework": "iso27001", "controlId": "A.8.16" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address monitoring system components for anomalous activity"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC7.2" },
+      "target": { "framework": "nist-csf", "controlId": "DE.AE-02" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address analyzing events and anomalies for potential incidents"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC7.2" },
+      "target": { "framework": "nist-csf", "controlId": "DE.CM-01" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "CC7.2 anomaly monitoring maps to DE.CM-01 continuous monitoring"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC7.2" },
+      "target": { "framework": "cis-v8", "controlId": "8.2" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "CC7.2 anomaly monitoring overlaps with CIS 8.2 audit log collection"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC7.2" },
+      "target": { "framework": "pci-dss", "controlId": "10.2.1" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "CC7.2 SIEM monitoring maps to PCI 10.2.1 audit log requirements"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.8.15" },
+      "target": { "framework": "soc2", "controlId": "CC7.1" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address security event logging and monitoring"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.8.15" },
+      "target": { "framework": "nist-csf", "controlId": "DE.CM-01" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address continuous monitoring and logging of security events"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.8.15" },
+      "target": { "framework": "cis-v8", "controlId": "8.1" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "A.8.15 logging maps to CIS 8.1 audit log management"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.8.15" },
+      "target": { "framework": "pci-dss", "controlId": "10.1.1" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "A.8.15 logging maps to PCI 10.1.1 audit log policies"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.8.16" },
+      "target": { "framework": "soc2", "controlId": "CC7.2" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address monitoring activities and anomaly detection"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.8.16" },
+      "target": { "framework": "nist-csf", "controlId": "DE.AE-02" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address analyzing events for anomalous patterns"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.8.16" },
+      "target": { "framework": "cis-v8", "controlId": "8.2" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "A.8.16 monitoring maps to CIS 8.2 audit log collection"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "DE.CM-01" },
+      "target": { "framework": "soc2", "controlId": "CC7.1" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address continuous security monitoring"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "DE.CM-01" },
+      "target": { "framework": "iso27001", "controlId": "A.8.15" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address logging and monitoring of security events"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "DE.CM-01" },
+      "target": { "framework": "cis-v8", "controlId": "8.1" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "DE.CM-01 monitoring maps to CIS 8.1 audit log management"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "DE.CM-01" },
+      "target": { "framework": "pci-dss", "controlId": "10.1.1" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "DE.CM-01 monitoring maps to PCI 10.1.1 audit log policies"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "DE.AE-02" },
+      "target": { "framework": "soc2", "controlId": "CC7.2" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address analyzing anomalies and indicators of compromise"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "DE.AE-02" },
+      "target": { "framework": "iso27001", "controlId": "A.8.16" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address monitoring activities and anomaly analysis"
+    },
+    {
+      "source": { "framework": "cis-v8", "controlId": "8.1" },
+      "target": { "framework": "soc2", "controlId": "CC7.1" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "CIS 8.1 audit log management maps to CC7.1 detection and monitoring"
+    },
+    {
+      "source": { "framework": "cis-v8", "controlId": "8.1" },
+      "target": { "framework": "iso27001", "controlId": "A.8.15" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "CIS 8.1 audit log management maps to A.8.15 logging"
+    },
+    {
+      "source": { "framework": "cis-v8", "controlId": "8.1" },
+      "target": { "framework": "pci-dss", "controlId": "10.1.1" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address establishing audit log management processes"
+    },
+    {
+      "source": { "framework": "cis-v8", "controlId": "8.2" },
+      "target": { "framework": "soc2", "controlId": "CC7.2" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "CIS 8.2 audit log collection maps to CC7.2 anomaly monitoring"
+    },
+    {
+      "source": { "framework": "cis-v8", "controlId": "8.2" },
+      "target": { "framework": "pci-dss", "controlId": "10.2.1" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address requirements for audit log content and collection"
+    },
+    {
+      "source": { "framework": "pci-dss", "controlId": "10.1.1" },
+      "target": { "framework": "soc2", "controlId": "CC7.1" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "PCI 10.1.1 audit log policies map to CC7.1 detection and monitoring"
+    },
+    {
+      "source": { "framework": "pci-dss", "controlId": "10.1.1" },
+      "target": { "framework": "iso27001", "controlId": "A.8.15" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "PCI 10.1.1 audit logging maps to A.8.15 logging"
+    },
+    {
+      "source": { "framework": "pci-dss", "controlId": "10.2.1" },
+      "target": { "framework": "cis-v8", "controlId": "8.2" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address detailed audit log content requirements"
+    },
+
+    {
+      "source": { "framework": "soc2", "controlId": "CC7.3" },
+      "target": { "framework": "iso27001", "controlId": "A.5.24" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address incident management planning and preparation"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC7.3" },
+      "target": { "framework": "iso27001", "controlId": "A.5.25" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "CC7.3 security event evaluation maps to A.5.25 assessment of security events"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC7.3" },
+      "target": { "framework": "nist-csf", "controlId": "RS.MA-01" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address incident triage, classification, and evaluation"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC7.3" },
+      "target": { "framework": "nist-csf", "controlId": "RS.AN-03" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "CC7.3 event evaluation maps to RS.AN-03 incident analysis and investigation"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC7.3" },
+      "target": { "framework": "cis-v8", "controlId": "17.1" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "CC7.3 security event evaluation maps to CIS 17.1 incident response process"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC7.3" },
+      "target": { "framework": "pci-dss", "controlId": "12.10.1" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "CC7.3 event evaluation overlaps with PCI 12.10.1 incident response plan"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC7.4" },
+      "target": { "framework": "iso27001", "controlId": "A.5.26" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address incident response execution and containment"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC7.4" },
+      "target": { "framework": "iso27001", "controlId": "A.5.24" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "CC7.4 response execution maps to A.5.24 incident management planning"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC7.4" },
+      "target": { "framework": "nist-csf", "controlId": "RS.MA-01" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "CC7.4 incident response overlaps with RS.MA-01 incident management"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC7.4" },
+      "target": { "framework": "cis-v8", "controlId": "17.2" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address designated incident response roles and responsibilities"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC7.4" },
+      "target": { "framework": "pci-dss", "controlId": "12.10.1" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both require formal incident response plans with defined procedures"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.5.24" },
+      "target": { "framework": "soc2", "controlId": "CC7.3" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address incident management planning and preparation"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.5.24" },
+      "target": { "framework": "nist-csf", "controlId": "RS.MA-01" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address incident response management and planning"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.5.24" },
+      "target": { "framework": "cis-v8", "controlId": "17.1" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "A.5.24 incident planning maps to CIS 17.1 incident response process"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.5.25" },
+      "target": { "framework": "soc2", "controlId": "CC7.3" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "A.5.25 assessment of security events maps to CC7.3 event evaluation"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.5.25" },
+      "target": { "framework": "nist-csf", "controlId": "RS.AN-03" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address assessment and analysis of security events"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.5.26" },
+      "target": { "framework": "soc2", "controlId": "CC7.4" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address response to information security incidents"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.5.26" },
+      "target": { "framework": "nist-csf", "controlId": "RS.MI-01" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "A.5.26 incident response maps to RS.MI-01 incident containment"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.5.26" },
+      "target": { "framework": "pci-dss", "controlId": "12.10.1" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "A.5.26 incident response maps to PCI 12.10.1 incident response plan"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "RS.MA-01" },
+      "target": { "framework": "soc2", "controlId": "CC7.3" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address incident triage and management"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "RS.MA-01" },
+      "target": { "framework": "iso27001", "controlId": "A.5.24" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address incident response planning and management"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "RS.MA-01" },
+      "target": { "framework": "cis-v8", "controlId": "17.1" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "RS.MA-01 incident management maps to CIS 17.1 incident response process"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "RS.MA-01" },
+      "target": { "framework": "pci-dss", "controlId": "12.10.1" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both require incident response planning and execution capabilities"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "RS.AN-03" },
+      "target": { "framework": "soc2", "controlId": "CC7.3" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "RS.AN-03 incident analysis maps to CC7.3 security event evaluation"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "RS.AN-03" },
+      "target": { "framework": "iso27001", "controlId": "A.5.25" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address analysis and assessment of security events"
+    },
+    {
+      "source": { "framework": "cis-v8", "controlId": "17.1" },
+      "target": { "framework": "soc2", "controlId": "CC7.3" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "CIS 17.1 incident response process maps to CC7.3 event evaluation"
+    },
+    {
+      "source": { "framework": "cis-v8", "controlId": "17.1" },
+      "target": { "framework": "iso27001", "controlId": "A.5.24" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "CIS 17.1 incident response maps to A.5.24 incident management planning"
+    },
+    {
+      "source": { "framework": "cis-v8", "controlId": "17.1" },
+      "target": { "framework": "pci-dss", "controlId": "12.10.1" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "Both address establishing incident response processes"
+    },
+    {
+      "source": { "framework": "cis-v8", "controlId": "17.2" },
+      "target": { "framework": "soc2", "controlId": "CC7.4" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address designating incident response personnel and roles"
+    },
+    {
+      "source": { "framework": "cis-v8", "controlId": "17.2" },
+      "target": { "framework": "pci-dss", "controlId": "12.10.1" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "CIS 17.2 incident response roles maps to PCI 12.10.1 response plan"
+    },
+    {
+      "source": { "framework": "pci-dss", "controlId": "12.10.1" },
+      "target": { "framework": "soc2", "controlId": "CC7.4" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both require formal incident response plans"
+    },
+    {
+      "source": { "framework": "pci-dss", "controlId": "12.10.1" },
+      "target": { "framework": "iso27001", "controlId": "A.5.24" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "PCI 12.10.1 incident response plan maps to A.5.24 planning"
+    },
+    {
+      "source": { "framework": "pci-dss", "controlId": "12.10.2" },
+      "target": { "framework": "cis-v8", "controlId": "17.3" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "Both address incident response plan review and updates"
+    },
+
+    {
+      "source": { "framework": "soc2", "controlId": "CC3.1" },
+      "target": { "framework": "iso27001", "controlId": "A.5.1" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "CC3.1 objective specification maps to A.5.1 information security policies"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC3.1" },
+      "target": { "framework": "nist-csf", "controlId": "ID.RA-01" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "CC3.1 specifying objectives supports ID.RA-01 risk identification"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC3.2" },
+      "target": { "framework": "iso27001", "controlId": "A.5.1" },
+      "mappingType": "partial",
+      "confidence": 0.65,
+      "notes": "CC3.2 risk identification relates to A.5.1 policy-driven risk awareness"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC3.2" },
+      "target": { "framework": "iso27001", "controlId": "A.8.8" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "CC3.2 risk analysis relates to A.8.8 technical vulnerability management"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC3.2" },
+      "target": { "framework": "nist-csf", "controlId": "ID.RA-01" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address identifying and documenting asset vulnerabilities and risks"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC3.2" },
+      "target": { "framework": "nist-csf", "controlId": "ID.RA-02" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "CC3.2 risk analysis relates to ID.RA-02 threat intelligence gathering"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC3.2" },
+      "target": { "framework": "cis-v8", "controlId": "7.1" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "CC3.2 risk identification maps to CIS 7.1 vulnerability management process"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC3.2" },
+      "target": { "framework": "pci-dss", "controlId": "6.1.1" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "CC3.2 risk analysis maps to PCI 6.1.1 security vulnerability identification"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.5.1" },
+      "target": { "framework": "soc2", "controlId": "CC3.1" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "A.5.1 security policies map to CC3.1 specifying objectives"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.5.1" },
+      "target": { "framework": "nist-csf", "controlId": "GV.PO-01" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address establishing information security governance policies"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.8.8" },
+      "target": { "framework": "soc2", "controlId": "CC3.2" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "A.8.8 technical vulnerability management relates to CC3.2 risk analysis"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.8.8" },
+      "target": { "framework": "nist-csf", "controlId": "ID.RA-01" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address technical vulnerability identification and management"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.8.8" },
+      "target": { "framework": "cis-v8", "controlId": "7.1" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address establishing vulnerability management processes"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.8.8" },
+      "target": { "framework": "cis-v8", "controlId": "7.2" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "A.8.8 vulnerability management relates to CIS 7.2 remediation process"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.8.8" },
+      "target": { "framework": "cis-v8", "controlId": "7.3" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "A.8.8 vulnerability management relates to CIS 7.3 automated remediation"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.8.8" },
+      "target": { "framework": "pci-dss", "controlId": "6.1.1" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address identifying and managing technical vulnerabilities"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.8.8" },
+      "target": { "framework": "pci-dss", "controlId": "6.2.1" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "A.8.8 vulnerability management relates to PCI 6.2.1 secure development"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.8.8" },
+      "target": { "framework": "pci-dss", "controlId": "11.3.1" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "A.8.8 vulnerability management maps to PCI 11.3.1 vulnerability scanning"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "ID.RA-01" },
+      "target": { "framework": "soc2", "controlId": "CC3.2" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address vulnerability and risk identification processes"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "ID.RA-01" },
+      "target": { "framework": "iso27001", "controlId": "A.8.8" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address vulnerability identification and management"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "ID.RA-01" },
+      "target": { "framework": "cis-v8", "controlId": "7.1" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address vulnerability identification processes"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "ID.RA-01" },
+      "target": { "framework": "pci-dss", "controlId": "6.1.1" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "ID.RA-01 vulnerability identification maps to PCI 6.1.1"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "ID.RA-02" },
+      "target": { "framework": "soc2", "controlId": "CC3.2" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "ID.RA-02 threat intelligence maps to CC3.2 risk identification"
+    },
+    {
+      "source": { "framework": "cis-v8", "controlId": "7.1" },
+      "target": { "framework": "iso27001", "controlId": "A.8.8" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address establishing vulnerability management processes"
+    },
+    {
+      "source": { "framework": "cis-v8", "controlId": "7.1" },
+      "target": { "framework": "nist-csf", "controlId": "ID.RA-01" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address vulnerability identification and management"
+    },
+    {
+      "source": { "framework": "cis-v8", "controlId": "7.1" },
+      "target": { "framework": "pci-dss", "controlId": "6.1.1" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "CIS 7.1 vulnerability management maps to PCI 6.1.1 vulnerability identification"
+    },
+    {
+      "source": { "framework": "cis-v8", "controlId": "7.2" },
+      "target": { "framework": "iso27001", "controlId": "A.8.8" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "CIS 7.2 vulnerability remediation maps to A.8.8 vulnerability management"
+    },
+    {
+      "source": { "framework": "cis-v8", "controlId": "7.2" },
+      "target": { "framework": "pci-dss", "controlId": "6.2.1" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "CIS 7.2 remediation maps to PCI 6.2.1 secure development practices"
+    },
+    {
+      "source": { "framework": "cis-v8", "controlId": "7.3" },
+      "target": { "framework": "pci-dss", "controlId": "11.3.1" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "CIS 7.3 automated remediation maps to PCI 11.3.1 vulnerability scanning"
+    },
+    {
+      "source": { "framework": "pci-dss", "controlId": "6.1.1" },
+      "target": { "framework": "soc2", "controlId": "CC3.2" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "PCI 6.1.1 vulnerability identification maps to CC3.2 risk analysis"
+    },
+    {
+      "source": { "framework": "pci-dss", "controlId": "6.1.1" },
+      "target": { "framework": "iso27001", "controlId": "A.8.8" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address vulnerability identification processes"
+    },
+    {
+      "source": { "framework": "pci-dss", "controlId": "11.3.1" },
+      "target": { "framework": "iso27001", "controlId": "A.8.8" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "PCI 11.3.1 vulnerability scanning maps to A.8.8 vulnerability management"
+    },
+    {
+      "source": { "framework": "pci-dss", "controlId": "11.3.1" },
+      "target": { "framework": "cis-v8", "controlId": "7.1" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "PCI 11.3.1 vulnerability scanning maps to CIS 7.1 vulnerability management"
+    },
+    {
+      "source": { "framework": "pci-dss", "controlId": "11.3.2" },
+      "target": { "framework": "cis-v8", "controlId": "7.3" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "PCI 11.3.2 external scanning maps to CIS 7.3 automated remediation"
+    },
+
+    {
+      "source": { "framework": "soc2", "controlId": "CC6.7" },
+      "target": { "framework": "iso27001", "controlId": "A.8.24" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address use of cryptography for data protection"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC6.7" },
+      "target": { "framework": "nist-csf", "controlId": "PR.DS-01" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address protection of data at rest"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC6.7" },
+      "target": { "framework": "nist-csf", "controlId": "PR.DS-02" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address protection of data in transit"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC6.7" },
+      "target": { "framework": "cis-v8", "controlId": "3.1" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "CC6.7 data restriction maps to CIS 3.1 data management process"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC6.7" },
+      "target": { "framework": "cis-v8", "controlId": "3.6" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address encrypting data in transit and restricting data flows"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC6.7" },
+      "target": { "framework": "pci-dss", "controlId": "3.5.1" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "CC6.7 data protection maps to PCI 3.5.1 PAN rendering unreadable"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC6.7" },
+      "target": { "framework": "pci-dss", "controlId": "4.1.1" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address encrypting data during transmission over networks"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.8.24" },
+      "target": { "framework": "soc2", "controlId": "CC6.7" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address cryptographic controls for data protection"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.8.24" },
+      "target": { "framework": "nist-csf", "controlId": "PR.DS-01" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "A.8.24 cryptography maps to PR.DS-01 data-at-rest protection"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.8.24" },
+      "target": { "framework": "nist-csf", "controlId": "PR.DS-02" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "A.8.24 cryptography maps to PR.DS-02 data-in-transit protection"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.8.24" },
+      "target": { "framework": "cis-v8", "controlId": "3.6" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address encryption of data during transmission"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.8.24" },
+      "target": { "framework": "pci-dss", "controlId": "4.1.1" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address strong cryptography for data transmission"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "PR.DS-01" },
+      "target": { "framework": "soc2", "controlId": "CC6.7" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address data-at-rest protection requirements"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "PR.DS-01" },
+      "target": { "framework": "iso27001", "controlId": "A.8.24" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address cryptographic protection of stored data"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "PR.DS-01" },
+      "target": { "framework": "pci-dss", "controlId": "3.5.1" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "PR.DS-01 data protection maps to PCI 3.5.1 data rendering"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "PR.DS-02" },
+      "target": { "framework": "soc2", "controlId": "CC6.7" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address data-in-transit protection requirements"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "PR.DS-02" },
+      "target": { "framework": "pci-dss", "controlId": "4.1.1" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address encryption of data during transmission"
+    },
+    {
+      "source": { "framework": "cis-v8", "controlId": "3.1" },
+      "target": { "framework": "soc2", "controlId": "CC6.7" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "CIS 3.1 data management process maps to CC6.7 data restrictions"
+    },
+    {
+      "source": { "framework": "cis-v8", "controlId": "3.6" },
+      "target": { "framework": "soc2", "controlId": "CC6.7" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address encryption during data transmission"
+    },
+    {
+      "source": { "framework": "cis-v8", "controlId": "3.6" },
+      "target": { "framework": "pci-dss", "controlId": "4.1.1" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address encrypting data during network transmission"
+    },
+    {
+      "source": { "framework": "pci-dss", "controlId": "3.5.1" },
+      "target": { "framework": "nist-csf", "controlId": "PR.DS-01" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "PCI 3.5.1 data rendering maps to PR.DS-01 data-at-rest protection"
+    },
+    {
+      "source": { "framework": "pci-dss", "controlId": "4.1.1" },
+      "target": { "framework": "soc2", "controlId": "CC6.7" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address encrypting data during transmission"
+    },
+    {
+      "source": { "framework": "pci-dss", "controlId": "4.1.1" },
+      "target": { "framework": "iso27001", "controlId": "A.8.24" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both require strong cryptography for data transmission"
+    },
+
+    {
+      "source": { "framework": "soc2", "controlId": "CC1.4" },
+      "target": { "framework": "iso27001", "controlId": "A.6.3" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "CC1.4 commitment to competence includes security awareness training addressed in A.6.3"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC1.4" },
+      "target": { "framework": "nist-csf", "controlId": "PR.AT-01" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "CC1.4 workforce competence maps to PR.AT-01 security awareness training"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC1.4" },
+      "target": { "framework": "cis-v8", "controlId": "14.1" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "CC1.4 training commitment maps to CIS 14.1 security awareness program"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC1.4" },
+      "target": { "framework": "pci-dss", "controlId": "12.6.1" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "CC1.4 competence commitment maps to PCI 12.6.1 security awareness program"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.6.3" },
+      "target": { "framework": "soc2", "controlId": "CC1.4" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "A.6.3 security awareness training maps to CC1.4 competence commitment"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.6.3" },
+      "target": { "framework": "nist-csf", "controlId": "PR.AT-01" },
+      "mappingType": "equivalent",
+      "confidence": 0.9,
+      "notes": "Both directly address security awareness education and training"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.6.3" },
+      "target": { "framework": "cis-v8", "controlId": "14.1" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address establishing security awareness training programs"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.6.3" },
+      "target": { "framework": "pci-dss", "controlId": "12.6.1" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both require formal security awareness training programs"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "PR.AT-01" },
+      "target": { "framework": "soc2", "controlId": "CC1.4" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "PR.AT-01 security awareness maps to CC1.4 competence commitment"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "PR.AT-01" },
+      "target": { "framework": "iso27001", "controlId": "A.6.3" },
+      "mappingType": "equivalent",
+      "confidence": 0.9,
+      "notes": "Both directly address security awareness and training requirements"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "PR.AT-01" },
+      "target": { "framework": "cis-v8", "controlId": "14.1" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address security awareness training program establishment"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "PR.AT-01" },
+      "target": { "framework": "pci-dss", "controlId": "12.6.1" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both require security awareness training for all personnel"
+    },
+    {
+      "source": { "framework": "cis-v8", "controlId": "14.1" },
+      "target": { "framework": "iso27001", "controlId": "A.6.3" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address security awareness training programs"
+    },
+    {
+      "source": { "framework": "cis-v8", "controlId": "14.1" },
+      "target": { "framework": "pci-dss", "controlId": "12.6.1" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both require establishing security awareness training"
+    },
+    {
+      "source": { "framework": "pci-dss", "controlId": "12.6.1" },
+      "target": { "framework": "iso27001", "controlId": "A.6.3" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both require formal security awareness training programs"
+    },
+    {
+      "source": { "framework": "pci-dss", "controlId": "12.6.1" },
+      "target": { "framework": "cis-v8", "controlId": "14.1" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address security awareness program establishment"
+    },
+
+    {
+      "source": { "framework": "iso27001", "controlId": "A.5.9" },
+      "target": { "framework": "nist-csf", "controlId": "ID.AM-01" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address inventorying information and associated assets"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.5.9" },
+      "target": { "framework": "cis-v8", "controlId": "1.1" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address establishing and maintaining asset inventories"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.5.10" },
+      "target": { "framework": "nist-csf", "controlId": "ID.AM-01" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "A.5.10 acceptable use maps to ID.AM-01 asset identification rules"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.5.10" },
+      "target": { "framework": "nist-csf", "controlId": "ID.AM-02" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "A.5.10 acceptable use of assets relates to ID.AM-02 software inventory"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.5.10" },
+      "target": { "framework": "cis-v8", "controlId": "2.1" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "A.5.10 acceptable use maps to CIS 2.1 software inventory management"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "ID.AM-01" },
+      "target": { "framework": "iso27001", "controlId": "A.5.9" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address hardware and physical asset inventory management"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "ID.AM-01" },
+      "target": { "framework": "cis-v8", "controlId": "1.1" },
+      "mappingType": "equivalent",
+      "confidence": 0.9,
+      "notes": "Both directly address hardware asset inventory processes"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "ID.AM-02" },
+      "target": { "framework": "iso27001", "controlId": "A.5.9" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "ID.AM-02 software platforms map to A.5.9 asset inventory"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "ID.AM-02" },
+      "target": { "framework": "cis-v8", "controlId": "2.1" },
+      "mappingType": "equivalent",
+      "confidence": 0.9,
+      "notes": "Both directly address software asset inventory processes"
+    },
+    {
+      "source": { "framework": "cis-v8", "controlId": "1.1" },
+      "target": { "framework": "iso27001", "controlId": "A.5.9" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address enterprise hardware asset inventory"
+    },
+    {
+      "source": { "framework": "cis-v8", "controlId": "1.1" },
+      "target": { "framework": "nist-csf", "controlId": "ID.AM-01" },
+      "mappingType": "equivalent",
+      "confidence": 0.9,
+      "notes": "Both address hardware asset identification and inventory"
+    },
+    {
+      "source": { "framework": "cis-v8", "controlId": "2.1" },
+      "target": { "framework": "iso27001", "controlId": "A.5.9" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "CIS 2.1 software inventory maps to A.5.9 asset inventory"
+    },
+    {
+      "source": { "framework": "cis-v8", "controlId": "2.1" },
+      "target": { "framework": "nist-csf", "controlId": "ID.AM-02" },
+      "mappingType": "equivalent",
+      "confidence": 0.9,
+      "notes": "Both address software asset inventory and management"
+    },
+
+    {
+      "source": { "framework": "iso27001", "controlId": "A.8.20" },
+      "target": { "framework": "nist-csf", "controlId": "PR.IR-01" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address network security and protection mechanisms"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.8.20" },
+      "target": { "framework": "cis-v8", "controlId": "12.1" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address network infrastructure management and security"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.8.20" },
+      "target": { "framework": "pci-dss", "controlId": "1.2.1" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "A.8.20 network security maps to PCI 1.2.1 network security controls configuration"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.8.21" },
+      "target": { "framework": "nist-csf", "controlId": "PR.IR-01" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "A.8.21 web services security maps to PR.IR-01 network protection"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.8.21" },
+      "target": { "framework": "cis-v8", "controlId": "13.1" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "A.8.21 web services security relates to CIS 13.1 network monitoring"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.8.21" },
+      "target": { "framework": "pci-dss", "controlId": "1.2.1" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "A.8.21 web services security relates to PCI 1.2.1 network controls"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "PR.IR-01" },
+      "target": { "framework": "iso27001", "controlId": "A.8.20" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address network security and resilience"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "PR.IR-01" },
+      "target": { "framework": "cis-v8", "controlId": "12.1" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "PR.IR-01 network protection maps to CIS 12.1 network management"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "PR.IR-01" },
+      "target": { "framework": "pci-dss", "controlId": "1.2.1" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "PR.IR-01 network protection maps to PCI 1.2.1 network controls"
+    },
+    {
+      "source": { "framework": "cis-v8", "controlId": "12.1" },
+      "target": { "framework": "iso27001", "controlId": "A.8.20" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address network infrastructure management"
+    },
+    {
+      "source": { "framework": "cis-v8", "controlId": "12.1" },
+      "target": { "framework": "pci-dss", "controlId": "1.2.1" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "CIS 12.1 network management maps to PCI 1.2.1 network controls"
+    },
+    {
+      "source": { "framework": "cis-v8", "controlId": "13.1" },
+      "target": { "framework": "iso27001", "controlId": "A.8.20" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "CIS 13.1 network monitoring maps to A.8.20 network security"
+    },
+    {
+      "source": { "framework": "cis-v8", "controlId": "13.1" },
+      "target": { "framework": "pci-dss", "controlId": "1.1.1" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "CIS 13.1 network monitoring relates to PCI 1.1.1 network security controls"
+    },
+    {
+      "source": { "framework": "pci-dss", "controlId": "1.1.1" },
+      "target": { "framework": "iso27001", "controlId": "A.8.20" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "PCI 1.1.1 network security controls map to A.8.20 network security"
+    },
+    {
+      "source": { "framework": "pci-dss", "controlId": "1.1.1" },
+      "target": { "framework": "cis-v8", "controlId": "12.1" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "PCI 1.1.1 network security maps to CIS 12.1 network management"
+    },
+    {
+      "source": { "framework": "pci-dss", "controlId": "1.2.1" },
+      "target": { "framework": "iso27001", "controlId": "A.8.20" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "PCI 1.2.1 NSC configuration maps to A.8.20 network security"
+    },
+    {
+      "source": { "framework": "pci-dss", "controlId": "1.2.1" },
+      "target": { "framework": "nist-csf", "controlId": "PR.IR-01" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "PCI 1.2.1 network controls map to PR.IR-01 network protection"
+    },
+
+    {
+      "source": { "framework": "soc2", "controlId": "A1.2" },
+      "target": { "framework": "iso27001", "controlId": "A.8.13" },
+      "mappingType": "equivalent",
+      "confidence": 0.9,
+      "notes": "Both address data backup and recovery procedures"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "A1.2" },
+      "target": { "framework": "nist-csf", "controlId": "PR.DS-11" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address backup creation and maintenance requirements"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "A1.2" },
+      "target": { "framework": "cis-v8", "controlId": "11.1" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address establishing data recovery practices"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "A1.2" },
+      "target": { "framework": "cis-v8", "controlId": "11.2" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "A1.2 recovery infrastructure maps to CIS 11.2 automated backup processes"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "A1.2" },
+      "target": { "framework": "pci-dss", "controlId": "9.2.1" },
+      "mappingType": "related",
+      "confidence": 0.4,
+      "notes": "A1.2 backup and recovery relates to PCI 9.2.1 physical access procedures for media protection"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.8.13" },
+      "target": { "framework": "soc2", "controlId": "A1.2" },
+      "mappingType": "equivalent",
+      "confidence": 0.9,
+      "notes": "Both address information backup policies and procedures"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.8.13" },
+      "target": { "framework": "nist-csf", "controlId": "PR.DS-11" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address backup requirements for data protection"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.8.13" },
+      "target": { "framework": "cis-v8", "controlId": "11.1" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address data recovery and backup practices"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.8.13" },
+      "target": { "framework": "cis-v8", "controlId": "11.2" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "A.8.13 backup maps to CIS 11.2 automated backups"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "PR.DS-11" },
+      "target": { "framework": "soc2", "controlId": "A1.2" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address backup and recovery of data"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "PR.DS-11" },
+      "target": { "framework": "iso27001", "controlId": "A.8.13" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address data backup requirements"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "PR.DS-11" },
+      "target": { "framework": "cis-v8", "controlId": "11.1" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address data recovery and backup practices"
+    },
+    {
+      "source": { "framework": "cis-v8", "controlId": "11.1" },
+      "target": { "framework": "soc2", "controlId": "A1.2" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address data recovery processes and procedures"
+    },
+    {
+      "source": { "framework": "cis-v8", "controlId": "11.1" },
+      "target": { "framework": "iso27001", "controlId": "A.8.13" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address backup and data recovery practices"
+    },
+    {
+      "source": { "framework": "cis-v8", "controlId": "11.2" },
+      "target": { "framework": "soc2", "controlId": "A1.2" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "CIS 11.2 automated backups map to A1.2 recovery infrastructure"
+    },
+    {
+      "source": { "framework": "cis-v8", "controlId": "11.2" },
+      "target": { "framework": "iso27001", "controlId": "A.8.13" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "CIS 11.2 automated backups map to A.8.13 backup of information"
+    },
+
+    {
+      "source": { "framework": "soc2", "controlId": "CC6.4" },
+      "target": { "framework": "iso27001", "controlId": "A.7.1" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address physical security perimeters and access restrictions"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC6.4" },
+      "target": { "framework": "iso27001", "controlId": "A.7.2" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address physical entry controls to secure areas"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC6.4" },
+      "target": { "framework": "pci-dss", "controlId": "9.1.1" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both restrict physical access to cardholder data and sensitive areas"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.7.1" },
+      "target": { "framework": "soc2", "controlId": "CC6.4" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address physical security perimeters"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.7.1" },
+      "target": { "framework": "pci-dss", "controlId": "9.1.1" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "A.7.1 physical perimeters map to PCI 9.1.1 physical access controls"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.7.2" },
+      "target": { "framework": "soc2", "controlId": "CC6.4" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address physical entry controls and access management"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.7.2" },
+      "target": { "framework": "pci-dss", "controlId": "9.2.1" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "A.7.2 physical entry maps to PCI 9.2.1 physical access procedures"
+    },
+    {
+      "source": { "framework": "pci-dss", "controlId": "9.1.1" },
+      "target": { "framework": "soc2", "controlId": "CC6.4" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address physical access restrictions"
+    },
+    {
+      "source": { "framework": "pci-dss", "controlId": "9.1.1" },
+      "target": { "framework": "iso27001", "controlId": "A.7.1" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "PCI 9.1.1 physical access maps to A.7.1 physical security perimeters"
+    },
+    {
+      "source": { "framework": "pci-dss", "controlId": "9.2.1" },
+      "target": { "framework": "iso27001", "controlId": "A.7.2" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "PCI 9.2.1 access procedures map to A.7.2 physical entry"
+    },
+
+    {
+      "source": { "framework": "soc2", "controlId": "CC6.6" },
+      "target": { "framework": "iso27001", "controlId": "A.8.20" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "CC6.6 boundary protection maps to A.8.20 network security"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC6.6" },
+      "target": { "framework": "nist-csf", "controlId": "PR.IR-01" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "CC6.6 external threat protection maps to PR.IR-01 network protection"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC6.6" },
+      "target": { "framework": "cis-v8", "controlId": "13.1" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "CC6.6 boundary protection maps to CIS 13.1 network monitoring and defense"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC6.6" },
+      "target": { "framework": "pci-dss", "controlId": "1.2.1" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "CC6.6 external threat measures map to PCI 1.2.1 NSC configuration"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC6.8" },
+      "target": { "framework": "iso27001", "controlId": "A.8.7" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address malware protection and prevention"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC6.8" },
+      "target": { "framework": "nist-csf", "controlId": "DE.CM-01" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "CC6.8 malware detection overlaps with DE.CM-01 continuous monitoring"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC6.8" },
+      "target": { "framework": "cis-v8", "controlId": "10.1" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address deploying and maintaining anti-malware defenses"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC6.8" },
+      "target": { "framework": "pci-dss", "controlId": "5.1.1" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "CC6.8 malware prevention maps to PCI 5.1.1 anti-malware policies"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.8.7" },
+      "target": { "framework": "soc2", "controlId": "CC6.8" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address protection against malware"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.8.7" },
+      "target": { "framework": "cis-v8", "controlId": "10.1" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address malware defense deployment and maintenance"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.8.7" },
+      "target": { "framework": "pci-dss", "controlId": "5.2.1" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "A.8.7 malware protection maps to PCI 5.2.1 anti-malware deployment"
+    },
+    {
+      "source": { "framework": "cis-v8", "controlId": "10.1" },
+      "target": { "framework": "soc2", "controlId": "CC6.8" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address deploying anti-malware software"
+    },
+    {
+      "source": { "framework": "cis-v8", "controlId": "10.1" },
+      "target": { "framework": "iso27001", "controlId": "A.8.7" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address malware defense management"
+    },
+    {
+      "source": { "framework": "pci-dss", "controlId": "5.2.1" },
+      "target": { "framework": "soc2", "controlId": "CC6.8" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "PCI 5.2.1 anti-malware deployment maps to CC6.8 malware prevention"
+    },
+    {
+      "source": { "framework": "pci-dss", "controlId": "5.2.1" },
+      "target": { "framework": "iso27001", "controlId": "A.8.7" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "PCI 5.2.1 anti-malware maps to A.8.7 malware protection"
+    },
+
+    {
+      "source": { "framework": "soc2", "controlId": "CC9.2" },
+      "target": { "framework": "iso27001", "controlId": "A.5.19" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address supplier and vendor information security management"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC9.2" },
+      "target": { "framework": "iso27001", "controlId": "A.5.20" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "CC9.2 vendor management maps to A.5.20 supplier agreements"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC9.2" },
+      "target": { "framework": "iso27001", "controlId": "A.5.21" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "CC9.2 ongoing vendor monitoring maps to A.5.21 supply chain risk management"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC9.2" },
+      "target": { "framework": "nist-csf", "controlId": "GV.SC-01" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "CC9.2 vendor risk maps to GV.SC-01 supply chain risk management"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC9.2" },
+      "target": { "framework": "cis-v8", "controlId": "15.1" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "CC9.2 vendor management maps to CIS 15.1 service provider management"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC9.2" },
+      "target": { "framework": "pci-dss", "controlId": "12.8.1" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "CC9.2 vendor risk maps to PCI 12.8.1 third-party service provider management"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.5.19" },
+      "target": { "framework": "soc2", "controlId": "CC9.2" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address supplier information security requirements"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.5.19" },
+      "target": { "framework": "nist-csf", "controlId": "GV.SC-01" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "A.5.19 supplier security maps to GV.SC-01 supply chain risk management"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.5.19" },
+      "target": { "framework": "pci-dss", "controlId": "12.8.1" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "A.5.19 supplier requirements map to PCI 12.8.1 TPSP management"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.5.21" },
+      "target": { "framework": "nist-csf", "controlId": "GV.SC-04" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "A.5.21 ICT supply chain security maps to GV.SC-04 supplier assessments"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "GV.SC-01" },
+      "target": { "framework": "soc2", "controlId": "CC9.2" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "GV.SC-01 supply chain risk management maps to CC9.2 vendor management"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "GV.SC-01" },
+      "target": { "framework": "iso27001", "controlId": "A.5.19" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "GV.SC-01 supply chain maps to A.5.19 supplier security"
+    },
+    {
+      "source": { "framework": "cis-v8", "controlId": "15.1" },
+      "target": { "framework": "soc2", "controlId": "CC9.2" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "CIS 15.1 service provider management maps to CC9.2 vendor risk"
+    },
+    {
+      "source": { "framework": "pci-dss", "controlId": "12.8.1" },
+      "target": { "framework": "soc2", "controlId": "CC9.2" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "PCI 12.8.1 TPSP management maps to CC9.2 vendor risk management"
+    },
+    {
+      "source": { "framework": "pci-dss", "controlId": "12.8.1" },
+      "target": { "framework": "iso27001", "controlId": "A.5.19" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "PCI 12.8.1 TPSP management maps to A.5.19 supplier security"
+    },
+
+    {
+      "source": { "framework": "soc2", "controlId": "CC5.2" },
+      "target": { "framework": "iso27001", "controlId": "A.8.25" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "CC5.2 technology general controls map to A.8.25 secure development lifecycle"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC5.2" },
+      "target": { "framework": "pci-dss", "controlId": "6.2.1" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "CC5.2 technology controls map to PCI 6.2.1 secure development practices"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.8.25" },
+      "target": { "framework": "pci-dss", "controlId": "6.2.1" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address secure software development lifecycle requirements"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.8.25" },
+      "target": { "framework": "cis-v8", "controlId": "16.1" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "A.8.25 secure development maps to CIS 16.1 application security process"
+    },
+    {
+      "source": { "framework": "pci-dss", "controlId": "6.2.1" },
+      "target": { "framework": "iso27001", "controlId": "A.8.25" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address secure software development lifecycle"
+    },
+    {
+      "source": { "framework": "pci-dss", "controlId": "6.2.1" },
+      "target": { "framework": "cis-v8", "controlId": "16.1" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "PCI 6.2.1 secure development maps to CIS 16.1 application security"
+    },
+    {
+      "source": { "framework": "cis-v8", "controlId": "16.1" },
+      "target": { "framework": "iso27001", "controlId": "A.8.25" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "CIS 16.1 application security maps to A.8.25 secure development"
+    },
+
+    {
+      "source": { "framework": "soc2", "controlId": "CC5.3" },
+      "target": { "framework": "iso27001", "controlId": "A.5.1" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address establishing and maintaining security policies and procedures"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC5.3" },
+      "target": { "framework": "nist-csf", "controlId": "GV.PO-01" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address security policy establishment and management"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.5.1" },
+      "target": { "framework": "soc2", "controlId": "CC5.3" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both require documented information security policies"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.5.1" },
+      "target": { "framework": "nist-csf", "controlId": "GV.PO-01" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address security governance and policy frameworks"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "GV.PO-01" },
+      "target": { "framework": "soc2", "controlId": "CC5.3" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address organizational security policy management"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "GV.PO-01" },
+      "target": { "framework": "iso27001", "controlId": "A.5.1" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address establishing security governance policies"
+    },
+
+    {
+      "source": { "framework": "soc2", "controlId": "CC7.5" },
+      "target": { "framework": "nist-csf", "controlId": "RC.RP-01" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address recovery planning and execution after incidents"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC7.5" },
+      "target": { "framework": "iso27001", "controlId": "A.5.29" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "CC7.5 recovery procedures map to A.5.29 ICT continuity during disruption"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "RC.RP-01" },
+      "target": { "framework": "soc2", "controlId": "CC7.5" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address recovery plan execution"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "A1.3" },
+      "target": { "framework": "iso27001", "controlId": "A.5.30" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "A1.3 recovery testing maps to A.5.30 ICT readiness for continuity"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "A1.3" },
+      "target": { "framework": "cis-v8", "controlId": "11.3" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address testing data recovery processes"
+    },
+    {
+      "source": { "framework": "cis-v8", "controlId": "11.3" },
+      "target": { "framework": "soc2", "controlId": "A1.3" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address data recovery testing and validation"
+    },
+
+    {
+      "source": { "framework": "soc2", "controlId": "C1.1" },
+      "target": { "framework": "iso27001", "controlId": "A.5.12" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address information classification"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "C1.1" },
+      "target": { "framework": "iso27001", "controlId": "A.5.13" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "C1.1 confidential info handling maps to A.5.13 labeling of information"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "C1.1" },
+      "target": { "framework": "cis-v8", "controlId": "3.1" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "C1.1 confidential info identification maps to CIS 3.1 data management"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.5.12" },
+      "target": { "framework": "soc2", "controlId": "C1.1" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address information classification processes"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.5.12" },
+      "target": { "framework": "cis-v8", "controlId": "3.1" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "A.5.12 classification maps to CIS 3.1 data management process"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.5.12" },
+      "target": { "framework": "pci-dss", "controlId": "3.1.1" },
+      "mappingType": "partial",
+      "confidence": 0.65,
+      "notes": "A.5.12 classification relates to PCI 3.1.1 data retention policies"
+    },
+
+    {
+      "source": { "framework": "soc2", "controlId": "CC6.5" },
+      "target": { "framework": "iso27001", "controlId": "A.8.10" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address information deletion and media sanitization"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "C1.2" },
+      "target": { "framework": "iso27001", "controlId": "A.8.10" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address secure disposal of confidential information"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.8.10" },
+      "target": { "framework": "soc2", "controlId": "CC6.5" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address information deletion and secure disposal"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.8.10" },
+      "target": { "framework": "soc2", "controlId": "C1.2" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address disposal of confidential data"
+    },
+
+    {
+      "source": { "framework": "soc2", "controlId": "CC4.1" },
+      "target": { "framework": "iso27001", "controlId": "A.8.34" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "CC4.1 monitoring evaluations map to A.8.34 protection of systems during audit testing"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC4.1" },
+      "target": { "framework": "nist-csf", "controlId": "ID.IM-01" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "CC4.1 ongoing evaluations map to ID.IM-01 improvements are identified"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC4.1" },
+      "target": { "framework": "nist-csf", "controlId": "ID.IM-02" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "CC4.1 evaluations map to ID.IM-02 improvement plans are developed"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "ID.IM-01" },
+      "target": { "framework": "soc2", "controlId": "CC4.1" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "ID.IM-01 improvement identification maps to CC4.1 ongoing evaluations"
+    },
+
+    {
+      "source": { "framework": "soc2", "controlId": "CC2.2" },
+      "target": { "framework": "iso27001", "controlId": "A.6.3" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "CC2.2 internal communication of security matters maps to A.6.3 awareness"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC2.3" },
+      "target": { "framework": "iso27001", "controlId": "A.5.6" },
+      "mappingType": "partial",
+      "confidence": 0.65,
+      "notes": "CC2.3 external communication maps to A.5.6 contact with special interest groups"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC1.1" },
+      "target": { "framework": "iso27001", "controlId": "A.5.1" },
+      "mappingType": "partial",
+      "confidence": 0.65,
+      "notes": "CC1.1 ethics and integrity commitment maps to A.5.1 security policy"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC1.2" },
+      "target": { "framework": "nist-csf", "controlId": "GV.OV-01" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "CC1.2 board oversight maps to GV.OV-01 governance oversight"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC1.3" },
+      "target": { "framework": "nist-csf", "controlId": "GV.RR-01" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "CC1.3 organizational structure maps to GV.RR-01 roles and responsibilities"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "GV.RR-01" },
+      "target": { "framework": "soc2", "controlId": "CC1.3" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "GV.RR-01 organizational roles maps to CC1.3 structure and authority"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "GV.OV-01" },
+      "target": { "framework": "soc2", "controlId": "CC1.2" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "GV.OV-01 cybersecurity oversight maps to CC1.2 board oversight"
+    },
+
+    {
+      "source": { "framework": "soc2", "controlId": "CC9.1" },
+      "target": { "framework": "iso27001", "controlId": "A.5.29" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "CC9.1 business disruption risk maps to A.5.29 ICT continuity"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC9.1" },
+      "target": { "framework": "iso27001", "controlId": "A.5.30" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "CC9.1 risk mitigation maps to A.5.30 ICT readiness for business continuity"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC9.1" },
+      "target": { "framework": "nist-csf", "controlId": "ID.RA-05" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "CC9.1 risk mitigation maps to ID.RA-05 risk responses"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.5.29" },
+      "target": { "framework": "soc2", "controlId": "CC9.1" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "A.5.29 ICT continuity maps to CC9.1 business disruption risk mitigation"
+    },
+
+    {
+      "source": { "framework": "soc2", "controlId": "CC3.3" },
+      "target": { "framework": "iso27001", "controlId": "A.6.1" },
+      "mappingType": "related",
+      "confidence": 0.45,
+      "notes": "CC3.3 fraud risk assessment relates to A.6.1 personnel screening"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC3.3" },
+      "target": { "framework": "nist-csf", "controlId": "ID.RA-03" },
+      "mappingType": "partial",
+      "confidence": 0.65,
+      "notes": "CC3.3 fraud risk maps to ID.RA-03 internal and external threats"
+    },
+    {
+      "source": { "framework": "soc2", "controlId": "CC3.4" },
+      "target": { "framework": "nist-csf", "controlId": "ID.RA-04" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "CC3.4 significant change identification maps to ID.RA-04 impact analysis"
+    },
+
+    {
+      "source": { "framework": "iso27001", "controlId": "A.5.2" },
+      "target": { "framework": "nist-csf", "controlId": "GV.RR-01" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "A.5.2 security roles map to GV.RR-01 organizational roles"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.5.2" },
+      "target": { "framework": "soc2", "controlId": "CC1.3" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "A.5.2 security roles map to CC1.3 structure and authority"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.6.1" },
+      "target": { "framework": "pci-dss", "controlId": "12.1.1" },
+      "mappingType": "related",
+      "confidence": 0.45,
+      "notes": "A.6.1 screening relates to PCI 12.1.1 security policy scope"
+    },
+
+    {
+      "source": { "framework": "cis-v8", "controlId": "4.1" },
+      "target": { "framework": "iso27001", "controlId": "A.8.9" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "CIS 4.1 secure configuration maps to A.8.9 configuration management"
+    },
+    {
+      "source": { "framework": "cis-v8", "controlId": "4.1" },
+      "target": { "framework": "pci-dss", "controlId": "2.2.1" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address secure system configuration standards"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.8.9" },
+      "target": { "framework": "cis-v8", "controlId": "4.1" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "A.8.9 configuration management maps to CIS 4.1 secure configuration"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.8.9" },
+      "target": { "framework": "pci-dss", "controlId": "2.2.1" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "A.8.9 configuration management maps to PCI 2.2.1 system configuration"
+    },
+    {
+      "source": { "framework": "pci-dss", "controlId": "2.2.1" },
+      "target": { "framework": "cis-v8", "controlId": "4.1" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address secure system configuration baselines"
+    },
+    {
+      "source": { "framework": "pci-dss", "controlId": "2.2.1" },
+      "target": { "framework": "iso27001", "controlId": "A.8.9" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "PCI 2.2.1 system configuration maps to A.8.9 configuration management"
+    },
+
+    {
+      "source": { "framework": "nist-csf", "controlId": "RS.MI-01" },
+      "target": { "framework": "soc2", "controlId": "CC7.4" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "RS.MI-01 incident containment maps to CC7.4 incident response"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "RS.MI-01" },
+      "target": { "framework": "iso27001", "controlId": "A.5.26" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "RS.MI-01 containment maps to A.5.26 incident response"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "RS.MI-02" },
+      "target": { "framework": "soc2", "controlId": "CC7.4" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "RS.MI-02 incident eradication maps to CC7.4 incident response"
+    },
+
+    {
+      "source": { "framework": "nist-csf", "controlId": "DE.CM-02" },
+      "target": { "framework": "soc2", "controlId": "CC6.4" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "DE.CM-02 physical environment monitoring maps to CC6.4 physical access"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "DE.CM-02" },
+      "target": { "framework": "iso27001", "controlId": "A.7.4" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "DE.CM-02 physical monitoring maps to A.7.4 physical security monitoring"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.7.4" },
+      "target": { "framework": "nist-csf", "controlId": "DE.CM-02" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "A.7.4 physical security monitoring maps to DE.CM-02"
+    },
+
+    {
+      "source": { "framework": "nist-csf", "controlId": "DE.CM-03" },
+      "target": { "framework": "soc2", "controlId": "CC6.2" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "DE.CM-03 personnel activity monitoring maps to CC6.2 credential management"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "DE.CM-06" },
+      "target": { "framework": "soc2", "controlId": "CC7.1" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "DE.CM-06 external service provider monitoring maps to CC7.1 monitoring"
+    },
+
+    {
+      "source": { "framework": "soc2", "controlId": "A1.1" },
+      "target": { "framework": "nist-csf", "controlId": "PR.IR-04" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "A1.1 capacity management maps to PR.IR-04 adequate resource capacity"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "PR.IR-04" },
+      "target": { "framework": "soc2", "controlId": "A1.1" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "PR.IR-04 resource capacity maps to A1.1 capacity management"
+    },
+
+    {
+      "source": { "framework": "cis-v8", "controlId": "14.2" },
+      "target": { "framework": "iso27001", "controlId": "A.6.3" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "CIS 14.2 security skill training maps to A.6.3 security awareness"
+    },
+    {
+      "source": { "framework": "cis-v8", "controlId": "14.2" },
+      "target": { "framework": "nist-csf", "controlId": "PR.AT-02" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address privileged user and specialized role training"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "PR.AT-02" },
+      "target": { "framework": "cis-v8", "controlId": "14.2" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address security training for privileged roles"
+    },
+
+    {
+      "source": { "framework": "cis-v8", "controlId": "3.3" },
+      "target": { "framework": "pci-dss", "controlId": "3.2.1" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "CIS 3.3 data flow documentation maps to PCI 3.2.1 account data storage"
+    },
+    {
+      "source": { "framework": "cis-v8", "controlId": "3.4" },
+      "target": { "framework": "iso27001", "controlId": "A.5.33" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "CIS 3.4 data retention enforcement maps to A.5.33 records protection"
+    },
+
+    {
+      "source": { "framework": "cis-v8", "controlId": "9.1" },
+      "target": { "framework": "iso27001", "controlId": "A.8.1" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "CIS 9.1 email and web browser protections map to A.8.1 user endpoint devices"
+    },
+    {
+      "source": { "framework": "cis-v8", "controlId": "9.2" },
+      "target": { "framework": "pci-dss", "controlId": "5.2.2" },
+      "mappingType": "related",
+      "confidence": 0.45,
+      "notes": "CIS 9.2 DNS filtering relates to PCI 5.2.2 anti-malware mechanisms"
+    },
+
+    {
+      "source": { "framework": "iso27001", "controlId": "A.5.14" },
+      "target": { "framework": "cis-v8", "controlId": "3.10" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "A.5.14 information transfer maps to CIS 3.10 data encryption in transit"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.5.14" },
+      "target": { "framework": "pci-dss", "controlId": "4.2.1" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "A.5.14 information transfer maps to PCI 4.2.1 transmission protection"
+    },
+
+    {
+      "source": { "framework": "iso27001", "controlId": "A.8.4" },
+      "target": { "framework": "cis-v8", "controlId": "3.1" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "A.8.4 access to source code maps to CIS 3.1 data management process"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.8.4" },
+      "target": { "framework": "soc2", "controlId": "CC6.1" },
+      "mappingType": "related",
+      "confidence": 0.4,
+      "notes": "A.8.4 source code access relates to CC6.1 logical access security"
+    },
+
+    {
+      "source": { "framework": "iso27001", "controlId": "A.8.6" },
+      "target": { "framework": "nist-csf", "controlId": "PR.IR-04" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "A.8.6 capacity management maps to PR.IR-04 adequate resource capacity"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.8.6" },
+      "target": { "framework": "soc2", "controlId": "A1.1" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address system capacity management and monitoring"
+    },
+
+    {
+      "source": { "framework": "cis-v8", "controlId": "8.3" },
+      "target": { "framework": "pci-dss", "controlId": "10.3.1" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "CIS 8.3 adequate audit log storage maps to PCI 10.3.1 log retention"
+    },
+    {
+      "source": { "framework": "pci-dss", "controlId": "10.3.1" },
+      "target": { "framework": "cis-v8", "controlId": "8.3" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "PCI 10.3.1 log retention maps to CIS 8.3 audit log storage"
+    },
+
+    {
+      "source": { "framework": "cis-v8", "controlId": "18.1" },
+      "target": { "framework": "nist-csf", "controlId": "ID.RA-01" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "CIS 18.1 penetration testing maps to ID.RA-01 vulnerability identification"
+    },
+    {
+      "source": { "framework": "cis-v8", "controlId": "18.1" },
+      "target": { "framework": "pci-dss", "controlId": "11.4.1" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address penetration testing requirements"
+    },
+    {
+      "source": { "framework": "pci-dss", "controlId": "11.4.1" },
+      "target": { "framework": "cis-v8", "controlId": "18.1" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address penetration testing requirements"
+    },
+
+    {
+      "source": { "framework": "nist-csf", "controlId": "PR.PS-01" },
+      "target": { "framework": "cis-v8", "controlId": "4.1" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "PR.PS-01 configuration management maps to CIS 4.1 secure configuration"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "PR.PS-01" },
+      "target": { "framework": "iso27001", "controlId": "A.8.9" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address configuration management practices"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.8.9" },
+      "target": { "framework": "nist-csf", "controlId": "PR.PS-01" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address configuration management of hardware, software, and services"
+    },
+
+    {
+      "source": { "framework": "nist-csf", "controlId": "PR.AA-06" },
+      "target": { "framework": "soc2", "controlId": "CC6.4" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "PR.AA-06 physical access management maps to CC6.4 physical access restrictions"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "PR.AA-06" },
+      "target": { "framework": "iso27001", "controlId": "A.7.2" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address physical access authorization and control"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.7.2" },
+      "target": { "framework": "nist-csf", "controlId": "PR.AA-06" },
+      "mappingType": "equivalent",
+      "confidence": 0.85,
+      "notes": "Both address physical entry controls"
+    },
+
+    {
+      "source": { "framework": "pci-dss", "controlId": "6.3.1" },
+      "target": { "framework": "iso27001", "controlId": "A.8.8" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "PCI 6.3.1 security vulnerability identification maps to A.8.8 vulnerability management"
+    },
+    {
+      "source": { "framework": "pci-dss", "controlId": "6.3.1" },
+      "target": { "framework": "cis-v8", "controlId": "7.4" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "PCI 6.3.1 vulnerability identification maps to CIS 7.4 automated scanning"
+    },
+    {
+      "source": { "framework": "pci-dss", "controlId": "6.4.1" },
+      "target": { "framework": "iso27001", "controlId": "A.8.23" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "PCI 6.4.1 web application protection maps to A.8.23 web filtering"
+    },
+
+    {
+      "source": { "framework": "cis-v8", "controlId": "1.2" },
+      "target": { "framework": "iso27001", "controlId": "A.5.9" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "CIS 1.2 unauthorized asset addressing maps to A.5.9 asset inventory"
+    },
+    {
+      "source": { "framework": "cis-v8", "controlId": "1.2" },
+      "target": { "framework": "nist-csf", "controlId": "ID.AM-01" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "CIS 1.2 unauthorized assets maps to ID.AM-01 asset identification"
+    },
+
+    {
+      "source": { "framework": "nist-csf", "controlId": "RC.CO-03" },
+      "target": { "framework": "soc2", "controlId": "CC7.5" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "RC.CO-03 recovery communication maps to CC7.5 recovery and communication"
+    },
+    {
+      "source": { "framework": "nist-csf", "controlId": "RC.RP-03" },
+      "target": { "framework": "iso27001", "controlId": "A.5.27" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "RC.RP-03 recovery verification maps to A.5.27 learning from incidents"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.5.27" },
+      "target": { "framework": "nist-csf", "controlId": "RC.RP-03" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "A.5.27 learning from incidents maps to RC.RP-03 recovery integrity"
+    },
+
+    {
+      "source": { "framework": "iso27001", "controlId": "A.5.16" },
+      "target": { "framework": "nist-csf", "controlId": "PR.AA-01" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "A.5.16 identity management maps to PR.AA-01 identity provisioning"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.5.16" },
+      "target": { "framework": "cis-v8", "controlId": "5.1" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "A.5.16 identity management maps to CIS 5.1 account management"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.5.17" },
+      "target": { "framework": "nist-csf", "controlId": "PR.AA-03" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "A.5.17 authentication information maps to PR.AA-03 authentication"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.5.17" },
+      "target": { "framework": "pci-dss", "controlId": "8.2.1" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "A.5.17 authentication management maps to PCI 8.2.1 user identification"
+    },
+    {
+      "source": { "framework": "pci-dss", "controlId": "8.2.1" },
+      "target": { "framework": "iso27001", "controlId": "A.5.17" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "PCI 8.2.1 user identification maps to A.5.17 authentication information"
+    },
+    {
+      "source": { "framework": "pci-dss", "controlId": "8.2.2" },
+      "target": { "framework": "cis-v8", "controlId": "5.4" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "PCI 8.2.2 shared account management maps to CIS 5.4 admin privilege restriction"
+    },
+
+    {
+      "source": { "framework": "cis-v8", "controlId": "6.2" },
+      "target": { "framework": "pci-dss", "controlId": "8.4.2" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "CIS 6.2 MFA for externally-exposed apps maps to PCI 8.4.2 MFA for CDE"
+    },
+    {
+      "source": { "framework": "cis-v8", "controlId": "6.2" },
+      "target": { "framework": "nist-csf", "controlId": "PR.AA-03" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "CIS 6.2 MFA maps to PR.AA-03 authentication requirements"
+    },
+    {
+      "source": { "framework": "pci-dss", "controlId": "8.4.2" },
+      "target": { "framework": "cis-v8", "controlId": "6.2" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "PCI 8.4.2 MFA for CDE maps to CIS 6.2 MFA for applications"
+    },
+
+    {
+      "source": { "framework": "cis-v8", "controlId": "8.5" },
+      "target": { "framework": "pci-dss", "controlId": "10.2.1.1" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "CIS 8.5 detailed log collection maps to PCI 10.2.1.1 detailed audit trails"
+    },
+    {
+      "source": { "framework": "cis-v8", "controlId": "8.9" },
+      "target": { "framework": "pci-dss", "controlId": "10.5.1" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "CIS 8.9 log access protection maps to PCI 10.5.1 log integrity"
+    },
+    {
+      "source": { "framework": "pci-dss", "controlId": "10.5.1" },
+      "target": { "framework": "cis-v8", "controlId": "8.9" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "PCI 10.5.1 log integrity maps to CIS 8.9 log access protection"
+    },
+
+    {
+      "source": { "framework": "iso27001", "controlId": "A.8.11" },
+      "target": { "framework": "nist-csf", "controlId": "PR.DS-01" },
+      "mappingType": "partial",
+      "confidence": 0.7,
+      "notes": "A.8.11 data masking maps to PR.DS-01 data-at-rest confidentiality protection"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.8.11" },
+      "target": { "framework": "pci-dss", "controlId": "3.4.1" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "A.8.11 data masking maps to PCI 3.4.1 PAN masking requirements"
+    },
+    {
+      "source": { "framework": "pci-dss", "controlId": "3.4.1" },
+      "target": { "framework": "iso27001", "controlId": "A.8.11" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "PCI 3.4.1 PAN masking maps to A.8.11 data masking"
+    },
+
+    {
+      "source": { "framework": "iso27001", "controlId": "A.8.12" },
+      "target": { "framework": "nist-csf", "controlId": "PR.DS-01" },
+      "mappingType": "partial",
+      "confidence": 0.65,
+      "notes": "A.8.12 data leakage prevention maps to PR.DS-01 data protection"
+    },
+    {
+      "source": { "framework": "iso27001", "controlId": "A.8.12" },
+      "target": { "framework": "cis-v8", "controlId": "3.11" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "A.8.12 DLP maps to CIS 3.11 DLP tool deployment"
+    },
+    {
+      "source": { "framework": "cis-v8", "controlId": "3.11" },
+      "target": { "framework": "iso27001", "controlId": "A.8.12" },
+      "mappingType": "partial",
+      "confidence": 0.75,
+      "notes": "CIS 3.11 DLP maps to A.8.12 data leakage prevention"
+    }
+  ]
+}

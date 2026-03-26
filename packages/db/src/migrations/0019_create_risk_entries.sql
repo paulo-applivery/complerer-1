@@ -1,0 +1,25 @@
+CREATE TABLE IF NOT EXISTS risk_entries (
+  id TEXT PRIMARY KEY,
+  workspace_id TEXT NOT NULL REFERENCES workspaces(id),
+  title TEXT NOT NULL,
+  description TEXT,
+  asset TEXT,
+  asset_ref TEXT,
+  threat TEXT,
+  vulnerability TEXT,
+  likelihood INTEGER NOT NULL DEFAULT 3,
+  impact INTEGER NOT NULL DEFAULT 3,
+  inherent_risk INTEGER NOT NULL DEFAULT 9,
+  controls_applied TEXT NOT NULL DEFAULT '[]',
+  residual_likelihood INTEGER,
+  residual_impact INTEGER,
+  residual_risk INTEGER,
+  risk_owner TEXT,
+  treatment TEXT NOT NULL DEFAULT 'mitigate',
+  status TEXT NOT NULL DEFAULT 'open',
+  review_date TEXT,
+  created_by TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+CREATE INDEX idx_risk_ws ON risk_entries(workspace_id);

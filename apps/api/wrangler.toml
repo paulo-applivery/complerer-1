@@ -1,0 +1,21 @@
+name = "complerer-api"
+main = "src/index.ts"
+compatibility_date = "2024-12-01"
+
+[dev]
+port = 8787
+
+[vars]
+ENVIRONMENT = "development"
+# Secrets (set via `wrangler secret put` or .dev.vars):
+# ANTHROPIC_API_KEY
+# GEMINI_API_KEY
+
+[[d1_databases]]
+binding = "DB"
+database_name = "complerer-db"
+database_id = "local"
+
+[[r2_buckets]]
+binding = "EVIDENCE_BUCKET"
+bucket_name = "complerer-evidence"

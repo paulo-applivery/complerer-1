@@ -1,0 +1,916 @@
+{
+  "framework": {
+    "slug": "nist_csf",
+    "name": "NIST CSF",
+    "description": "NIST Cybersecurity Framework 2.0 — comprehensive cybersecurity risk management",
+    "sourceOrg": "NIST",
+    "sourceUrl": "https://www.nist.gov/cyberframework"
+  },
+  "version": {
+    "version": "2.0",
+    "status": "current",
+    "publishedAt": "2024-02-26T00:00:00Z"
+  },
+  "controls": [
+    {
+      "controlId": "GV.OC-01",
+      "domain": "Govern",
+      "subdomain": "Organizational Context",
+      "title": "Organizational Mission Understanding",
+      "requirementText": "The organizational mission is understood and informs cybersecurity risk management",
+      "guidance": "Ensure that the organization's mission, objectives, and activities are documented and that cybersecurity risk management decisions are aligned with and support those objectives.",
+      "evidenceRequirements": ["Mission statement documentation", "Risk management policy aligned to mission", "Board or leadership acknowledgment records"],
+      "riskWeight": 0.6
+    },
+    {
+      "controlId": "GV.OC-02",
+      "domain": "Govern",
+      "subdomain": "Organizational Context",
+      "title": "Stakeholder Expectations",
+      "requirementText": "Internal and external stakeholders are understood, and their needs and expectations regarding cybersecurity risk management are understood and considered",
+      "guidance": "Identify and document all internal and external stakeholders whose expectations influence cybersecurity risk decisions, including regulators, customers, partners, and employees.",
+      "evidenceRequirements": ["Stakeholder registry", "Stakeholder communication records", "Requirements traceability matrix"],
+      "riskWeight": 0.5
+    },
+    {
+      "controlId": "GV.OC-03",
+      "domain": "Govern",
+      "subdomain": "Organizational Context",
+      "title": "Legal and Regulatory Requirements",
+      "requirementText": "Legal, regulatory, and contractual requirements regarding cybersecurity — including privacy and civil liberties obligations — are understood and managed",
+      "guidance": "Maintain a current inventory of applicable legal, regulatory, and contractual cybersecurity obligations and ensure compliance is monitored and managed.",
+      "evidenceRequirements": ["Regulatory requirements inventory", "Compliance monitoring reports", "Contractual obligations register"],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "GV.OC-04",
+      "domain": "Govern",
+      "subdomain": "Organizational Context",
+      "title": "Critical Objectives and Services",
+      "requirementText": "Critical objectives, capabilities, and services that stakeholders depend on or expect from the organization are understood and communicated",
+      "guidance": "Identify and document the organization's critical business services and capabilities, and communicate dependencies to relevant stakeholders.",
+      "evidenceRequirements": ["Critical services inventory", "Business impact analysis", "Service dependency documentation"],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "GV.OC-05",
+      "domain": "Govern",
+      "subdomain": "Organizational Context",
+      "title": "Dependency Understanding",
+      "requirementText": "Outcomes, capabilities, and services that the organization depends on are understood and communicated",
+      "guidance": "Identify external dependencies including third-party services, supply chain elements, and infrastructure that the organization relies upon for its operations.",
+      "evidenceRequirements": ["Dependency mapping documentation", "Third-party service inventory", "Critical supplier list"],
+      "riskWeight": 0.6
+    },
+    {
+      "controlId": "GV.RM-01",
+      "domain": "Govern",
+      "subdomain": "Risk Management Strategy",
+      "title": "Risk Management Objectives",
+      "requirementText": "Risk management objectives are established and agreed to by organizational stakeholders",
+      "guidance": "Define and document risk management objectives that are approved by senior leadership and aligned with the organization's overall mission and strategy.",
+      "evidenceRequirements": ["Risk management strategy document", "Stakeholder approval records", "Risk management objectives statement"],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "GV.RM-02",
+      "domain": "Govern",
+      "subdomain": "Risk Management Strategy",
+      "title": "Risk Appetite and Tolerance",
+      "requirementText": "Risk appetite and risk tolerance statements are established, communicated, and maintained",
+      "guidance": "Define quantitative and qualitative risk appetite and tolerance levels, communicate them across the organization, and review them periodically.",
+      "evidenceRequirements": ["Risk appetite statement", "Risk tolerance thresholds documentation", "Communication records"],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "GV.RM-03",
+      "domain": "Govern",
+      "subdomain": "Risk Management Strategy",
+      "title": "Enterprise Risk Management Integration",
+      "requirementText": "Cybersecurity risk management activities and outcomes are included in enterprise risk management processes",
+      "guidance": "Integrate cybersecurity risk management into the organization's overall enterprise risk management program to ensure holistic risk visibility.",
+      "evidenceRequirements": ["Enterprise risk management framework", "Cybersecurity risk register integration", "ERM committee meeting minutes"],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "GV.RM-04",
+      "domain": "Govern",
+      "subdomain": "Risk Management Strategy",
+      "title": "Strategic Risk Response Direction",
+      "requirementText": "Strategic direction that describes appropriate risk response options is established and communicated",
+      "guidance": "Establish and communicate strategic guidance on acceptable risk response options including accept, mitigate, transfer, and avoid.",
+      "evidenceRequirements": ["Risk response strategy document", "Risk treatment plan templates", "Communication records"],
+      "riskWeight": 0.6
+    },
+    {
+      "controlId": "GV.RM-05",
+      "domain": "Govern",
+      "subdomain": "Risk Management Strategy",
+      "title": "Risk Communication Lines",
+      "requirementText": "Lines of communication across the organization are established for cybersecurity risks, including risks from suppliers and other third parties",
+      "guidance": "Establish formal communication channels for reporting and escalating cybersecurity risks across all levels of the organization and with external parties.",
+      "evidenceRequirements": ["Risk communication plan", "Escalation procedures", "Third-party risk reporting channels"],
+      "riskWeight": 0.6
+    },
+    {
+      "controlId": "GV.RM-06",
+      "domain": "Govern",
+      "subdomain": "Risk Management Strategy",
+      "title": "Standardized Risk Calculation",
+      "requirementText": "A standardized method for calculating, documenting, categorizing, and prioritizing cybersecurity risks is established and communicated",
+      "guidance": "Implement a consistent methodology for risk assessment including standardized scoring, categorization, and prioritization criteria.",
+      "evidenceRequirements": ["Risk assessment methodology document", "Risk scoring criteria", "Risk categorization scheme"],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "GV.RM-07",
+      "domain": "Govern",
+      "subdomain": "Risk Management Strategy",
+      "title": "Strategic Opportunities",
+      "requirementText": "Strategic opportunities (i.e., positive risks) are characterized and are included in organizational cybersecurity risk discussions",
+      "guidance": "Include positive risk opportunities in cybersecurity risk assessments to identify potential strategic advantages from cybersecurity investments.",
+      "evidenceRequirements": ["Opportunity assessment records", "Strategic risk discussion minutes", "Positive risk register"],
+      "riskWeight": 0.4
+    },
+    {
+      "controlId": "GV.RR-01",
+      "domain": "Govern",
+      "subdomain": "Roles, Responsibilities, and Authorities",
+      "title": "Leadership Accountability",
+      "requirementText": "Organizational leadership is responsible and accountable for cybersecurity risk and fosters a culture that is risk-aware, ethical, and continually improving",
+      "guidance": "Ensure executive leadership has defined accountability for cybersecurity risk and actively promotes a security-aware culture throughout the organization.",
+      "evidenceRequirements": ["Leadership accountability charter", "Board cybersecurity briefing records", "Culture assessment results"],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "GV.RR-02",
+      "domain": "Govern",
+      "subdomain": "Roles, Responsibilities, and Authorities",
+      "title": "Cybersecurity Roles and Responsibilities",
+      "requirementText": "Roles, responsibilities, and authorities related to cybersecurity risk management are established, communicated, understood, and enforced",
+      "guidance": "Define, document, and communicate cybersecurity roles and responsibilities across all organizational levels including RACI matrices and authority designations.",
+      "evidenceRequirements": ["RACI matrix for cybersecurity", "Role descriptions and authority documentation", "Communication and acknowledgment records"],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "GV.RR-03",
+      "domain": "Govern",
+      "subdomain": "Roles, Responsibilities, and Authorities",
+      "title": "Adequate Resource Allocation",
+      "requirementText": "Adequate resources are allocated commensurate with the cybersecurity risk strategy, roles, responsibilities, and policies",
+      "guidance": "Ensure sufficient budget, personnel, tools, and training are allocated to support the cybersecurity program aligned with the risk strategy.",
+      "evidenceRequirements": ["Cybersecurity budget documentation", "Staffing plan", "Resource allocation approval records"],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "GV.RR-04",
+      "domain": "Govern",
+      "subdomain": "Roles, Responsibilities, and Authorities",
+      "title": "Human Resources Practices",
+      "requirementText": "Cybersecurity is included in human resources practices",
+      "guidance": "Integrate cybersecurity considerations into HR processes including hiring, onboarding, role changes, and termination procedures.",
+      "evidenceRequirements": ["HR policy with cybersecurity provisions", "Background check procedures", "Onboarding/offboarding checklists"],
+      "riskWeight": 0.6
+    },
+    {
+      "controlId": "GV.PO-01",
+      "domain": "Govern",
+      "subdomain": "Policy",
+      "title": "Cybersecurity Policy Establishment",
+      "requirementText": "Policy for managing cybersecurity risks is established based on organizational context, cybersecurity strategy, and priorities and is communicated and enforced",
+      "guidance": "Develop comprehensive cybersecurity policies that reflect organizational context, strategy, and risk priorities, and ensure they are communicated to and enforced across all relevant personnel.",
+      "evidenceRequirements": ["Cybersecurity policy document", "Policy communication records", "Policy enforcement evidence"],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "GV.PO-02",
+      "domain": "Govern",
+      "subdomain": "Policy",
+      "title": "Policy Review and Update",
+      "requirementText": "Policy for managing cybersecurity risks is reviewed, updated, communicated, and enforced to reflect changes in requirements, threats, technology, and organizational mission",
+      "guidance": "Establish a regular review cycle for cybersecurity policies to ensure they remain current with evolving threats, technology changes, and organizational requirements.",
+      "evidenceRequirements": ["Policy review schedule", "Policy change log", "Updated policy distribution records"],
+      "riskWeight": 0.6
+    },
+    {
+      "controlId": "GV.SC-01",
+      "domain": "Govern",
+      "subdomain": "Cybersecurity Supply Chain Risk Management",
+      "title": "Supply Chain Risk Management Program",
+      "requirementText": "A cybersecurity supply chain risk management program, strategy, objectives, policies, and processes are established and agreed to by organizational stakeholders",
+      "guidance": "Establish a formal C-SCRM program with documented strategy, objectives, and processes approved by organizational leadership.",
+      "evidenceRequirements": ["C-SCRM program charter", "Supply chain risk management policy", "Stakeholder approval records"],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "GV.SC-04",
+      "domain": "Govern",
+      "subdomain": "Cybersecurity Supply Chain Risk Management",
+      "title": "Supplier Prioritization",
+      "requirementText": "Suppliers are known and prioritized by criticality",
+      "guidance": "Maintain an inventory of all suppliers and prioritize them based on their criticality to the organization's operations and data security.",
+      "evidenceRequirements": ["Supplier inventory", "Criticality assessment records", "Supplier tiering documentation"],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "GV.SC-05",
+      "domain": "Govern",
+      "subdomain": "Cybersecurity Supply Chain Risk Management",
+      "title": "Supply Chain Contractual Requirements",
+      "requirementText": "Requirements to address cybersecurity risks in supply chains are established, prioritized, and integrated into contracts and other types of agreements with suppliers and other relevant third parties",
+      "guidance": "Include cybersecurity requirements in contracts, SLAs, and agreements with suppliers and third parties covering security controls, incident notification, and audit rights.",
+      "evidenceRequirements": ["Contract security requirements templates", "Third-party agreement reviews", "SLA documentation with security provisions"],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "GV.SC-07",
+      "domain": "Govern",
+      "subdomain": "Cybersecurity Supply Chain Risk Management",
+      "title": "Supplier Risk Monitoring",
+      "requirementText": "The risks posed by a supplier, their products and services, and other third parties are understood, recorded, prioritized, assessed, responded to, and monitored over the course of the relationship",
+      "guidance": "Implement ongoing monitoring and assessment of supplier risks throughout the lifecycle of the relationship including periodic reassessments.",
+      "evidenceRequirements": ["Supplier risk assessment reports", "Ongoing monitoring records", "Third-party risk register"],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "GV.OV-01",
+      "domain": "Govern",
+      "subdomain": "Oversight",
+      "title": "Risk Management Strategy Review",
+      "requirementText": "Cybersecurity risk management strategy outcomes are reviewed to inform and adjust strategy and direction",
+      "guidance": "Regularly review the outcomes of cybersecurity risk management activities and use findings to adjust the overall strategy and direction.",
+      "evidenceRequirements": ["Strategy review meeting minutes", "Performance metrics reports", "Strategy adjustment records"],
+      "riskWeight": 0.6
+    },
+    {
+      "controlId": "GV.OV-02",
+      "domain": "Govern",
+      "subdomain": "Oversight",
+      "title": "Strategy Coverage Review",
+      "requirementText": "The cybersecurity risk management strategy is reviewed and adjusted to ensure coverage of organizational requirements and risks",
+      "guidance": "Periodically assess whether the cybersecurity risk management strategy adequately addresses all organizational requirements and emerging risks.",
+      "evidenceRequirements": ["Coverage gap analysis", "Strategy alignment assessment", "Adjustment action plans"],
+      "riskWeight": 0.6
+    },
+    {
+      "controlId": "GV.OV-03",
+      "domain": "Govern",
+      "subdomain": "Oversight",
+      "title": "Performance Evaluation",
+      "requirementText": "Organizational cybersecurity risk management performance is evaluated and reviewed for adjustments needed",
+      "guidance": "Evaluate cybersecurity risk management performance using defined metrics and KPIs, and make adjustments as needed.",
+      "evidenceRequirements": ["Performance metrics dashboard", "KPI tracking reports", "Management review records"],
+      "riskWeight": 0.6
+    },
+    {
+      "controlId": "ID.AM-01",
+      "domain": "Identify",
+      "subdomain": "Asset Management",
+      "title": "Hardware Asset Inventory",
+      "requirementText": "Inventories of hardware managed by the organization are maintained",
+      "guidance": "Maintain accurate, up-to-date inventories of all hardware assets managed by the organization including servers, workstations, network devices, and IoT devices.",
+      "evidenceRequirements": ["Hardware asset inventory report", "CMDB export", "Asset discovery scan results"],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "ID.AM-02",
+      "domain": "Identify",
+      "subdomain": "Asset Management",
+      "title": "Software Asset Inventory",
+      "requirementText": "Inventories of software, services, and systems managed by the organization are maintained",
+      "guidance": "Maintain accurate, up-to-date inventories of all software, services, and systems including versions, licenses, and deployment locations.",
+      "evidenceRequirements": ["Software asset inventory", "License management report", "System inventory documentation"],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "ID.AM-03",
+      "domain": "Identify",
+      "subdomain": "Asset Management",
+      "title": "Network Communication Mapping",
+      "requirementText": "Representations of the organization's authorized network communication and internal and external network data flows are maintained",
+      "guidance": "Document and maintain up-to-date network architecture diagrams and data flow maps showing authorized communication paths.",
+      "evidenceRequirements": ["Network architecture diagrams", "Data flow diagrams", "Authorized communication matrix"],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "ID.AM-05",
+      "domain": "Identify",
+      "subdomain": "Asset Management",
+      "title": "Asset Prioritization",
+      "requirementText": "Assets are prioritized based on classification, criticality, resources, and impact on the mission",
+      "guidance": "Classify and prioritize all assets based on their criticality to the organization's mission, data sensitivity, and potential impact if compromised.",
+      "evidenceRequirements": ["Asset classification scheme", "Criticality assessment records", "Asset prioritization matrix"],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "ID.AM-07",
+      "domain": "Identify",
+      "subdomain": "Asset Management",
+      "title": "Data Inventory",
+      "requirementText": "Inventories of data and corresponding metadata for designated data types are maintained",
+      "guidance": "Maintain inventories of data assets including data classification, storage locations, retention requirements, and associated metadata.",
+      "evidenceRequirements": ["Data inventory register", "Data classification records", "Data mapping documentation"],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "ID.AM-08",
+      "domain": "Identify",
+      "subdomain": "Asset Management",
+      "title": "Asset Lifecycle Management",
+      "requirementText": "Systems, hardware, software, services, and data are managed throughout their life cycles",
+      "guidance": "Implement lifecycle management processes for all assets from procurement through decommissioning including tracking, maintenance, and secure disposal.",
+      "evidenceRequirements": ["Asset lifecycle management policy", "Decommissioning records", "Lifecycle tracking reports"],
+      "riskWeight": 0.6
+    },
+    {
+      "controlId": "ID.RA-01",
+      "domain": "Identify",
+      "subdomain": "Risk Assessment",
+      "title": "Vulnerability Identification",
+      "requirementText": "Vulnerabilities in assets are identified, validated, and recorded",
+      "guidance": "Implement processes to continuously identify, validate, and record vulnerabilities in organizational assets through scanning, testing, and threat intelligence.",
+      "evidenceRequirements": ["Vulnerability scan reports", "Vulnerability register", "Validation and triage records"],
+      "riskWeight": 0.9
+    },
+    {
+      "controlId": "ID.RA-02",
+      "domain": "Identify",
+      "subdomain": "Risk Assessment",
+      "title": "Cyber Threat Intelligence",
+      "requirementText": "Cyber threat intelligence is received from information sharing forums and sources",
+      "guidance": "Participate in threat intelligence sharing communities and subscribe to relevant threat feeds to maintain awareness of current threats and attack patterns.",
+      "evidenceRequirements": ["Threat intelligence feed subscriptions", "ISAC membership records", "Threat briefing documentation"],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "ID.RA-03",
+      "domain": "Identify",
+      "subdomain": "Risk Assessment",
+      "title": "Threat Identification",
+      "requirementText": "Internal and external threats to the organization are identified and recorded",
+      "guidance": "Identify and document both internal and external threats to organizational assets, including threat actor profiles and attack vectors.",
+      "evidenceRequirements": ["Threat register", "Threat assessment reports", "Threat landscape analysis"],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "ID.RA-04",
+      "domain": "Identify",
+      "subdomain": "Risk Assessment",
+      "title": "Impact and Likelihood Assessment",
+      "requirementText": "Potential impacts and likelihoods of threats exploiting vulnerabilities are identified and recorded",
+      "guidance": "Assess and document the potential business impact and likelihood of identified threats exploiting known vulnerabilities.",
+      "evidenceRequirements": ["Risk assessment matrix", "Impact analysis reports", "Likelihood scoring records"],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "ID.RA-05",
+      "domain": "Identify",
+      "subdomain": "Risk Assessment",
+      "title": "Inherent Risk Understanding",
+      "requirementText": "Threats, vulnerabilities, likelihoods, and impacts are used to understand inherent risk and inform the prioritization of risk response activities",
+      "guidance": "Aggregate threat, vulnerability, likelihood, and impact data to calculate inherent risk levels and prioritize risk response activities accordingly.",
+      "evidenceRequirements": ["Risk scoring methodology", "Inherent risk register", "Risk prioritization records"],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "ID.RA-06",
+      "domain": "Identify",
+      "subdomain": "Risk Assessment",
+      "title": "Risk Response Management",
+      "requirementText": "Risk responses are chosen, prioritized, planned, tracked, and communicated",
+      "guidance": "Select appropriate risk responses (accept, mitigate, transfer, avoid), develop treatment plans, and track their implementation.",
+      "evidenceRequirements": ["Risk treatment plans", "Risk response tracking records", "Risk acceptance documentation"],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "ID.RA-08",
+      "domain": "Identify",
+      "subdomain": "Risk Assessment",
+      "title": "Vulnerability Disclosure Processes",
+      "requirementText": "Processes for receiving, analyzing, and responding to vulnerability disclosures are established",
+      "guidance": "Establish formal processes for receiving and handling vulnerability disclosures from internal and external sources including responsible disclosure programs.",
+      "evidenceRequirements": ["Vulnerability disclosure policy", "Disclosure handling procedures", "Response tracking records"],
+      "riskWeight": 0.6
+    },
+    {
+      "controlId": "ID.IM-01",
+      "domain": "Identify",
+      "subdomain": "Improvement",
+      "title": "Improvements from Evaluations",
+      "requirementText": "Improvements are identified from evaluations",
+      "guidance": "Use the results of cybersecurity evaluations, assessments, and audits to identify opportunities for improvement in security processes and controls.",
+      "evidenceRequirements": ["Evaluation findings reports", "Improvement action plans", "Corrective action tracking"],
+      "riskWeight": 0.6
+    },
+    {
+      "controlId": "ID.IM-02",
+      "domain": "Identify",
+      "subdomain": "Improvement",
+      "title": "Improvements from Security Tests",
+      "requirementText": "Improvements are identified from security tests and exercises, including those done in coordination with suppliers and relevant third parties",
+      "guidance": "Conduct regular security tests, exercises, and simulations and use results to drive improvements in cybersecurity posture.",
+      "evidenceRequirements": ["Security test reports", "Exercise after-action reports", "Improvement recommendations"],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "ID.IM-04",
+      "domain": "Identify",
+      "subdomain": "Improvement",
+      "title": "Incident Response Plan Improvement",
+      "requirementText": "Incident response plans and other cybersecurity plans that affect operations are established, communicated, maintained, and improved",
+      "guidance": "Maintain and continuously improve incident response plans and other operational cybersecurity plans based on lessons learned and changing conditions.",
+      "evidenceRequirements": ["Incident response plan", "Plan review and update records", "Lessons learned documentation"],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "PR.AA-01",
+      "domain": "Protect",
+      "subdomain": "Identity Management, Authentication, and Access Control",
+      "title": "Identity and Credential Management",
+      "requirementText": "Identities and credentials for authorized users, services, and hardware are managed by the organization",
+      "guidance": "Implement identity lifecycle management for all users, services, and devices including provisioning, review, and deprovisioning of identities and credentials.",
+      "evidenceRequirements": ["Identity management policy", "User provisioning records", "Credential management procedures"],
+      "riskWeight": 0.9
+    },
+    {
+      "controlId": "PR.AA-02",
+      "domain": "Protect",
+      "subdomain": "Identity Management, Authentication, and Access Control",
+      "title": "Identity Proofing",
+      "requirementText": "Identities are proofed and bound to credentials based on the context of interactions",
+      "guidance": "Verify identities before binding them to credentials using appropriate identity proofing methods based on the risk level of the interaction.",
+      "evidenceRequirements": ["Identity proofing procedures", "Verification records", "Context-based authentication policy"],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "PR.AA-03",
+      "domain": "Protect",
+      "subdomain": "Identity Management, Authentication, and Access Control",
+      "title": "Authentication",
+      "requirementText": "Users, services, and hardware are authenticated",
+      "guidance": "Implement authentication mechanisms for all users, services, and hardware including multi-factor authentication for high-risk access.",
+      "evidenceRequirements": ["Authentication policy", "MFA deployment records", "Authentication mechanism inventory"],
+      "riskWeight": 0.9
+    },
+    {
+      "controlId": "PR.AA-05",
+      "domain": "Protect",
+      "subdomain": "Identity Management, Authentication, and Access Control",
+      "title": "Access Permissions Management",
+      "requirementText": "Access permissions, entitlements, and authorizations are defined in a policy, managed, enforced, and reviewed, and incorporate the principles of least privilege and separation of duties",
+      "guidance": "Define and enforce access control policies based on least privilege and separation of duties, with regular reviews of access permissions and entitlements.",
+      "evidenceRequirements": ["Access control policy", "Access review records", "Least privilege implementation evidence"],
+      "riskWeight": 0.9
+    },
+    {
+      "controlId": "PR.AA-06",
+      "domain": "Protect",
+      "subdomain": "Identity Management, Authentication, and Access Control",
+      "title": "Physical Access Management",
+      "requirementText": "Physical access to assets is managed, monitored, and enforced commensurate with risk",
+      "guidance": "Implement physical access controls proportionate to the risk level of the assets being protected, including monitoring and logging of physical access.",
+      "evidenceRequirements": ["Physical access control policy", "Access logs and monitoring records", "Physical security assessment reports"],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "PR.AT-01",
+      "domain": "Protect",
+      "subdomain": "Awareness and Training",
+      "title": "General Cybersecurity Awareness",
+      "requirementText": "Personnel are provided with awareness and training so that they possess the knowledge and skills to perform general tasks with cybersecurity risks in mind",
+      "guidance": "Provide regular cybersecurity awareness training to all personnel covering topics such as phishing, password hygiene, social engineering, and data handling.",
+      "evidenceRequirements": ["Training program documentation", "Training completion records", "Awareness campaign materials"],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "PR.AT-02",
+      "domain": "Protect",
+      "subdomain": "Awareness and Training",
+      "title": "Specialized Role Training",
+      "requirementText": "Individuals in specialized roles are provided with awareness and training so that they possess the knowledge and skills to perform relevant tasks with cybersecurity risks in mind",
+      "guidance": "Provide role-specific cybersecurity training to individuals with specialized responsibilities such as system administrators, developers, and incident responders.",
+      "evidenceRequirements": ["Role-specific training curriculum", "Certification records", "Specialized training completion logs"],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "PR.DS-01",
+      "domain": "Protect",
+      "subdomain": "Data Security",
+      "title": "Data-at-Rest Protection",
+      "requirementText": "The confidentiality, integrity, and availability of data-at-rest are protected",
+      "guidance": "Implement encryption, access controls, and integrity mechanisms to protect stored data across all storage media and locations.",
+      "evidenceRequirements": ["Data-at-rest encryption policy", "Encryption implementation records", "Storage security configuration documentation"],
+      "riskWeight": 0.9
+    },
+    {
+      "controlId": "PR.DS-02",
+      "domain": "Protect",
+      "subdomain": "Data Security",
+      "title": "Data-in-Transit Protection",
+      "requirementText": "The confidentiality, integrity, and availability of data-in-transit are protected",
+      "guidance": "Use strong cryptographic protocols (e.g., TLS 1.2+) to protect data during transmission across all network communications.",
+      "evidenceRequirements": ["Data-in-transit encryption policy", "TLS configuration records", "Network encryption audit results"],
+      "riskWeight": 0.9
+    },
+    {
+      "controlId": "PR.DS-10",
+      "domain": "Protect",
+      "subdomain": "Data Security",
+      "title": "Data-in-Use Protection",
+      "requirementText": "The confidentiality, integrity, and availability of data-in-use are protected",
+      "guidance": "Implement controls to protect data while being actively processed, including memory protections, secure enclaves, and access controls on processing systems.",
+      "evidenceRequirements": ["Data-in-use protection policy", "Processing environment security controls", "DLP implementation records"],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "PR.DS-11",
+      "domain": "Protect",
+      "subdomain": "Data Security",
+      "title": "Backup Management",
+      "requirementText": "Backups of data are created, protected, maintained, and tested",
+      "guidance": "Implement comprehensive backup processes including regular backups, secure storage, integrity verification, and periodic restoration testing.",
+      "evidenceRequirements": ["Backup policy and procedures", "Backup completion logs", "Restoration test records"],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "PR.PS-01",
+      "domain": "Protect",
+      "subdomain": "Platform Security",
+      "title": "Configuration Management",
+      "requirementText": "Configuration management practices are established and applied",
+      "guidance": "Establish and maintain secure baseline configurations for all systems and apply configuration management processes to track and control changes.",
+      "evidenceRequirements": ["Configuration management policy", "Baseline configuration standards", "Configuration change records"],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "PR.PS-02",
+      "domain": "Protect",
+      "subdomain": "Platform Security",
+      "title": "Software Maintenance",
+      "requirementText": "Software is maintained, replaced, and removed commensurate with risk",
+      "guidance": "Maintain software through regular patching, replace end-of-life software, and remove unnecessary or unauthorized software from systems.",
+      "evidenceRequirements": ["Patch management records", "Software lifecycle tracking", "Unauthorized software removal logs"],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "PR.PS-04",
+      "domain": "Protect",
+      "subdomain": "Platform Security",
+      "title": "Log Generation",
+      "requirementText": "Log records are generated and made available for continuous monitoring",
+      "guidance": "Configure systems to generate comprehensive log records for security-relevant events and make them available for continuous monitoring and analysis.",
+      "evidenceRequirements": ["Logging policy", "Log configuration standards", "Log availability verification records"],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "PR.PS-05",
+      "domain": "Protect",
+      "subdomain": "Platform Security",
+      "title": "Unauthorized Software Prevention",
+      "requirementText": "Installation and execution of unauthorized software are prevented",
+      "guidance": "Implement application whitelisting, software restriction policies, or other controls to prevent installation and execution of unauthorized software.",
+      "evidenceRequirements": ["Application control policy", "Whitelisting configuration records", "Unauthorized software detection logs"],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "PR.PS-06",
+      "domain": "Protect",
+      "subdomain": "Platform Security",
+      "title": "Secure Software Development",
+      "requirementText": "Secure software development practices are integrated, and their performance is monitored throughout the software development life cycle",
+      "guidance": "Integrate secure development practices including code review, security testing, and vulnerability assessment into all phases of the SDLC.",
+      "evidenceRequirements": ["Secure SDLC policy", "Code review records", "Security testing results"],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "PR.IR-01",
+      "domain": "Protect",
+      "subdomain": "Technology Infrastructure Resilience",
+      "title": "Network Protection",
+      "requirementText": "Networks and environments are protected from unauthorized logical access and usage",
+      "guidance": "Implement network segmentation, firewalls, access controls, and monitoring to protect networks from unauthorized access and usage.",
+      "evidenceRequirements": ["Network security architecture documentation", "Firewall rule sets", "Network access control records"],
+      "riskWeight": 0.9
+    },
+    {
+      "controlId": "PR.IR-03",
+      "domain": "Protect",
+      "subdomain": "Technology Infrastructure Resilience",
+      "title": "Resilience Mechanisms",
+      "requirementText": "Mechanisms are implemented to achieve resilience requirements in normal and adverse situations",
+      "guidance": "Implement redundancy, failover, and disaster recovery mechanisms to maintain operations during normal conditions and adverse events.",
+      "evidenceRequirements": ["Business continuity plan", "Redundancy architecture documentation", "Failover test records"],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "PR.IR-04",
+      "domain": "Protect",
+      "subdomain": "Technology Infrastructure Resilience",
+      "title": "Resource Capacity Management",
+      "requirementText": "Adequate resource capacity to ensure availability is maintained",
+      "guidance": "Monitor and manage resource capacity including processing power, storage, bandwidth, and personnel to ensure continuous availability.",
+      "evidenceRequirements": ["Capacity planning documentation", "Resource utilization reports", "Capacity threshold alerts configuration"],
+      "riskWeight": 0.6
+    },
+    {
+      "controlId": "DE.CM-01",
+      "domain": "Detect",
+      "subdomain": "Continuous Monitoring",
+      "title": "Network Monitoring",
+      "requirementText": "Networks and network services are monitored to find potentially adverse events",
+      "guidance": "Deploy network monitoring tools and processes to continuously monitor network traffic and services for indicators of potentially adverse events.",
+      "evidenceRequirements": ["Network monitoring tool deployment records", "Monitoring coverage documentation", "Alert configuration records"],
+      "riskWeight": 0.9
+    },
+    {
+      "controlId": "DE.CM-02",
+      "domain": "Detect",
+      "subdomain": "Continuous Monitoring",
+      "title": "Physical Environment Monitoring",
+      "requirementText": "The physical environment is monitored to find potentially adverse events",
+      "guidance": "Implement physical security monitoring including surveillance, environmental sensors, and intrusion detection for physical facilities.",
+      "evidenceRequirements": ["Physical monitoring system records", "Surveillance system documentation", "Environmental monitoring logs"],
+      "riskWeight": 0.6
+    },
+    {
+      "controlId": "DE.CM-03",
+      "domain": "Detect",
+      "subdomain": "Continuous Monitoring",
+      "title": "Personnel Activity Monitoring",
+      "requirementText": "Personnel activity and technology usage are monitored to find potentially adverse events",
+      "guidance": "Monitor personnel activities and technology usage patterns to detect insider threats, policy violations, and other potentially adverse events.",
+      "evidenceRequirements": ["User activity monitoring policy", "UEBA tool deployment records", "Monitoring alert records"],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "DE.CM-06",
+      "domain": "Detect",
+      "subdomain": "Continuous Monitoring",
+      "title": "External Service Provider Monitoring",
+      "requirementText": "External service provider activities and services are monitored to find potentially adverse events",
+      "guidance": "Monitor the activities and services of external service providers for security events and anomalies that could indicate adverse conditions.",
+      "evidenceRequirements": ["Service provider monitoring procedures", "Third-party activity logs", "SLA monitoring reports"],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "DE.CM-09",
+      "domain": "Detect",
+      "subdomain": "Continuous Monitoring",
+      "title": "Computing Environment Monitoring",
+      "requirementText": "Computing hardware and software, runtime environments, and their data are monitored to find potentially adverse events",
+      "guidance": "Implement endpoint detection and response, file integrity monitoring, and runtime monitoring across computing environments.",
+      "evidenceRequirements": ["EDR deployment records", "File integrity monitoring configuration", "Runtime monitoring logs"],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "DE.AE-02",
+      "domain": "Detect",
+      "subdomain": "Adverse Event Analysis",
+      "title": "Adverse Event Analysis",
+      "requirementText": "Potentially adverse events are analyzed to better understand associated activities",
+      "guidance": "Analyze detected adverse events to understand their nature, scope, and associated activities for effective response determination.",
+      "evidenceRequirements": ["Event analysis procedures", "Analysis reports", "Analyst investigation records"],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "DE.AE-03",
+      "domain": "Detect",
+      "subdomain": "Adverse Event Analysis",
+      "title": "Information Correlation",
+      "requirementText": "Information is correlated from multiple sources",
+      "guidance": "Implement SIEM or similar correlation capabilities to aggregate and correlate security information from multiple sources for comprehensive analysis.",
+      "evidenceRequirements": ["SIEM deployment documentation", "Correlation rule configuration", "Cross-source analysis reports"],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "DE.AE-06",
+      "domain": "Detect",
+      "subdomain": "Adverse Event Analysis",
+      "title": "Adverse Event Information Sharing",
+      "requirementText": "Information on adverse events is provided to authorized staff and tools",
+      "guidance": "Ensure that information about adverse events is promptly distributed to authorized personnel and security tools for analysis and response.",
+      "evidenceRequirements": ["Information distribution procedures", "Notification records", "Tool integration documentation"],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "DE.AE-07",
+      "domain": "Detect",
+      "subdomain": "Adverse Event Analysis",
+      "title": "Threat Intelligence Integration",
+      "requirementText": "Cyber threat intelligence and other contextual information are integrated into the analysis",
+      "guidance": "Integrate cyber threat intelligence feeds and contextual information into event analysis processes to enhance detection and understanding of threats.",
+      "evidenceRequirements": ["Threat intelligence integration records", "CTI feed configuration", "Enriched analysis reports"],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "DE.AE-08",
+      "domain": "Detect",
+      "subdomain": "Adverse Event Analysis",
+      "title": "Incident Declaration",
+      "requirementText": "Incidents are declared when adverse events meet the defined incident criteria",
+      "guidance": "Define clear incident declaration criteria and ensure that adverse events are promptly escalated to incident status when criteria are met.",
+      "evidenceRequirements": ["Incident declaration criteria", "Escalation procedures", "Incident declaration records"],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "RS.MA-01",
+      "domain": "Respond",
+      "subdomain": "Incident Management",
+      "title": "Incident Response Plan Execution",
+      "requirementText": "The incident response plan is executed in coordination with relevant third parties once an incident is declared",
+      "guidance": "Execute the incident response plan promptly upon incident declaration, coordinating with relevant internal teams and external third parties as needed.",
+      "evidenceRequirements": ["Incident response plan", "Incident response execution records", "Third-party coordination logs"],
+      "riskWeight": 0.9
+    },
+    {
+      "controlId": "RS.MA-02",
+      "domain": "Respond",
+      "subdomain": "Incident Management",
+      "title": "Incident Triage and Validation",
+      "requirementText": "Incident reports are triaged and validated",
+      "guidance": "Establish triage processes to quickly validate and prioritize incident reports for appropriate response allocation.",
+      "evidenceRequirements": ["Triage procedures", "Incident validation records", "Priority classification documentation"],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "RS.MA-03",
+      "domain": "Respond",
+      "subdomain": "Incident Management",
+      "title": "Incident Categorization",
+      "requirementText": "Incidents are categorized and prioritized",
+      "guidance": "Categorize and prioritize incidents based on severity, impact, urgency, and affected assets to guide response efforts.",
+      "evidenceRequirements": ["Incident categorization scheme", "Priority matrix", "Categorized incident records"],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "RS.MA-04",
+      "domain": "Respond",
+      "subdomain": "Incident Management",
+      "title": "Incident Escalation",
+      "requirementText": "Incidents are escalated or elevated as needed",
+      "guidance": "Define and follow escalation procedures to ensure incidents are elevated to appropriate management levels based on severity and impact.",
+      "evidenceRequirements": ["Escalation procedures", "Escalation records", "Management notification logs"],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "RS.MA-05",
+      "domain": "Respond",
+      "subdomain": "Incident Management",
+      "title": "Recovery Initiation Criteria",
+      "requirementText": "The criteria for initiating incident recovery are applied",
+      "guidance": "Define and apply criteria for transitioning from incident response to recovery activities based on containment and eradication status.",
+      "evidenceRequirements": ["Recovery initiation criteria", "Transition decision records", "Recovery readiness assessment"],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "RS.AN-03",
+      "domain": "Respond",
+      "subdomain": "Incident Analysis",
+      "title": "Root Cause Analysis",
+      "requirementText": "Analysis is performed to establish what has taken place during an incident and the root cause of the incident",
+      "guidance": "Conduct thorough analysis of incidents to determine the timeline of events, attack vectors used, and root cause of the incident.",
+      "evidenceRequirements": ["Root cause analysis reports", "Incident timeline documentation", "Attack vector analysis"],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "RS.AN-06",
+      "domain": "Respond",
+      "subdomain": "Incident Analysis",
+      "title": "Investigation Record Integrity",
+      "requirementText": "Actions performed during an investigation are recorded, and the records' integrity and provenance are preserved",
+      "guidance": "Maintain detailed records of all investigation activities with integrity controls to ensure evidence admissibility and audit trail completeness.",
+      "evidenceRequirements": ["Investigation activity logs", "Chain of custody records", "Evidence integrity documentation"],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "RS.AN-07",
+      "domain": "Respond",
+      "subdomain": "Incident Analysis",
+      "title": "Incident Data Collection",
+      "requirementText": "Incident data and metadata are collected, and their integrity and provenance are preserved",
+      "guidance": "Collect and preserve incident-related data and metadata with appropriate integrity controls for analysis and potential legal proceedings.",
+      "evidenceRequirements": ["Data collection procedures", "Evidence preservation records", "Forensic image documentation"],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "RS.CO-02",
+      "domain": "Respond",
+      "subdomain": "Incident Response Reporting and Communication",
+      "title": "Stakeholder Notification",
+      "requirementText": "Internal and external stakeholders are notified of incidents",
+      "guidance": "Notify relevant internal and external stakeholders of incidents in accordance with notification policies, regulatory requirements, and contractual obligations.",
+      "evidenceRequirements": ["Notification procedures", "Stakeholder contact lists", "Notification records"],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "RS.CO-03",
+      "domain": "Respond",
+      "subdomain": "Incident Response Reporting and Communication",
+      "title": "Information Sharing",
+      "requirementText": "Information is shared with designated internal and external stakeholders",
+      "guidance": "Share relevant incident information with designated stakeholders including law enforcement, regulators, and information sharing organizations as appropriate.",
+      "evidenceRequirements": ["Information sharing agreements", "Sharing procedures", "Communication records"],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "RS.MI-01",
+      "domain": "Respond",
+      "subdomain": "Incident Mitigation",
+      "title": "Incident Containment",
+      "requirementText": "Incidents are contained",
+      "guidance": "Implement containment strategies to prevent the spread and escalation of incidents, including network isolation, account disabling, and system quarantine.",
+      "evidenceRequirements": ["Containment procedures", "Containment action records", "Impact limitation documentation"],
+      "riskWeight": 0.9
+    },
+    {
+      "controlId": "RS.MI-02",
+      "domain": "Respond",
+      "subdomain": "Incident Mitigation",
+      "title": "Incident Eradication",
+      "requirementText": "Incidents are eradicated",
+      "guidance": "Remove all components of the incident including malware, compromised accounts, and unauthorized access to eliminate the threat from the environment.",
+      "evidenceRequirements": ["Eradication procedures", "Eradication verification records", "Clean system validation documentation"],
+      "riskWeight": 0.9
+    },
+    {
+      "controlId": "RC.RP-01",
+      "domain": "Recover",
+      "subdomain": "Incident Recovery Plan Execution",
+      "title": "Recovery Plan Execution",
+      "requirementText": "The recovery portion of the incident response plan is executed once initiated from the incident response process",
+      "guidance": "Execute the recovery plan following containment and eradication, restoring systems and services according to documented procedures and priorities.",
+      "evidenceRequirements": ["Recovery plan documentation", "Recovery execution records", "System restoration logs"],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "RC.RP-02",
+      "domain": "Recover",
+      "subdomain": "Incident Recovery Plan Execution",
+      "title": "Recovery Action Prioritization",
+      "requirementText": "Recovery actions are selected, scoped, prioritized, and performed",
+      "guidance": "Select and prioritize recovery actions based on business impact, criticality of affected systems, and available resources.",
+      "evidenceRequirements": ["Recovery prioritization matrix", "Action plan documentation", "Recovery progress reports"],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "RC.RP-03",
+      "domain": "Recover",
+      "subdomain": "Incident Recovery Plan Execution",
+      "title": "Backup Integrity Verification",
+      "requirementText": "The integrity of backups and other restoration assets is verified before using them for restoration",
+      "guidance": "Verify the integrity and security of backups and restoration assets before using them to restore systems to prevent reintroduction of threats.",
+      "evidenceRequirements": ["Backup integrity verification procedures", "Verification test records", "Clean backup validation documentation"],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "RC.RP-04",
+      "domain": "Recover",
+      "subdomain": "Incident Recovery Plan Execution",
+      "title": "Post-Incident Operational Norms",
+      "requirementText": "Critical mission functions and cybersecurity risk management are considered to establish post-incident operational norms",
+      "guidance": "Consider mission-critical functions and updated risk posture when establishing new operational norms following an incident.",
+      "evidenceRequirements": ["Post-incident operational assessment", "Updated risk management documentation", "New operational norm documentation"],
+      "riskWeight": 0.6
+    },
+    {
+      "controlId": "RC.RP-05",
+      "domain": "Recover",
+      "subdomain": "Incident Recovery Plan Execution",
+      "title": "Restored Asset Verification",
+      "requirementText": "The integrity of restored assets is verified, systems and services are restored, and normal operating status is confirmed",
+      "guidance": "Verify the integrity of all restored assets and confirm that systems and services are functioning normally before returning them to production.",
+      "evidenceRequirements": ["Restoration verification procedures", "System health check records", "Service restoration confirmation"],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "RC.RP-06",
+      "domain": "Recover",
+      "subdomain": "Incident Recovery Plan Execution",
+      "title": "Recovery Closure",
+      "requirementText": "The end of incident recovery is declared based on criteria, and incident-related documentation is completed",
+      "guidance": "Formally declare the end of incident recovery when predefined criteria are met and ensure all incident documentation is completed and archived.",
+      "evidenceRequirements": ["Recovery completion criteria", "Closure declaration records", "Complete incident documentation package"],
+      "riskWeight": 0.6
+    },
+    {
+      "controlId": "RC.CO-03",
+      "domain": "Recover",
+      "subdomain": "Incident Recovery Communication",
+      "title": "Recovery Progress Communication",
+      "requirementText": "Recovery activities and progress in restoring operational capabilities are communicated to designated internal and external stakeholders",
+      "guidance": "Provide regular updates on recovery progress to designated stakeholders including estimated timelines for full restoration of services.",
+      "evidenceRequirements": ["Recovery status reports", "Stakeholder communication records", "Progress update documentation"],
+      "riskWeight": 0.6
+    },
+    {
+      "controlId": "RC.CO-04",
+      "domain": "Recover",
+      "subdomain": "Incident Recovery Communication",
+      "title": "Public Recovery Updates",
+      "requirementText": "Public updates on incident recovery are shared using approved methods and messaging",
+      "guidance": "Communicate public updates about incident recovery using approved channels and pre-reviewed messaging to maintain stakeholder confidence.",
+      "evidenceRequirements": ["Public communication plan", "Approved messaging templates", "Public update records"],
+      "riskWeight": 0.6
+    }
+  ]
+}

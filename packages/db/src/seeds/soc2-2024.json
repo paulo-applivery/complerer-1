@@ -1,0 +1,604 @@
+{
+  "framework": {
+    "slug": "soc2",
+    "name": "SOC 2",
+    "description": "Service Organization Control 2 — Trust Services Criteria for security, availability, processing integrity, confidentiality, and privacy",
+    "sourceOrg": "AICPA",
+    "sourceUrl": "https://us.aicpa.org/interestareas/frc/assuranceadvisoryservices/trustservicescriteria"
+  },
+  "version": {
+    "version": "2024",
+    "status": "current",
+    "publishedAt": "2024-01-01T00:00:00Z"
+  },
+  "controls": [
+    {
+      "controlId": "CC1.1",
+      "domain": "Control Environment",
+      "title": "COSO Principle 1: Demonstrates Commitment to Integrity and Ethical Values",
+      "requirementText": "The entity demonstrates a commitment to integrity and ethical values.",
+      "guidance": "Sets the tone at the top by establishing standards of conduct, evaluating adherence, and addressing deviations in a timely manner. Board of directors and management reinforce expectations around integrity at all levels of the organization.",
+      "evidenceRequirements": [
+        "Code of conduct or ethics policy",
+        "Ethics training completion records",
+        "Board or audit committee meeting minutes",
+        "Whistleblower or ethics hotline reports"
+      ],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "CC1.2",
+      "domain": "Control Environment",
+      "title": "COSO Principle 2: Board Exercises Oversight Responsibility",
+      "requirementText": "The board of directors demonstrates independence from management and exercises oversight of the development and performance of internal control.",
+      "guidance": "The board establishes oversight responsibilities, applies relevant expertise, and operates independently. Board members have appropriate skills and experience to question and scrutinize management activities.",
+      "evidenceRequirements": [
+        "Board charter or governance documents",
+        "Board independence attestations",
+        "Board meeting minutes showing oversight activities",
+        "Audit committee reports"
+      ],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "CC1.3",
+      "domain": "Control Environment",
+      "title": "COSO Principle 3: Establishes Structure, Authority, and Responsibility",
+      "requirementText": "Management establishes, with board oversight, structures, reporting lines, and appropriate authorities and responsibilities in the pursuit of objectives.",
+      "guidance": "Management designs and evaluates organizational structures, reporting lines, and authority assignments to support the achievement of objectives and operation of internal controls.",
+      "evidenceRequirements": [
+        "Organizational chart",
+        "Role and responsibility documentation (RACI matrices)",
+        "Delegation of authority policies"
+      ],
+      "riskWeight": 0.6
+    },
+    {
+      "controlId": "CC1.4",
+      "domain": "Control Environment",
+      "title": "COSO Principle 4: Demonstrates Commitment to Competence",
+      "requirementText": "The entity demonstrates a commitment to attract, develop, and retain competent individuals in alignment with objectives.",
+      "guidance": "The organization defines competency requirements for key roles, attracts and recruits qualified individuals, provides training and development, and evaluates performance. Succession planning is in place for critical positions.",
+      "evidenceRequirements": [
+        "Job descriptions with competency requirements",
+        "Training and development programs",
+        "Performance evaluation records",
+        "Succession planning documentation"
+      ],
+      "riskWeight": 0.6
+    },
+    {
+      "controlId": "CC1.5",
+      "domain": "Control Environment",
+      "title": "COSO Principle 5: Enforces Accountability",
+      "requirementText": "The entity holds individuals accountable for their internal control responsibilities in the pursuit of objectives.",
+      "guidance": "Management and the board establish mechanisms to communicate and hold individuals accountable for performance of internal control responsibilities across the organization, including corrective actions for deficiencies.",
+      "evidenceRequirements": [
+        "Performance evaluation criteria including security responsibilities",
+        "Disciplinary policies and procedures",
+        "Incentive and reward structures tied to control objectives"
+      ],
+      "riskWeight": 0.6
+    },
+    {
+      "controlId": "CC2.1",
+      "domain": "Communication and Information",
+      "title": "COSO Principle 13: Uses Relevant Information",
+      "requirementText": "The entity obtains or generates and uses relevant, quality information to support the functioning of internal control.",
+      "guidance": "The organization identifies information requirements, captures relevant data from internal and external sources, processes data into quality information, and maintains quality throughout the information lifecycle.",
+      "evidenceRequirements": [
+        "Information classification policies",
+        "Data quality management procedures",
+        "System-generated reports and dashboards",
+        "Data governance documentation"
+      ],
+      "riskWeight": 0.6
+    },
+    {
+      "controlId": "CC2.2",
+      "domain": "Communication and Information",
+      "title": "COSO Principle 14: Communicates Internally",
+      "requirementText": "The entity internally communicates information, including objectives and responsibilities for internal control, necessary to support the functioning of internal control.",
+      "guidance": "Management communicates internally regarding objectives, responsibilities, and other matters necessary for internal controls to function. Communication channels enable personnel to report security issues and concerns.",
+      "evidenceRequirements": [
+        "Internal security communication records",
+        "Security awareness training materials",
+        "Internal policy distribution and acknowledgment records"
+      ],
+      "riskWeight": 0.5
+    },
+    {
+      "controlId": "CC2.3",
+      "domain": "Communication and Information",
+      "title": "COSO Principle 15: Communicates Externally",
+      "requirementText": "The entity communicates with external parties regarding matters affecting the functioning of internal control.",
+      "guidance": "The organization communicates to external parties regarding matters that affect internal controls, including system descriptions, commitments, policies regarding interactions with external parties, and relevant security matters.",
+      "evidenceRequirements": [
+        "External communication policies",
+        "Customer-facing security documentation (SOC 2 reports)",
+        "Vendor and partner security communications",
+        "Incident notification procedures for external parties"
+      ],
+      "riskWeight": 0.5
+    },
+    {
+      "controlId": "CC3.1",
+      "domain": "Risk Assessment",
+      "title": "COSO Principle 6: Specifies Suitable Objectives",
+      "requirementText": "The entity specifies objectives with sufficient clarity to enable the identification and assessment of risks relating to objectives.",
+      "guidance": "Objectives related to operations, reporting, and compliance are clearly articulated and measurable. Management considers the specific nature of the entity and its tolerance for risk when establishing objectives.",
+      "evidenceRequirements": [
+        "Documented security objectives and policies",
+        "Risk tolerance and appetite statements",
+        "Service level agreements and commitments"
+      ],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "CC3.2",
+      "domain": "Risk Assessment",
+      "title": "COSO Principle 7: Identifies and Analyzes Risk",
+      "requirementText": "The entity identifies risks to the achievement of its objectives across the entity and analyzes risks as a basis for determining how the risks should be managed.",
+      "guidance": "The organization identifies and analyzes risks at the entity, subsidiary, division, operating unit, and functional levels. Risk analysis includes estimating significance of identified risks, assessing likelihood of occurrence, and determining actions needed.",
+      "evidenceRequirements": [
+        "Risk assessment reports",
+        "Risk register or risk inventory",
+        "Threat modeling documentation",
+        "Vulnerability assessment results"
+      ],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "CC3.3",
+      "domain": "Risk Assessment",
+      "title": "COSO Principle 8: Assesses Fraud Risk",
+      "requirementText": "The entity considers the potential for fraud in assessing risks to the achievement of objectives.",
+      "guidance": "The assessment of fraud risk considers incentives and pressures, opportunities, attitudes and rationalizations. Assessments consider types of fraud including fraudulent reporting, misappropriation of assets, and corruption.",
+      "evidenceRequirements": [
+        "Fraud risk assessment documentation",
+        "Anti-fraud controls documentation",
+        "Background check policies and records"
+      ],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "CC3.4",
+      "domain": "Risk Assessment",
+      "title": "COSO Principle 9: Identifies and Analyzes Significant Change",
+      "requirementText": "The entity identifies and assesses changes that could significantly impact the system of internal control.",
+      "guidance": "The organization identifies changes in the external environment, business model, or leadership that could significantly impact the internal control system. Changes are assessed for their impact on security controls.",
+      "evidenceRequirements": [
+        "Change impact assessment procedures",
+        "Environmental scanning and monitoring reports",
+        "Regulatory change tracking documentation"
+      ],
+      "riskWeight": 0.6
+    },
+    {
+      "controlId": "CC4.1",
+      "domain": "Monitoring Activities",
+      "title": "COSO Principle 16: Selects, Develops, and Performs Ongoing and/or Separate Evaluations",
+      "requirementText": "The entity selects, develops, and performs ongoing and/or separate evaluations to ascertain whether the components of internal control are present and functioning.",
+      "guidance": "Management uses ongoing monitoring, separate evaluations, or a combination of the two to determine whether controls are present and functioning. The frequency and scope of evaluations are commensurate with risk.",
+      "evidenceRequirements": [
+        "Internal audit plans and reports",
+        "Continuous monitoring procedures and dashboards",
+        "Control self-assessment results",
+        "Penetration testing and security assessment reports"
+      ],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "CC4.2",
+      "domain": "Monitoring Activities",
+      "title": "COSO Principle 17: Evaluates and Communicates Deficiencies",
+      "requirementText": "The entity evaluates and communicates internal control deficiencies in a timely manner to those parties responsible for taking corrective action, including senior management and the board of directors, as appropriate.",
+      "guidance": "Internal control deficiencies are identified, evaluated, and reported to the appropriate parties. Corrective actions are tracked and validated to ensure timely remediation.",
+      "evidenceRequirements": [
+        "Deficiency tracking and remediation logs",
+        "Management response to audit findings",
+        "Board reporting on control deficiencies",
+        "Corrective action plans"
+      ],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "CC5.1",
+      "domain": "Control Activities",
+      "title": "COSO Principle 10: Selects and Develops Control Activities",
+      "requirementText": "The entity selects and develops control activities that contribute to the mitigation of risks to the achievement of objectives to acceptable levels.",
+      "guidance": "Management selects and develops control activities that mitigate identified risks. These include IT general controls, application controls, and manual controls. Segregation of duties is considered.",
+      "evidenceRequirements": [
+        "Control matrix mapping risks to controls",
+        "IT general controls documentation",
+        "Segregation of duties matrix"
+      ],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "CC5.2",
+      "domain": "Control Activities",
+      "title": "COSO Principle 11: Selects and Develops General Controls over Technology",
+      "requirementText": "The entity also selects and develops general control activities over technology to support the achievement of objectives.",
+      "guidance": "Technology general controls are designed and implemented over the technology infrastructure, security management process, and technology acquisition, development, and maintenance.",
+      "evidenceRequirements": [
+        "IT general controls framework documentation",
+        "Technology infrastructure security configurations",
+        "Software development lifecycle procedures"
+      ],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "CC5.3",
+      "domain": "Control Activities",
+      "title": "COSO Principle 12: Deploys Through Policies and Procedures",
+      "requirementText": "The entity deploys control activities through policies that establish what is expected and procedures that put policies into action.",
+      "guidance": "Management establishes and maintains policies that define expectations and procedures that implement control activities. Policies and procedures are reviewed and updated periodically.",
+      "evidenceRequirements": [
+        "Information security policy library",
+        "Policy review and approval records",
+        "Procedure documentation with version control",
+        "Policy acknowledgment records"
+      ],
+      "riskWeight": 0.6
+    },
+    {
+      "controlId": "CC6.1",
+      "domain": "Logical and Physical Access Controls",
+      "title": "Logical Access Security Software, Infrastructure, and Architectures",
+      "requirementText": "The entity implements logical access security software, infrastructure, and architectures over protected information assets to protect them from security events to meet the entity's objectives.",
+      "guidance": "Logical access security measures protect information assets through identification and authentication mechanisms, access control models, network security, and encryption. The entity uses layered security architecture.",
+      "evidenceRequirements": [
+        "Network architecture diagrams",
+        "Firewall and security group configurations",
+        "Intrusion detection/prevention system documentation",
+        "Encryption standards and implementation records"
+      ],
+      "riskWeight": 0.9
+    },
+    {
+      "controlId": "CC6.2",
+      "domain": "Logical and Physical Access Controls",
+      "title": "User Authentication and Access Credentials",
+      "requirementText": "Prior to issuing system credentials and granting system access, the entity registers and authorizes new internal and external users whose access is administered by the entity. For those users whose access is administered by the entity, user system credentials are removed when user access is no longer authorized.",
+      "guidance": "Access provisioning processes ensure that only authorized individuals receive system credentials. Deprovisioning occurs promptly when access is no longer needed. Periodic access reviews are performed.",
+      "evidenceRequirements": [
+        "User provisioning and deprovisioning procedures",
+        "Access request and approval workflows",
+        "Periodic user access review reports",
+        "Terminated user access removal evidence"
+      ],
+      "riskWeight": 0.9
+    },
+    {
+      "controlId": "CC6.3",
+      "domain": "Logical and Physical Access Controls",
+      "title": "Role-Based Access and Least Privilege",
+      "requirementText": "The entity authorizes, modifies, or removes access to data, software, functions, and other protected information assets based on roles, responsibilities, or the system design and changes, giving consideration to the concepts of least privilege and segregation of duties, to meet the entity's objectives.",
+      "guidance": "Access is granted based on the principle of least privilege and segregation of duties. Access rights are reviewed when personnel change roles and are aligned with job responsibilities.",
+      "evidenceRequirements": [
+        "Role-based access control (RBAC) configuration",
+        "Least privilege policy documentation",
+        "Access modification records for role changes",
+        "Segregation of duties analysis"
+      ],
+      "riskWeight": 0.9
+    },
+    {
+      "controlId": "CC6.4",
+      "domain": "Logical and Physical Access Controls",
+      "title": "Physical Access Restrictions",
+      "requirementText": "The entity restricts physical access to facilities and protected information assets (for example, data center facilities, backup media storage, and other sensitive locations) to authorized personnel to meet the entity's objectives.",
+      "guidance": "Physical security controls restrict access to facilities housing information systems and data. Access is granted based on business need, and physical access is logged and monitored.",
+      "evidenceRequirements": [
+        "Physical access control system logs",
+        "Data center access policies and procedures",
+        "Visitor management logs",
+        "Physical access review records"
+      ],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "CC6.5",
+      "domain": "Logical and Physical Access Controls",
+      "title": "Logical Access to Protected Assets",
+      "requirementText": "The entity discontinues logical and physical protections over physical assets only after the ability to read or recover data and software from those assets has been diminished and is no longer required to meet the entity's objectives.",
+      "guidance": "Data and software on physical assets are rendered unreadable before disposal or repurposing. Media sanitization procedures ensure that data cannot be recovered from decommissioned assets.",
+      "evidenceRequirements": [
+        "Media sanitization and disposal procedures",
+        "Asset disposal records with sanitization confirmation",
+        "Data destruction certificates"
+      ],
+      "riskWeight": 0.6
+    },
+    {
+      "controlId": "CC6.6",
+      "domain": "Logical and Physical Access Controls",
+      "title": "Security Measures Against Threats Outside System Boundaries",
+      "requirementText": "The entity implements logical access security measures to protect against threats from sources outside its system boundaries.",
+      "guidance": "Boundary protection mechanisms such as firewalls, DMZs, and intrusion detection systems protect against external threats. External connections are managed and monitored.",
+      "evidenceRequirements": [
+        "Firewall rule sets and change management records",
+        "Intrusion detection/prevention system alerts and reports",
+        "External vulnerability scan results",
+        "Web application firewall configurations"
+      ],
+      "riskWeight": 0.9
+    },
+    {
+      "controlId": "CC6.7",
+      "domain": "Logical and Physical Access Controls",
+      "title": "Restriction of Data Transmission, Movement, and Removal",
+      "requirementText": "The entity restricts the transmission, movement, and removal of information to authorized internal and external users and processes, and protects it during transmission, movement, or removal to meet the entity's objectives.",
+      "guidance": "Data in transit is encrypted. Data loss prevention controls restrict unauthorized data transfers. Removable media usage is controlled and monitored.",
+      "evidenceRequirements": [
+        "Data encryption in transit configurations (TLS/SSL)",
+        "Data loss prevention (DLP) policy and tool configurations",
+        "Removable media usage policies",
+        "Secure file transfer procedures"
+      ],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "CC6.8",
+      "domain": "Logical and Physical Access Controls",
+      "title": "Prevention and Detection of Unauthorized or Malicious Software",
+      "requirementText": "The entity implements controls to prevent or detect and act upon the introduction of unauthorized or malicious software to meet the entity's objectives.",
+      "guidance": "Anti-malware solutions are deployed and maintained. Software installation is restricted to authorized software. Endpoint protection platforms monitor for malicious activity.",
+      "evidenceRequirements": [
+        "Anti-malware/endpoint protection deployment records",
+        "Malware detection and response logs",
+        "Software allowlisting/blocklisting policies",
+        "Endpoint detection and response (EDR) configurations"
+      ],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "CC7.1",
+      "domain": "System Operations",
+      "title": "Detection and Monitoring of New Vulnerabilities",
+      "requirementText": "To meet its objectives, the entity uses detection and monitoring procedures to identify (1) changes to configurations that result in the introduction of new vulnerabilities, and (2) susceptibilities to newly discovered vulnerabilities.",
+      "guidance": "Vulnerability management processes identify, assess, and remediate known vulnerabilities. Configuration monitoring detects unauthorized changes. Threat intelligence feeds inform vulnerability prioritization.",
+      "evidenceRequirements": [
+        "Vulnerability scanning reports and remediation tracking",
+        "Configuration monitoring tool outputs",
+        "Threat intelligence subscription and review records",
+        "Patch management records"
+      ],
+      "riskWeight": 0.9
+    },
+    {
+      "controlId": "CC7.2",
+      "domain": "System Operations",
+      "title": "Monitoring System Components for Anomalies",
+      "requirementText": "The entity monitors system components and the operation of those components for anomalies that are indicative of malicious acts, natural disasters, and errors affecting the entity's ability to meet its objectives; anomalies are analyzed to determine whether they represent security events.",
+      "guidance": "Monitoring systems detect anomalous behavior that could indicate security events. Security information and event management (SIEM) systems aggregate and correlate log data for analysis.",
+      "evidenceRequirements": [
+        "SIEM deployment and configuration documentation",
+        "Security monitoring alert rules and thresholds",
+        "Anomaly detection procedures",
+        "Log aggregation and retention configurations"
+      ],
+      "riskWeight": 0.9
+    },
+    {
+      "controlId": "CC7.3",
+      "domain": "System Operations",
+      "title": "Evaluation of Security Events",
+      "requirementText": "The entity evaluates security events to determine whether they could or have resulted in a failure of the entity to meet its objectives (security incidents) and, if so, takes actions to prevent or address such failures.",
+      "guidance": "Security event triage processes determine the severity and impact of detected events. Criteria are established for escalating events to incidents. Root cause analysis is performed for significant events.",
+      "evidenceRequirements": [
+        "Security event triage and classification procedures",
+        "Incident severity classification criteria",
+        "Security event analysis logs",
+        "Escalation procedures and records"
+      ],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "CC7.4",
+      "domain": "System Operations",
+      "title": "Incident Response Procedures",
+      "requirementText": "The entity responds to identified security incidents by executing a defined incident response program to understand, contain, remediate, and communicate security incidents, as appropriate.",
+      "guidance": "The incident response plan defines roles, responsibilities, communication protocols, containment strategies, eradication steps, and recovery procedures. The plan is tested periodically.",
+      "evidenceRequirements": [
+        "Incident response plan",
+        "Incident response team roster and contact information",
+        "Incident response exercise/tabletop results",
+        "Post-incident review reports"
+      ],
+      "riskWeight": 0.9
+    },
+    {
+      "controlId": "CC7.5",
+      "domain": "System Operations",
+      "title": "Recovery Procedures and Communication",
+      "requirementText": "The entity identifies, develops, and implements activities to recover from identified security incidents.",
+      "guidance": "Recovery procedures restore normal operations following a security incident. Communication protocols notify affected parties. Lessons learned are documented and incorporated into the incident response program.",
+      "evidenceRequirements": [
+        "Disaster recovery and business continuity plans",
+        "Recovery testing results",
+        "Incident communication templates and records",
+        "Lessons learned documentation"
+      ],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "CC8.1",
+      "domain": "Change Management",
+      "title": "Changes to Infrastructure, Data, Software, and Procedures",
+      "requirementText": "The entity authorizes, designs, develops or acquires, configures, documents, tests, approves, and implements changes to infrastructure, data, software, and procedures to meet its objectives.",
+      "guidance": "A formal change management process ensures that changes are authorized, tested, and approved before implementation. Emergency change procedures exist for urgent changes. Changes are documented and tracked.",
+      "evidenceRequirements": [
+        "Change management policy and procedures",
+        "Change advisory board (CAB) meeting minutes",
+        "Change request and approval records",
+        "Testing and deployment documentation"
+      ],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "CC9.1",
+      "domain": "Risk Mitigation",
+      "title": "Risk Mitigation Activities",
+      "requirementText": "The entity identifies, selects, and develops risk mitigation activities for risks arising from potential business disruptions.",
+      "guidance": "Risk mitigation strategies are identified and implemented for risks associated with business disruptions. Business impact analyses are performed to prioritize mitigation efforts.",
+      "evidenceRequirements": [
+        "Business impact analysis",
+        "Risk treatment plans",
+        "Business continuity plans",
+        "Insurance coverage documentation"
+      ],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "CC9.2",
+      "domain": "Risk Mitigation",
+      "title": "Vendor and Business Partner Risk Management",
+      "requirementText": "The entity assesses and manages risks associated with vendors and business partners.",
+      "guidance": "Vendor risk management processes evaluate and monitor the security posture of third parties. Due diligence is performed before engaging vendors, and ongoing monitoring ensures continued compliance with security requirements.",
+      "evidenceRequirements": [
+        "Vendor risk assessment questionnaires and results",
+        "Third-party SOC reports or equivalent assessments",
+        "Vendor contract security requirements",
+        "Ongoing vendor monitoring procedures"
+      ],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "A1.1",
+      "domain": "Availability",
+      "title": "System Availability Objectives and Commitments",
+      "requirementText": "The entity maintains, monitors, and evaluates current processing capacity and use of system components (infrastructure, data, and software) to manage capacity demand and to enable the implementation of additional capacity to help meet its objectives.",
+      "guidance": "Capacity planning and monitoring processes ensure that systems meet availability commitments. Infrastructure is monitored for utilization trends, and additional capacity is provisioned proactively.",
+      "evidenceRequirements": [
+        "Capacity planning documentation",
+        "System utilization monitoring dashboards and alerts",
+        "Infrastructure scaling procedures",
+        "Service level agreement (SLA) documentation"
+      ],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "A1.2",
+      "domain": "Availability",
+      "title": "Environmental Protections and Recovery Infrastructure",
+      "requirementText": "The entity authorizes, designs, develops or acquires, implements, operates, approves, maintains, and monitors environmental protections, software, data backup processes, and recovery infrastructure to meet its objectives.",
+      "guidance": "Environmental controls protect systems from natural and man-made threats. Backup and recovery infrastructure ensures data can be restored. Redundancy is implemented for critical components.",
+      "evidenceRequirements": [
+        "Data backup policies and procedures",
+        "Backup testing and restoration records",
+        "Environmental control documentation (UPS, fire suppression, HVAC)",
+        "Redundancy and failover configurations"
+      ],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "A1.3",
+      "domain": "Availability",
+      "title": "Recovery Plan Testing",
+      "requirementText": "The entity tests recovery plan procedures supporting system recovery to meet its objectives.",
+      "guidance": "Recovery plans are tested periodically to validate that systems can be restored within defined recovery time objectives (RTO) and recovery point objectives (RPO). Test results are documented and deficiencies addressed.",
+      "evidenceRequirements": [
+        "Disaster recovery test plans and results",
+        "RTO/RPO achievement documentation",
+        "Recovery test deficiency remediation records"
+      ],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "PI1.1",
+      "domain": "Processing Integrity",
+      "title": "Processing Accuracy, Completeness, and Timeliness Objectives",
+      "requirementText": "The entity obtains or generates, uses, and communicates relevant, quality information regarding the objectives related to processing, including definitions of data processed and product and service specifications, to support the use of products and services.",
+      "guidance": "Processing objectives are defined, including data input specifications, processing rules, and expected output formats. Quality information is communicated to relevant stakeholders.",
+      "evidenceRequirements": [
+        "Data processing specifications and documentation",
+        "Input validation rules and configurations",
+        "Product and service specifications"
+      ],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "PI1.2",
+      "domain": "Processing Integrity",
+      "title": "System Input Controls",
+      "requirementText": "The entity implements policies and procedures over system inputs, including controls over completeness and accuracy, to result in products, services, and reporting to meet the entity's objectives.",
+      "guidance": "Input validation controls ensure data accuracy and completeness. Edit checks, validation routines, and error handling procedures prevent erroneous data from being processed.",
+      "evidenceRequirements": [
+        "Input validation control configurations",
+        "Data quality check procedures",
+        "Error handling and rejection reports",
+        "Input reconciliation procedures"
+      ],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "PI1.3",
+      "domain": "Processing Integrity",
+      "title": "System Processing Controls",
+      "requirementText": "The entity implements policies and procedures over system processing to result in products, services, and reporting to meet the entity's objectives.",
+      "guidance": "Processing controls ensure that transactions are processed accurately, completely, and in a timely manner. Processing logs and audit trails support verification of processing integrity.",
+      "evidenceRequirements": [
+        "Processing control documentation",
+        "Transaction processing audit trails",
+        "Processing reconciliation procedures and results"
+      ],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "PI1.4",
+      "domain": "Processing Integrity",
+      "title": "System Output Controls",
+      "requirementText": "The entity implements policies and procedures to make available or deliver output completely, accurately, and timely in accordance with specifications to meet the entity's objectives.",
+      "guidance": "Output controls validate that processed data is delivered to the correct recipients in the correct format and within defined timeframes. Output reconciliation ensures completeness.",
+      "evidenceRequirements": [
+        "Output validation and reconciliation procedures",
+        "Output distribution controls",
+        "Output accuracy verification records"
+      ],
+      "riskWeight": 0.6
+    },
+    {
+      "controlId": "PI1.5",
+      "domain": "Processing Integrity",
+      "title": "Error and Exception Handling",
+      "requirementText": "The entity implements policies and procedures to store inputs, items in processing, and outputs completely, accurately, and timely in accordance with system specifications to meet the entity's objectives.",
+      "guidance": "Data storage controls maintain data integrity throughout the processing lifecycle. Error correction procedures address processing exceptions and ensure data remains accurate and complete.",
+      "evidenceRequirements": [
+        "Error handling and correction procedures",
+        "Exception reporting and resolution logs",
+        "Data integrity validation procedures"
+      ],
+      "riskWeight": 0.6
+    },
+    {
+      "controlId": "C1.1",
+      "domain": "Confidentiality",
+      "title": "Identification and Classification of Confidential Information",
+      "requirementText": "The entity identifies and maintains confidential information to meet the entity's objectives related to confidentiality.",
+      "guidance": "Confidential information is identified, classified, and inventoried. Classification schemes define handling requirements for different levels of sensitivity. Data owners are assigned responsibility for classification decisions.",
+      "evidenceRequirements": [
+        "Data classification policy and scheme",
+        "Confidential information inventory",
+        "Data owner assignments",
+        "Data handling procedures by classification level"
+      ],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "C1.2",
+      "domain": "Confidentiality",
+      "title": "Disposal of Confidential Information",
+      "requirementText": "The entity disposes of confidential information to meet the entity's objectives related to confidentiality.",
+      "guidance": "Confidential information is disposed of in accordance with retention policies and regulatory requirements. Disposal methods ensure that confidential data cannot be recovered from disposed assets.",
+      "evidenceRequirements": [
+        "Data retention and disposal policies",
+        "Data disposal procedures and records",
+        "Certificate of destruction records",
+        "Retention schedule documentation"
+      ],
+      "riskWeight": 0.7
+    }
+  ]
+}

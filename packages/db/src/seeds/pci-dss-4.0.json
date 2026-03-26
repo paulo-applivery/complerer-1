@@ -1,0 +1,666 @@
+{
+  "framework": {
+    "slug": "pci_dss",
+    "name": "PCI DSS",
+    "description": "Payment Card Industry Data Security Standard v4.0 — security standards for organizations that handle branded credit cards",
+    "sourceOrg": "PCI SSC",
+    "sourceUrl": "https://www.pcisecuritystandards.org/"
+  },
+  "version": {
+    "version": "4.0.1",
+    "status": "current",
+    "publishedAt": "2024-06-11T00:00:00Z"
+  },
+  "controls": [
+    {
+      "controlId": "1.1.1",
+      "domain": "Install and Maintain Network Security Controls",
+      "subdomain": "Processes and Mechanisms",
+      "title": "Security Policies and Procedures Defined and Known",
+      "requirementText": "All security policies and operational procedures that are identified in Requirement 1 are documented, kept up to date, in use, and known to all affected parties.",
+      "guidance": "Maintain documented policies and procedures for network security controls and ensure they are communicated to all relevant personnel.",
+      "evidenceRequirements": ["Network security policy documents", "Policy acknowledgment records", "Policy review dates"],
+      "riskWeight": 0.6
+    },
+    {
+      "controlId": "1.1.2",
+      "domain": "Install and Maintain Network Security Controls",
+      "subdomain": "Processes and Mechanisms",
+      "title": "Roles and Responsibilities Assigned",
+      "requirementText": "Roles and responsibilities for performing activities in Requirement 1 are documented, assigned, and understood.",
+      "guidance": "Document and assign roles and responsibilities for network security control management to specific personnel.",
+      "evidenceRequirements": ["Role assignment documentation", "Responsibility matrix", "Personnel acknowledgment records"],
+      "riskWeight": 0.5
+    },
+    {
+      "controlId": "1.2.1",
+      "domain": "Install and Maintain Network Security Controls",
+      "subdomain": "Network Security Controls Configuration",
+      "title": "NSC Configuration Standards Defined and Implemented",
+      "requirementText": "Configuration standards for NSC rulesets are defined, implemented, and maintained.",
+      "guidance": "Define and implement configuration standards for all network security controls including firewalls, routers, and cloud security groups.",
+      "evidenceRequirements": ["NSC configuration standards document", "Implemented configuration evidence", "Configuration review records"],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "1.2.2",
+      "domain": "Install and Maintain Network Security Controls",
+      "subdomain": "Network Security Controls Configuration",
+      "title": "NSC Configuration Changes Reviewed",
+      "requirementText": "All changes to network connections and to configurations of NSCs are approved and managed in accordance with the change control process defined at Requirement 6.5.1.",
+      "guidance": "Implement change management processes for all network security control configuration changes with proper approval workflows.",
+      "evidenceRequirements": ["Change management records", "Approval documentation", "Configuration change logs"],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "1.2.5",
+      "domain": "Install and Maintain Network Security Controls",
+      "subdomain": "Network Security Controls Configuration",
+      "title": "Permitted Services, Protocols, and Ports Identified",
+      "requirementText": "All services, protocols, and ports that are allowed are identified, approved, and have a defined business need.",
+      "guidance": "Maintain documentation of all permitted services, protocols, and ports with business justification for each.",
+      "evidenceRequirements": ["Services/protocols/ports inventory", "Business justification records", "Approval documentation"],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "1.2.6",
+      "domain": "Install and Maintain Network Security Controls",
+      "subdomain": "Network Security Controls Configuration",
+      "title": "Security Features for Insecure Services Documented",
+      "requirementText": "Security features are defined and implemented for all services, protocols, and ports that are in use and considered to be insecure, such that the risk is mitigated.",
+      "guidance": "For any insecure services or protocols in use, document compensating security controls that mitigate the associated risks.",
+      "evidenceRequirements": ["Insecure service inventory", "Compensating control documentation", "Risk mitigation evidence"],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "1.2.7",
+      "domain": "Install and Maintain Network Security Controls",
+      "subdomain": "Network Security Controls Configuration",
+      "title": "NSC Configurations Reviewed Semi-Annually",
+      "requirementText": "Configurations of NSCs are reviewed at least once every six months to confirm they are relevant and effective.",
+      "guidance": "Conduct semi-annual reviews of all network security control configurations to ensure they remain appropriate and effective.",
+      "evidenceRequirements": ["Semi-annual review records", "Configuration review checklist", "Remediation action records"],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "1.3.1",
+      "domain": "Install and Maintain Network Security Controls",
+      "subdomain": "Network Access Restriction",
+      "title": "Inbound Traffic to CDE Restricted",
+      "requirementText": "Inbound traffic to the CDE is restricted to only that traffic which is necessary, and all other traffic is specifically denied.",
+      "guidance": "Configure network security controls to restrict inbound traffic to the cardholder data environment to only necessary traffic with explicit deny-all rules.",
+      "evidenceRequirements": ["Firewall rule sets showing deny-all default", "Allowed inbound traffic documentation", "Rule review records"],
+      "riskWeight": 0.9
+    },
+    {
+      "controlId": "1.3.2",
+      "domain": "Install and Maintain Network Security Controls",
+      "subdomain": "Network Access Restriction",
+      "title": "Outbound Traffic from CDE Restricted",
+      "requirementText": "Outbound traffic from the CDE is restricted to only that traffic which is necessary, and all other traffic is specifically denied.",
+      "guidance": "Configure network security controls to restrict outbound traffic from the CDE to only necessary traffic with explicit deny-all rules.",
+      "evidenceRequirements": ["Firewall rule sets for outbound traffic", "Allowed outbound traffic documentation", "Egress filtering configuration"],
+      "riskWeight": 0.9
+    },
+    {
+      "controlId": "1.4.1",
+      "domain": "Install and Maintain Network Security Controls",
+      "subdomain": "Network Connections Between Trusted and Untrusted Networks",
+      "title": "NSCs Between Trusted and Untrusted Networks",
+      "requirementText": "NSCs are implemented between trusted and untrusted networks.",
+      "guidance": "Deploy network security controls at all boundaries between trusted and untrusted network segments to control traffic flow.",
+      "evidenceRequirements": ["Network diagram showing NSC placement", "NSC deployment records", "Boundary protection verification"],
+      "riskWeight": 0.9
+    },
+    {
+      "controlId": "1.4.2",
+      "domain": "Install and Maintain Network Security Controls",
+      "subdomain": "Network Connections Between Trusted and Untrusted Networks",
+      "title": "Inbound Traffic from Untrusted Networks Restricted",
+      "requirementText": "Inbound traffic from untrusted networks to trusted networks is restricted to communications with system components that are authorized to provide publicly accessible services, protocols, and ports.",
+      "guidance": "Restrict inbound traffic from untrusted networks to only authorized public-facing services with documented business justification.",
+      "evidenceRequirements": ["DMZ architecture documentation", "Public-facing service inventory", "Firewall rules for inbound restrictions"],
+      "riskWeight": 0.9
+    },
+    {
+      "controlId": "2.1.1",
+      "domain": "Apply Secure Configurations to All System Components",
+      "subdomain": "Processes and Mechanisms",
+      "title": "Security Policies and Procedures Defined",
+      "requirementText": "All security policies and operational procedures that are identified in Requirement 2 are documented, kept up to date, in use, and known to all affected parties.",
+      "guidance": "Maintain documented policies and procedures for secure configuration of all system components.",
+      "evidenceRequirements": ["Secure configuration policy", "Policy communication records", "Policy review dates"],
+      "riskWeight": 0.6
+    },
+    {
+      "controlId": "2.2.1",
+      "domain": "Apply Secure Configurations to All System Components",
+      "subdomain": "System Components Configured Securely",
+      "title": "Configuration Standards Developed",
+      "requirementText": "Configuration standards are developed, implemented, and maintained to cover all system components, address all known security vulnerabilities, be consistent with industry-accepted system hardening standards, and be updated as new vulnerability issues are identified.",
+      "guidance": "Develop configuration standards based on industry-accepted hardening guidelines (CIS Benchmarks, DISA STIGs) for all system components.",
+      "evidenceRequirements": ["Configuration standards documentation", "Hardening baseline records", "Standards update history"],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "2.2.2",
+      "domain": "Apply Secure Configurations to All System Components",
+      "subdomain": "System Components Configured Securely",
+      "title": "Vendor Default Accounts Managed",
+      "requirementText": "Vendor default accounts are managed as follows: if the vendor default account(s) will be used, the default password is changed. If the vendor default account(s) will not be used, the account is removed or disabled.",
+      "guidance": "Change all vendor-supplied default passwords before deploying systems and disable or remove unused default accounts.",
+      "evidenceRequirements": ["Default account management procedures", "Default password change records", "Account audit results"],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "2.2.5",
+      "domain": "Apply Secure Configurations to All System Components",
+      "subdomain": "System Components Configured Securely",
+      "title": "Unnecessary Services Removed or Disabled",
+      "requirementText": "All unnecessary functionality is removed or disabled, such as unnecessary scripts, drivers, features, subsystems, file systems, unnecessary web servers.",
+      "guidance": "Remove or disable all unnecessary services, protocols, daemons, and functionality from system components to reduce the attack surface.",
+      "evidenceRequirements": ["System hardening checklists", "Service audit results", "Disabled service documentation"],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "3.1.1",
+      "domain": "Protect Stored Account Data",
+      "subdomain": "Processes and Mechanisms",
+      "title": "Security Policies and Procedures Defined",
+      "requirementText": "All security policies and operational procedures that are identified in Requirement 3 are documented, kept up to date, in use, and known to all affected parties.",
+      "guidance": "Maintain documented policies and procedures for protecting stored account data.",
+      "evidenceRequirements": ["Data protection policy", "Policy acknowledgment records", "Policy review documentation"],
+      "riskWeight": 0.6
+    },
+    {
+      "controlId": "3.2.1",
+      "domain": "Protect Stored Account Data",
+      "subdomain": "Account Data Storage Minimized",
+      "title": "Data Retention and Disposal",
+      "requirementText": "Account data storage amount and retention time are limited to that which is required for business, legal, and/or regulatory purposes, as documented in the data retention policy.",
+      "guidance": "Implement data retention policies that minimize the amount and duration of stored account data to only what is required.",
+      "evidenceRequirements": ["Data retention policy", "Data inventory with retention periods", "Data disposal records"],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "3.3.1",
+      "domain": "Protect Stored Account Data",
+      "subdomain": "Sensitive Authentication Data Not Stored After Authorization",
+      "title": "SAD Not Retained After Authorization",
+      "requirementText": "Sensitive authentication data (SAD) is not retained after authorization, even if encrypted. All sensitive authentication data received is rendered unrecoverable upon completion of the authorization process.",
+      "guidance": "Ensure sensitive authentication data (full track data, CAV2/CVC2/CVV2/CID, PINs) is not stored after authorization.",
+      "evidenceRequirements": ["SAD non-retention validation", "Data flow analysis showing SAD handling", "System configuration evidence"],
+      "riskWeight": 0.9
+    },
+    {
+      "controlId": "3.4.1",
+      "domain": "Protect Stored Account Data",
+      "subdomain": "Access to Stored PAN is Restricted",
+      "title": "PAN Masked When Displayed",
+      "requirementText": "PAN is masked when displayed (the first six and last four digits are the maximum number of digits to be displayed), such that only personnel with a legitimate business need can see more than the first six/last four digits of the PAN.",
+      "guidance": "Implement PAN masking to display only the first six and last four digits unless there is a documented business need for full PAN visibility.",
+      "evidenceRequirements": ["PAN masking configuration", "Business justification for full PAN access", "Display validation testing records"],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "3.5.1",
+      "domain": "Protect Stored Account Data",
+      "subdomain": "PAN Rendered Unreadable",
+      "title": "PAN Rendered Unreadable Anywhere it is Stored",
+      "requirementText": "PAN is rendered unreadable anywhere it is stored by using any of the following approaches: one-way hashes based on strong cryptography, truncation, index tokens and pads, or strong cryptography with associated key-management processes and procedures.",
+      "guidance": "Render PAN unreadable wherever it is stored using strong cryptography, tokenization, truncation, or one-way hashing.",
+      "evidenceRequirements": ["Encryption/tokenization implementation records", "Key management documentation", "Storage protection audit results"],
+      "riskWeight": 0.9
+    },
+    {
+      "controlId": "4.1.1",
+      "domain": "Protect Cardholder Data with Strong Cryptography During Transmission",
+      "subdomain": "Processes and Mechanisms",
+      "title": "Security Policies and Procedures Defined",
+      "requirementText": "All security policies and operational procedures that are identified in Requirement 4 are documented, kept up to date, in use, and known to all affected parties.",
+      "guidance": "Maintain documented policies and procedures for protecting cardholder data during transmission over open, public networks.",
+      "evidenceRequirements": ["Transmission security policy", "Policy communication records", "Policy review dates"],
+      "riskWeight": 0.6
+    },
+    {
+      "controlId": "4.2.1",
+      "domain": "Protect Cardholder Data with Strong Cryptography During Transmission",
+      "subdomain": "PAN Protected During Transmission",
+      "title": "Strong Cryptography Used During Transmission",
+      "requirementText": "PAN is protected with strong cryptography whenever it is sent via end-user messaging technologies. Only trusted keys and certificates are accepted. Certificates used to safeguard PAN during transmission over open, public networks are confirmed as valid and are not expired or revoked.",
+      "guidance": "Use strong cryptographic protocols (TLS 1.2 or higher) to protect PAN during transmission over open, public networks.",
+      "evidenceRequirements": ["TLS configuration records", "Certificate management documentation", "Transmission encryption audit results"],
+      "riskWeight": 0.9
+    },
+    {
+      "controlId": "5.1.1",
+      "domain": "Protect All Systems and Networks from Malicious Software",
+      "subdomain": "Processes and Mechanisms",
+      "title": "Security Policies and Procedures Defined",
+      "requirementText": "All security policies and operational procedures that are identified in Requirement 5 are documented, kept up to date, in use, and known to all affected parties.",
+      "guidance": "Maintain documented policies and procedures for protecting systems from malicious software.",
+      "evidenceRequirements": ["Anti-malware policy", "Policy communication records", "Policy review dates"],
+      "riskWeight": 0.6
+    },
+    {
+      "controlId": "5.2.1",
+      "domain": "Protect All Systems and Networks from Malicious Software",
+      "subdomain": "Malicious Software is Prevented or Detected",
+      "title": "Anti-Malware Solution Deployed",
+      "requirementText": "An anti-malware solution(s) is deployed on all system components, except for those system components identified in periodic evaluations that concludes the system components are not at risk from malware.",
+      "guidance": "Deploy anti-malware solutions on all system components that are susceptible to malware, with documented exceptions for systems deemed not at risk.",
+      "evidenceRequirements": ["Anti-malware deployment inventory", "Exception documentation with risk assessment", "Coverage audit results"],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "5.2.2",
+      "domain": "Protect All Systems and Networks from Malicious Software",
+      "subdomain": "Malicious Software is Prevented or Detected",
+      "title": "Anti-Malware Solution Detects All Known Types",
+      "requirementText": "The deployed anti-malware solution(s) detects all known types of malware and removes, blocks, or contains all known types of malware.",
+      "guidance": "Ensure anti-malware solutions are capable of detecting, blocking, and remediating all known malware types including viruses, trojans, worms, and ransomware.",
+      "evidenceRequirements": ["Anti-malware capability assessment", "Detection rate reports", "Malware incident records"],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "5.2.3",
+      "domain": "Protect All Systems and Networks from Malicious Software",
+      "subdomain": "Malicious Software is Prevented or Detected",
+      "title": "System Components Evaluated for Malware Risk",
+      "requirementText": "Any system components that are not at risk for malware are evaluated periodically to include a documented list of all system components not at risk, identification and evaluation of evolving malware threats, and confirmation whether such system components continue to not require anti-malware protection.",
+      "guidance": "Periodically evaluate system components without anti-malware protection to confirm they remain low risk, documenting the evaluation and rationale.",
+      "evidenceRequirements": ["Periodic evaluation records", "Low-risk system component list", "Evolving threat assessment documentation"],
+      "riskWeight": 0.6
+    },
+    {
+      "controlId": "5.3.1",
+      "domain": "Protect All Systems and Networks from Malicious Software",
+      "subdomain": "Anti-Malware Mechanisms are Active and Maintained",
+      "title": "Anti-Malware Solution Kept Current",
+      "requirementText": "The anti-malware solution(s) is kept current via automatic updates.",
+      "guidance": "Configure anti-malware solutions to receive automatic signature and engine updates to maintain effectiveness against emerging threats.",
+      "evidenceRequirements": ["Auto-update configuration records", "Update status reports", "Signature currency verification"],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "5.3.2",
+      "domain": "Protect All Systems and Networks from Malicious Software",
+      "subdomain": "Anti-Malware Mechanisms are Active and Maintained",
+      "title": "Anti-Malware Performs Periodic and Active Scans",
+      "requirementText": "The anti-malware solution(s) performs periodic scans and active or real-time scans, or performs continuous behavioral analysis of systems or processes.",
+      "guidance": "Configure anti-malware to perform both scheduled scans and real-time/on-access scanning or behavioral analysis.",
+      "evidenceRequirements": ["Scan schedule configuration", "Real-time protection configuration", "Scan completion reports"],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "6.1.1",
+      "domain": "Develop and Maintain Secure Systems and Software",
+      "subdomain": "Processes and Mechanisms",
+      "title": "Security Policies and Procedures Defined",
+      "requirementText": "All security policies and operational procedures that are identified in Requirement 6 are documented, kept up to date, in use, and known to all affected parties.",
+      "guidance": "Maintain documented policies and procedures for developing and maintaining secure systems and software.",
+      "evidenceRequirements": ["Secure development policy", "Policy communication records", "Policy review dates"],
+      "riskWeight": 0.6
+    },
+    {
+      "controlId": "6.2.1",
+      "domain": "Develop and Maintain Secure Systems and Software",
+      "subdomain": "Bespoke and Custom Software Developed Securely",
+      "title": "Secure Development Training",
+      "requirementText": "Bespoke and custom software are developed securely, as follows: based on industry standards and/or best practices for secure development; in accordance with PCI DSS; and incorporating information security throughout the software-development life cycle.",
+      "guidance": "Ensure bespoke and custom software development follows industry-standard secure coding practices integrated throughout the SDLC.",
+      "evidenceRequirements": ["Secure SDLC documentation", "Developer training records", "Code review procedures"],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "6.2.4",
+      "domain": "Develop and Maintain Secure Systems and Software",
+      "subdomain": "Bespoke and Custom Software Developed Securely",
+      "title": "Software Engineering Techniques Prevent Attacks",
+      "requirementText": "Software engineering techniques or other methods are defined and in use by software development personnel to prevent or mitigate common software attacks and related vulnerabilities in bespoke and custom software, including but not limited to injection attacks, attacks on data and data structures, attacks on cryptography usage, attacks on business logic, attacks on access control mechanisms, and attacks on client-side handling.",
+      "guidance": "Implement secure coding practices to prevent common vulnerabilities including injection flaws, XSS, CSRF, broken authentication, and other OWASP Top 10 categories.",
+      "evidenceRequirements": ["Secure coding guidelines", "Code review records addressing common vulnerabilities", "Security testing results"],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "6.3.1",
+      "domain": "Develop and Maintain Secure Systems and Software",
+      "subdomain": "Security Vulnerabilities Identified and Addressed",
+      "title": "Security Vulnerabilities Identified and Managed",
+      "requirementText": "Security vulnerabilities are identified and managed by installing applicable security patches/updates, and evaluating and following up on applicable security alerts.",
+      "guidance": "Establish processes to identify security vulnerabilities through vendor alerts, vulnerability databases, and threat intelligence, and address them through patching.",
+      "evidenceRequirements": ["Vulnerability identification process documentation", "Patch management records", "Security alert monitoring evidence"],
+      "riskWeight": 0.9
+    },
+    {
+      "controlId": "6.3.3",
+      "domain": "Develop and Maintain Secure Systems and Software",
+      "subdomain": "Security Vulnerabilities Identified and Addressed",
+      "title": "Critical Security Patches Installed Timely",
+      "requirementText": "All system components are protected from known vulnerabilities by installing applicable security patches/updates within one month of release.",
+      "guidance": "Install critical and high-severity security patches within one month of release for all system components in the cardholder data environment.",
+      "evidenceRequirements": ["Patch deployment records with timestamps", "Patch compliance reports", "Exception documentation for delayed patches"],
+      "riskWeight": 0.9
+    },
+    {
+      "controlId": "6.4.1",
+      "domain": "Develop and Maintain Secure Systems and Software",
+      "subdomain": "Public-Facing Web Applications Protected",
+      "title": "Public-Facing Web Applications Protected from Attacks",
+      "requirementText": "For public-facing web applications, new threats and vulnerabilities are addressed on an ongoing basis and these applications are protected against known attacks by reviewing public-facing web applications using automated or manual application vulnerability security assessment tools or methods, at least annually and after any changes; or by installing an automated technical solution that detects and prevents web-based attacks in front of public-facing web applications, to continually check all traffic.",
+      "guidance": "Protect public-facing web applications through WAF deployment, annual vulnerability assessments, and ongoing threat monitoring.",
+      "evidenceRequirements": ["WAF deployment records", "Web application assessment reports", "Vulnerability remediation records"],
+      "riskWeight": 0.9
+    },
+    {
+      "controlId": "6.5.1",
+      "domain": "Develop and Maintain Secure Systems and Software",
+      "subdomain": "Changes to All System Components Managed Securely",
+      "title": "Change Control Procedures Established",
+      "requirementText": "Changes to all system components in the production environment are made according to established procedures that include documentation of impact, documented change approval by authorized parties, functionality testing, and back-out procedures.",
+      "guidance": "Implement formal change management procedures for all production environment changes including impact assessment, approval, testing, and rollback plans.",
+      "evidenceRequirements": ["Change management policy", "Change request and approval records", "Testing and rollback documentation"],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "7.2.1",
+      "domain": "Restrict Access to System Components and Cardholder Data by Business Need to Know",
+      "subdomain": "Access to System Components and Data Appropriately Defined",
+      "title": "Access Control Model Defined",
+      "requirementText": "An access control model is defined and includes granting access based on individual personnel's job classification and function, with the least privileges necessary to perform job responsibilities.",
+      "guidance": "Define and implement an access control model based on role-based access control (RBAC) with least privilege principles.",
+      "evidenceRequirements": ["Access control model documentation", "Role-to-access mapping", "Least privilege verification records"],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "7.2.2",
+      "domain": "Restrict Access to System Components and Cardholder Data by Business Need to Know",
+      "subdomain": "Access to System Components and Data Appropriately Defined",
+      "title": "Access Assigned Based on Job Classification",
+      "requirementText": "Access is assigned to users, including privileged users, based on job classification and function, and the principle of least privilege.",
+      "guidance": "Assign access permissions based on documented job roles and functions, applying the principle of least privilege to all user accounts.",
+      "evidenceRequirements": ["User access assignment records", "Job classification to access mapping", "Access review documentation"],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "8.2.1",
+      "domain": "Identify Users and Authenticate Access to System Components",
+      "subdomain": "User Identification and Related Accounts Managed",
+      "title": "Unique IDs Assigned to All Users",
+      "requirementText": "All users are assigned a unique ID before access to system components or cardholder data is allowed.",
+      "guidance": "Assign unique user IDs to all personnel before granting access to system components or cardholder data to ensure individual accountability.",
+      "evidenceRequirements": ["User ID assignment procedures", "Unique ID inventory", "Shared account prohibition policy"],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "8.2.2",
+      "domain": "Identify Users and Authenticate Access to System Components",
+      "subdomain": "User Identification and Related Accounts Managed",
+      "title": "Group and Shared Accounts Managed",
+      "requirementText": "Group, shared, or generic accounts, or other shared authentication credentials are only used when necessary on an exception basis, and are managed with specific additional requirements.",
+      "guidance": "Minimize and strictly manage the use of group, shared, or generic accounts with documented exceptions and additional controls.",
+      "evidenceRequirements": ["Shared account inventory", "Exception documentation", "Additional control implementation records"],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "8.3.1",
+      "domain": "Identify Users and Authenticate Access to System Components",
+      "subdomain": "Strong Authentication Established",
+      "title": "All User Access Authenticated",
+      "requirementText": "All user access to system components for users and administrators is authenticated via at least one of the following authentication factors: something you know, something you have, or something you are.",
+      "guidance": "Implement authentication mechanisms for all user access using at least one authentication factor (knowledge, possession, or inherence).",
+      "evidenceRequirements": ["Authentication mechanism documentation", "Authentication factor implementation records", "Access authentication audit logs"],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "8.3.6",
+      "domain": "Identify Users and Authenticate Access to System Components",
+      "subdomain": "Strong Authentication Established",
+      "title": "Minimum Password Complexity Requirements",
+      "requirementText": "If passwords/passphrases are used as authentication factors, they meet the following minimum level of complexity: a minimum length of 12 characters (or if the system does not support 12 characters, a minimum length of eight characters), containing both numeric and alphabetic characters.",
+      "guidance": "Enforce minimum password complexity requirements of 12 characters with both numeric and alphabetic characters.",
+      "evidenceRequirements": ["Password policy documentation", "Password complexity enforcement configuration", "Compliance audit results"],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "8.4.2",
+      "domain": "Identify Users and Authenticate Access to System Components",
+      "subdomain": "Multi-Factor Authentication Implemented",
+      "title": "MFA for All Access into CDE",
+      "requirementText": "MFA is implemented for all access into the CDE.",
+      "guidance": "Implement multi-factor authentication for all access to the cardholder data environment regardless of access method or user type.",
+      "evidenceRequirements": ["MFA implementation records for CDE access", "MFA configuration documentation", "CDE access audit logs showing MFA"],
+      "riskWeight": 0.9
+    },
+    {
+      "controlId": "8.5.1",
+      "domain": "Identify Users and Authenticate Access to System Components",
+      "subdomain": "Multi-Factor Authentication Systems Configured Properly",
+      "title": "MFA Systems Properly Configured",
+      "requirementText": "MFA systems are implemented so that the MFA system is not susceptible to replay attacks, cannot be bypassed by any users including administrative users, and at least two different types of authentication factors are used.",
+      "guidance": "Configure MFA systems to be resistant to replay attacks, non-bypassable, and requiring two distinct authentication factor types.",
+      "evidenceRequirements": ["MFA system architecture documentation", "Anti-replay mechanism configuration", "MFA bypass prevention controls"],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "9.1.1",
+      "domain": "Restrict Physical Access to Cardholder Data",
+      "subdomain": "Processes and Mechanisms",
+      "title": "Security Policies and Procedures Defined",
+      "requirementText": "All security policies and operational procedures that are identified in Requirement 9 are documented, kept up to date, in use, and known to all affected parties.",
+      "guidance": "Maintain documented policies and procedures for physical security controls protecting cardholder data.",
+      "evidenceRequirements": ["Physical security policy", "Policy communication records", "Policy review dates"],
+      "riskWeight": 0.6
+    },
+    {
+      "controlId": "9.2.1",
+      "domain": "Restrict Physical Access to Cardholder Data",
+      "subdomain": "Physical Access Controls Manage Entry",
+      "title": "Physical Access Controls in Place",
+      "requirementText": "Appropriate facility entry controls are in place to limit physical access to systems in the CDE.",
+      "guidance": "Implement physical access controls (badge readers, locks, mantraps) to restrict access to areas containing cardholder data systems.",
+      "evidenceRequirements": ["Physical access control system records", "Facility access logs", "Physical security assessment reports"],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "10.1.1",
+      "domain": "Log and Monitor All Access to System Components and Cardholder Data",
+      "subdomain": "Processes and Mechanisms",
+      "title": "Security Policies and Procedures Defined",
+      "requirementText": "All security policies and operational procedures that are identified in Requirement 10 are documented, kept up to date, in use, and known to all affected parties.",
+      "guidance": "Maintain documented policies and procedures for logging and monitoring access to system components and cardholder data.",
+      "evidenceRequirements": ["Logging and monitoring policy", "Policy communication records", "Policy review dates"],
+      "riskWeight": 0.6
+    },
+    {
+      "controlId": "10.2.1",
+      "domain": "Log and Monitor All Access to System Components and Cardholder Data",
+      "subdomain": "Audit Logs Implemented",
+      "title": "Audit Logs Enabled for All System Components",
+      "requirementText": "Audit logs are enabled and active for all system components and cardholder data.",
+      "guidance": "Enable audit logging on all system components that store, process, or transmit cardholder data to capture security-relevant events.",
+      "evidenceRequirements": ["Audit log configuration records", "Log enablement verification", "System component logging inventory"],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "10.2.1.1",
+      "domain": "Log and Monitor All Access to System Components and Cardholder Data",
+      "subdomain": "Audit Logs Implemented",
+      "title": "Audit Logs Capture Specific Events",
+      "requirementText": "Audit logs capture all individual user access to cardholder data, all actions taken by any individual with root or administrative privileges, access to all audit trails, invalid logical access attempts, use of and changes to identification and authentication mechanisms, initialization, stopping, or pausing of audit logs, and creation and deletion of system-level objects.",
+      "guidance": "Configure audit logs to capture the minimum set of security events required by PCI DSS including user access, admin actions, and system events.",
+      "evidenceRequirements": ["Log event configuration standards", "Event capture verification records", "Log content audit results"],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "10.3.1",
+      "domain": "Log and Monitor All Access to System Components and Cardholder Data",
+      "subdomain": "Audit Logs Protected from Destruction",
+      "title": "Audit Logs Read Access Restricted",
+      "requirementText": "Read access to audit logs files is limited to those with a job-related need.",
+      "guidance": "Restrict read access to audit log files to only authorized personnel with a documented business need.",
+      "evidenceRequirements": ["Log file access control configuration", "Access permission records", "Access review documentation"],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "10.3.2",
+      "domain": "Log and Monitor All Access to System Components and Cardholder Data",
+      "subdomain": "Audit Logs Protected from Destruction",
+      "title": "Audit Log Files Protected from Modification",
+      "requirementText": "Audit log files are protected to prevent modifications by individuals.",
+      "guidance": "Implement controls to protect audit log files from unauthorized modification including write protection and integrity monitoring.",
+      "evidenceRequirements": ["Log file integrity protection configuration", "File integrity monitoring records", "Access control evidence"],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "10.4.1",
+      "domain": "Log and Monitor All Access to System Components and Cardholder Data",
+      "subdomain": "Audit Logs Reviewed",
+      "title": "Audit Logs Reviewed Daily",
+      "requirementText": "The following audit logs are reviewed at least once daily: all security events, logs of all system components that store, process, or transmit CHD and/or SAD, logs of all critical system components, logs of all servers and system components that perform security functions.",
+      "guidance": "Review security event logs daily for all critical systems and components in the cardholder data environment.",
+      "evidenceRequirements": ["Daily log review procedures", "Review completion records", "Anomaly investigation documentation"],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "10.5.1",
+      "domain": "Log and Monitor All Access to System Components and Cardholder Data",
+      "subdomain": "Audit Log History Retained",
+      "title": "Audit Log History Retained for 12 Months",
+      "requirementText": "Retain audit log history for at least 12 months, with at least the most recent three months immediately available for analysis.",
+      "guidance": "Retain all audit logs for a minimum of 12 months with the last three months available for immediate analysis.",
+      "evidenceRequirements": ["Log retention configuration", "Log availability verification", "Retention compliance audit"],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "11.2.1",
+      "domain": "Test Security of Systems and Networks Regularly",
+      "subdomain": "Wireless Access Points Identified and Monitored",
+      "title": "Authorized and Unauthorized Wireless APs Managed",
+      "requirementText": "Authorized and unauthorized wireless access points are managed by testing for the presence of wireless (Wi-Fi) access points and detecting and identifying all authorized and unauthorized wireless access points on a quarterly basis.",
+      "guidance": "Conduct quarterly wireless access point scans to identify and manage both authorized and unauthorized wireless access points.",
+      "evidenceRequirements": ["Quarterly wireless scan reports", "Authorized AP inventory", "Unauthorized AP remediation records"],
+      "riskWeight": 0.6
+    },
+    {
+      "controlId": "11.3.1",
+      "domain": "Test Security of Systems and Networks Regularly",
+      "subdomain": "External and Internal Vulnerabilities Regularly Identified",
+      "title": "Internal Vulnerability Scans Performed Quarterly",
+      "requirementText": "Internal vulnerability scans are performed at least once every three months and after any significant change. High-risk and critical vulnerabilities are resolved. Rescans are performed that confirm all high-risk and critical vulnerabilities have been resolved. The scan tool is kept up to date.",
+      "guidance": "Perform internal vulnerability scans quarterly and after significant changes, resolving high-risk and critical vulnerabilities with validation rescans.",
+      "evidenceRequirements": ["Quarterly internal scan reports", "Vulnerability remediation records", "Rescan verification results"],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "11.3.2",
+      "domain": "Test Security of Systems and Networks Regularly",
+      "subdomain": "External and Internal Vulnerabilities Regularly Identified",
+      "title": "External Vulnerability Scans Performed Quarterly",
+      "requirementText": "External vulnerability scans are performed at least once every three months and after any significant change by a PCI SSC Approved Scanning Vendor (ASV). Vulnerabilities are resolved and ASV program guide requirements for a passing scan are met. Rescans are performed as needed.",
+      "guidance": "Conduct quarterly external vulnerability scans through a PCI SSC-approved scanning vendor (ASV) and remediate identified vulnerabilities.",
+      "evidenceRequirements": ["Quarterly ASV scan reports", "Passing scan evidence", "Vulnerability remediation records"],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "11.4.1",
+      "domain": "Test Security of Systems and Networks Regularly",
+      "subdomain": "External and Internal Penetration Testing Performed",
+      "title": "Penetration Testing Performed Annually",
+      "requirementText": "External and internal penetration testing is performed at least once every 12 months and after any significant infrastructure or application upgrade or modification.",
+      "guidance": "Conduct annual external and internal penetration testing by qualified personnel and after any significant infrastructure or application changes.",
+      "evidenceRequirements": ["Annual penetration test reports", "Qualified tester credentials", "Finding remediation records"],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "11.5.1",
+      "domain": "Test Security of Systems and Networks Regularly",
+      "subdomain": "Network Intrusions and File Changes Detected and Responded To",
+      "title": "Intrusion Detection/Prevention Techniques Deployed",
+      "requirementText": "Intrusion-detection and/or intrusion-prevention techniques are used to detect and/or prevent intrusions into the network. All traffic at the perimeter of the CDE and at critical points within the CDE is monitored.",
+      "guidance": "Deploy IDS/IPS solutions to detect and prevent network intrusions at the CDE perimeter and at critical points within the CDE.",
+      "evidenceRequirements": ["IDS/IPS deployment records", "Monitoring coverage documentation", "Alert investigation records"],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "11.5.2",
+      "domain": "Test Security of Systems and Networks Regularly",
+      "subdomain": "Network Intrusions and File Changes Detected and Responded To",
+      "title": "Change-Detection Mechanism Deployed",
+      "requirementText": "A change-detection mechanism (for example, file integrity monitoring tools) is deployed to alert personnel to unauthorized modification of critical system files, configuration files, or content files; and the tools are configured to perform critical file comparisons at least weekly.",
+      "guidance": "Deploy file integrity monitoring (FIM) on critical system files and configuration files with at least weekly comparisons.",
+      "evidenceRequirements": ["FIM deployment records", "Monitoring configuration", "Alert and investigation records"],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "11.6.1",
+      "domain": "Test Security of Systems and Networks Regularly",
+      "subdomain": "Unauthorized Changes on Payment Pages Detected and Responded To",
+      "title": "Payment Page Change Detection",
+      "requirementText": "A change- and tamper-detection mechanism is deployed on payment pages to alert personnel to unauthorized modification to the HTTP headers and the contents of payment pages as received by the consumer browser.",
+      "guidance": "Deploy mechanisms to detect unauthorized changes to payment page HTTP headers and content to prevent e-skimming and Magecart-style attacks.",
+      "evidenceRequirements": ["Payment page monitoring tool deployment", "Detection mechanism configuration", "Alert response procedures"],
+      "riskWeight": 0.9
+    },
+    {
+      "controlId": "12.1.1",
+      "domain": "Support Information Security with Organizational Policies and Programs",
+      "subdomain": "Information Security Policy",
+      "title": "Overall Information Security Policy Established",
+      "requirementText": "An overall information security policy is established, published, maintained, and disseminated to all relevant personnel, as well as relevant vendors and business partners.",
+      "guidance": "Establish and maintain a comprehensive information security policy that is communicated to all relevant personnel and third parties.",
+      "evidenceRequirements": ["Information security policy", "Policy distribution records", "Personnel acknowledgment records"],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "12.3.1",
+      "domain": "Support Information Security with Organizational Policies and Programs",
+      "subdomain": "Risks to the Cardholder Data Environment are Formally Identified",
+      "title": "Risk Assessment Performed Annually",
+      "requirementText": "Each PCI DSS requirement that provides flexibility for how frequently it is performed is supported by a targeted risk analysis that is documented and includes justification for the frequency, identification of the assets being protected, identification of threats, and analysis of the likelihood and impact.",
+      "guidance": "Perform a formal risk assessment annually that identifies threats, vulnerabilities, and their potential impact on the cardholder data environment.",
+      "evidenceRequirements": ["Annual risk assessment report", "Threat and vulnerability analysis", "Risk treatment documentation"],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "12.6.1",
+      "domain": "Support Information Security with Organizational Policies and Programs",
+      "subdomain": "Security Awareness Education",
+      "title": "Security Awareness Program Implemented",
+      "requirementText": "A formal security awareness program is implemented to make all personnel aware of the cardholder data security policy and procedures.",
+      "guidance": "Implement a formal security awareness program that educates all personnel about the cardholder data security policies and their responsibilities.",
+      "evidenceRequirements": ["Security awareness program documentation", "Training materials", "Training completion records"],
+      "riskWeight": 0.6
+    },
+    {
+      "controlId": "12.8.1",
+      "domain": "Support Information Security with Organizational Policies and Programs",
+      "subdomain": "Risk to Information Assets from Third-Party Service Provider Relationships is Managed",
+      "title": "Service Provider Inventory Maintained",
+      "requirementText": "A list of all third-party service providers with which account data is shared or that could affect the security of account data is maintained, including a description of each of the services provided.",
+      "guidance": "Maintain an up-to-date inventory of all third-party service providers with access to or that could affect the security of cardholder data.",
+      "evidenceRequirements": ["Service provider inventory", "Service descriptions", "Annual review records"],
+      "riskWeight": 0.7
+    },
+    {
+      "controlId": "12.10.1",
+      "domain": "Support Information Security with Organizational Policies and Programs",
+      "subdomain": "Suspected and Confirmed Security Incidents that Could Impact the CDE Are Responded to Immediately",
+      "title": "Incident Response Plan Established",
+      "requirementText": "An incident response plan exists and is ready to be activated in the event of a suspected or confirmed security incident. The plan addresses roles, responsibilities, and communication and contact strategies including notification of the payment brands, at a minimum; incident response procedures; business recovery and continuity procedures; data backup processes; analysis of legal requirements for reporting compromises; coverage and responses of all critical system components; and reference to or inclusion of incident response procedures from the payment brands.",
+      "guidance": "Establish and maintain a comprehensive incident response plan covering roles, responsibilities, communication strategies, and payment brand notification procedures.",
+      "evidenceRequirements": ["Incident response plan", "Contact and communication procedures", "Annual plan review and testing records"],
+      "riskWeight": 0.8
+    },
+    {
+      "controlId": "12.10.2",
+      "domain": "Support Information Security with Organizational Policies and Programs",
+      "subdomain": "Suspected and Confirmed Security Incidents that Could Impact the CDE Are Responded to Immediately",
+      "title": "Incident Response Plan Reviewed and Tested Annually",
+      "requirementText": "The security incident response plan is reviewed and tested at least annually, including all elements listed in Requirement 12.10.1.",
+      "guidance": "Review and test the incident response plan at least annually through tabletop exercises or simulations to ensure effectiveness.",
+      "evidenceRequirements": ["Annual plan review records", "Testing exercise documentation", "After-action reports and improvements"],
+      "riskWeight": 0.7
+    }
+  ]
+}

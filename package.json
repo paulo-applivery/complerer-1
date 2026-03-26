@@ -1,0 +1,20 @@
+{
+  "name": "complerer",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm -r --parallel dev",
+    "dev:web": "pnpm --filter @complerer/web dev",
+    "dev:api": "pnpm --filter @complerer/api dev",
+    "build": "pnpm -r build",
+    "build:web": "pnpm --filter @complerer/web build",
+    "build:api": "pnpm --filter @complerer/api build",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "db:migrate": "pnpm --filter @complerer/db migrate",
+    "db:seed": "pnpm --filter @complerer/db seed"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
