@@ -14,6 +14,7 @@ import {
   ArrowRight01Icon,
   Delete01Icon,
 } from '@hugeicons/core-free-icons'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   useConversations,
   useChatMessages,
@@ -21,6 +22,8 @@ import {
   useDeleteConversation,
 } from '@/hooks/use-chat'
 import type { ToolUse } from '@/hooks/use-chat'
+import { useSystemsList, useDirectoryUsers } from '@/hooks/use-compliance'
+import { api } from '@/lib/api'
 
 // ── Rich Markdown Renderer ──────────────────────────────────────────────────
 
@@ -284,18 +287,293 @@ const TOOL_ICONS: Record<string, typeof Search01Icon> = {
   search_controls: Search01Icon,
   search_evidence: Search01Icon,
   search_access: Search01Icon,
+  list_access_records: Shield01Icon,
   link_evidence: Link01Icon,
   check_compliance: CheckmarkCircle01Icon,
+  check_evidence_gaps: Alert02Icon,
+  list_violations: Alert02Icon,
   assess_risk: Alert02Icon,
+  register_access: CheckmarkCircle01Icon,
+  show_access_form: PlusSignIcon,
+  get_compliance_posture: Shield01Icon,
 }
 
 const TOOL_LABELS: Record<string, string> = {
   search_controls: 'Searching controls',
   search_evidence: 'Searching evidence',
   search_access: 'Searching access records',
+  list_access_records: 'Listing access records',
   link_evidence: 'Linking evidence',
   check_compliance: 'Checking compliance',
+  check_evidence_gaps: 'Checking evidence gaps',
+  list_violations: 'Listing violations',
   assess_risk: 'Assessing risk',
+  register_access: 'Registering access',
+  show_access_form: 'Preparing access form',
+  get_compliance_posture: 'Getting compliance posture',
+}
+
+// ── Access Form Card ────────────────────────────────────────────────────────
+
+interface AccessFormPrefill {
+  userName?: string
+  userEmail?: string
+  systemName?: string
+  role?: string
+  approvedBy?: string
+  ticketRef?: string
+}
+
+function AccessFormCard({ prefill, workspaceId }: { prefill: AccessFormPrefill; workspaceId: string }) {
+  const { systems } = useSystemsList(workspaceId)
+  const { users } = useDirectoryUsers(workspaceId)
+  const queryClient = useQueryClient()
+
+  const [formState, setFormState] = useState({
+    userId: '',
+    systemId: '',
+    role: prefill.role || '',
+    approvedBy: prefill.approvedBy || '',
+    ticketRef: prefill.ticketRef || '',
+    status: 'active',
+    licenseType: '',
+    costPerPeriod: '',
+    costCurrency: 'USD',
+    costFrequency: '',
+  })
+  const [submitted, setSubmitted] = useState(false)
+  const [error, setError] = useState('')
+
+  // Pre-fill user/system IDs from name matching
+  useEffect(() => {
+    if (prefill.systemName && systems.length > 0 && !formState.systemId) {
+      const match = systems.find((s) =>
+        s.name.toLowerCase().includes(prefill.systemName!.toLowerCase())
+      )
+      if (match) setFormState((prev) => ({ ...prev, systemId: match.id }))
+    }
+    if (prefill.userName && users.length > 0 && !formState.userId) {
+      const match = users.find(
+        (u) =>
+          u.name.toLowerCase().includes(prefill.userName!.toLowerCase()) ||
+          (prefill.userEmail && u.email.toLowerCase() === prefill.userEmail.toLowerCase())
+      )
+      if (match) setFormState((prev) => ({ ...prev, userId: match.id }))
+    }
+  }, [systems, users, prefill, formState.systemId, formState.userId])
+
+  const createAccess = useMutation({
+    mutationFn: (payload: Record<string, unknown>) =>
+      api.post(`/workspaces/${workspaceId}/access`, payload),
+    onSuccess: () => {
+      setSubmitted(true)
+      queryClient.invalidateQueries({ queryKey: ['access-records', workspaceId] })
+    },
+    onError: (err: Error) => {
+      setError(err.message || 'Failed to register access')
+    },
+  })
+
+  const handleSubmit = () => {
+    if (!formState.userId || !formState.systemId || !formState.role) {
+      setError('Person, system, and role are required')
+      return
+    }
+    setError('')
+    createAccess.mutate({
+      userId: formState.userId,
+      systemId: formState.systemId,
+      role: formState.role,
+      approvedBy: formState.approvedBy || undefined,
+      ticketRef: formState.ticketRef || undefined,
+      status: formState.status || undefined,
+      licenseType: formState.licenseType || undefined,
+      costPerPeriod: formState.costPerPeriod ? Number(formState.costPerPeriod) : undefined,
+      costCurrency: formState.costCurrency || undefined,
+      costFrequency: formState.costFrequency || undefined,
+    })
+  }
+
+  if (submitted) {
+    return (
+      <div className="rounded-xl border border-primary-400/30 bg-primary-400/5 p-4">
+        <div className="flex items-center gap-2">
+          <HugeiconsIcon icon={CheckmarkCircle01Icon} size={16} className="text-primary-400" />
+          <span className="text-sm font-medium text-primary-400">Access registered successfully</span>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="rounded-xl border border-zinc-700 bg-zinc-900 p-4">
+      <div className="mb-3 flex items-center gap-2">
+        <HugeiconsIcon icon={Shield01Icon} size={16} className="text-primary-400" />
+        <span className="text-sm font-semibold text-zinc-100">Register Access</span>
+      </div>
+
+      <div className="space-y-3">
+        {/* Person */}
+        <div>
+          <label className="mb-1 block text-xs font-medium text-zinc-400">Person *</label>
+          <select
+            value={formState.userId}
+            onChange={(e) => setFormState((prev) => ({ ...prev, userId: e.target.value }))}
+            className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 focus:border-primary-400 focus:outline-none"
+          >
+            <option value="">Select a person...</option>
+            {users.map((u) => (
+              <option key={u.id} value={u.id}>
+                {u.name} ({u.email})
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* System */}
+        <div>
+          <label className="mb-1 block text-xs font-medium text-zinc-400">System *</label>
+          <select
+            value={formState.systemId}
+            onChange={(e) => setFormState((prev) => ({ ...prev, systemId: e.target.value }))}
+            className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 focus:border-primary-400 focus:outline-none"
+          >
+            <option value="">Select a system...</option>
+            {systems.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Role */}
+        <div>
+          <label className="mb-1 block text-xs font-medium text-zinc-400">Role *</label>
+          <select
+            value={formState.role}
+            onChange={(e) => setFormState((prev) => ({ ...prev, role: e.target.value }))}
+            className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 focus:border-primary-400 focus:outline-none"
+          >
+            <option value="">Select a role...</option>
+            <option value="read">Read</option>
+            <option value="write">Write</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+
+        {/* Status */}
+        <div>
+          <label className="mb-1 block text-xs font-medium text-zinc-400">Status</label>
+          <select
+            value={formState.status}
+            onChange={(e) => setFormState((prev) => ({ ...prev, status: e.target.value }))}
+            className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 focus:border-primary-400 focus:outline-none"
+          >
+            <option value="active">Active</option>
+            <option value="requested">Requested</option>
+            <option value="approved">Approved</option>
+            <option value="pending_review">Pending Review</option>
+            <option value="suspended">Suspended</option>
+          </select>
+        </div>
+
+        {/* Approved By + Ticket Ref */}
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="mb-1 block text-xs font-medium text-zinc-400">Approved by</label>
+            <input
+              type="text"
+              value={formState.approvedBy}
+              onChange={(e) => setFormState((prev) => ({ ...prev, approvedBy: e.target.value }))}
+              placeholder="Manager name"
+              className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 placeholder-zinc-600 focus:border-primary-400 focus:outline-none"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-medium text-zinc-400">Ticket ref</label>
+            <input
+              type="text"
+              value={formState.ticketRef}
+              onChange={(e) => setFormState((prev) => ({ ...prev, ticketRef: e.target.value }))}
+              placeholder="JIRA-123"
+              className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 placeholder-zinc-600 focus:border-primary-400 focus:outline-none"
+            />
+          </div>
+        </div>
+
+        {/* License + Cost */}
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="mb-1 block text-xs font-medium text-zinc-400">License type</label>
+            <input
+              type="text"
+              value={formState.licenseType}
+              onChange={(e) => setFormState((prev) => ({ ...prev, licenseType: e.target.value }))}
+              placeholder="e.g. Enterprise"
+              className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 placeholder-zinc-600 focus:border-primary-400 focus:outline-none"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-medium text-zinc-400">Cost frequency</label>
+            <select
+              value={formState.costFrequency}
+              onChange={(e) => setFormState((prev) => ({ ...prev, costFrequency: e.target.value }))}
+              className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 focus:border-primary-400 focus:outline-none"
+            >
+              <option value="">None</option>
+              <option value="monthly">Monthly</option>
+              <option value="annual">Annual</option>
+              <option value="one-time">One-time</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Cost amount + currency */}
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="mb-1 block text-xs font-medium text-zinc-400">Cost per period</label>
+            <input
+              type="number"
+              value={formState.costPerPeriod}
+              onChange={(e) => setFormState((prev) => ({ ...prev, costPerPeriod: e.target.value }))}
+              placeholder="0"
+              className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 placeholder-zinc-600 focus:border-primary-400 focus:outline-none"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-medium text-zinc-400">Currency</label>
+            <input
+              type="text"
+              value={formState.costCurrency}
+              onChange={(e) => setFormState((prev) => ({ ...prev, costCurrency: e.target.value }))}
+              placeholder="USD"
+              className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 placeholder-zinc-600 focus:border-primary-400 focus:outline-none"
+            />
+          </div>
+        </div>
+
+        {error && (
+          <p className="text-xs text-red-400">{error}</p>
+        )}
+
+        <button
+          onClick={handleSubmit}
+          disabled={createAccess.isPending}
+          className="w-full rounded-lg bg-primary-400 px-4 py-2 text-sm font-medium text-zinc-950 transition-colors hover:bg-primary-300 disabled:opacity-50"
+        >
+          {createAccess.isPending ? 'Registering...' : 'Register Access'}
+        </button>
+      </div>
+    </div>
+  )
+}
+
+/** Check if a tool output is a form request */
+function isFormToolOutput(output: unknown): output is { type: 'form'; formType: string; prefill: AccessFormPrefill } {
+  if (!output || typeof output !== 'object') return false
+  const obj = output as Record<string, unknown>
+  return obj.type === 'form' && obj.formType === 'access_register'
 }
 
 function ToolCard({ tool }: { tool: ToolUse }) {
@@ -579,9 +857,25 @@ export function ChatPage() {
                           {/* Tool uses */}
                           {msg.toolUses && msg.toolUses.length > 0 && (
                             <div className="space-y-1.5">
-                              {msg.toolUses.map((tool, idx) => (
-                                <ToolCard key={`${msg.id}-tool-${idx}`} tool={tool} />
-                              ))}
+                              {msg.toolUses.map((tool, idx) => {
+                                // Parse output if it's a JSON string
+                                const parsed = typeof tool.output === 'string'
+                                  ? (() => { try { return JSON.parse(tool.output as string) } catch { return tool.output } })()
+                                  : tool.output
+
+                                // Render inline form for access registration
+                                if (isFormToolOutput(parsed)) {
+                                  return (
+                                    <AccessFormCard
+                                      key={`${msg.id}-form-${idx}`}
+                                      prefill={parsed.prefill}
+                                      workspaceId={workspaceId!}
+                                    />
+                                  )
+                                }
+
+                                return <ToolCard key={`${msg.id}-tool-${idx}`} tool={tool} />
+                              })}
                             </div>
                           )}
 

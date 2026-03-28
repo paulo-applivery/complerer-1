@@ -83,6 +83,103 @@ complianceRoutes.get('/systems', async (c) => {
   })
 })
 
+/**
+ * GET /systems/library
+ * List all systems in the global library, grouped by category.
+ */
+complianceRoutes.get('/systems/library', async (c) => {
+  const { results } = await c.env.DB.prepare(
+    `SELECT id, name, category, description, vendor, website,
+            default_classification, default_sensitivity, icon_hint
+     FROM system_library
+     ORDER BY category, name`
+  )
+    .bind()
+    .all()
+
+  return c.json({ systems: results })
+})
+
+/**
+ * POST /systems/from-library
+ * Add one or more systems from the library to the workspace.
+ */
+const addFromLibrarySchema = z.object({
+  libraryIds: z.array(z.string()).min(1).max(50),
+  environment: z.string().optional(),
+})
+
+complianceRoutes.post(
+  '/systems/from-library',
+  requireRole('member'),
+  zValidator('json', addFromLibrarySchema),
+  async (c) => {
+    const workspaceId = c.get('workspaceId')
+    const userId = c.get('userId')
+    const { libraryIds, environment } = c.req.valid('json')
+    const now = new Date().toISOString()
+
+    // Fetch library items
+    const placeholders = libraryIds.map(() => '?').join(',')
+    const { results: libItems } = await c.env.DB.prepare(
+      `SELECT * FROM system_library WHERE id IN (${placeholders})`
+    )
+      .bind(...libraryIds)
+      .all<{
+        id: string
+        name: string
+        category: string
+        description: string | null
+        vendor: string | null
+        website: string | null
+        default_classification: string
+        default_sensitivity: string
+      }>()
+
+    // Check which names already exist in workspace
+    const { results: existing } = await c.env.DB.prepare(
+      'SELECT name FROM systems WHERE workspace_id = ?'
+    )
+      .bind(workspaceId)
+      .all<{ name: string }>()
+
+    const existingNames = new Set(existing.map((e) => e.name.toLowerCase()))
+
+    let created = 0
+    let skipped = 0
+
+    for (const item of libItems) {
+      if (existingNames.has(item.name.toLowerCase())) {
+        skipped++
+        continue
+      }
+
+      const systemId = generateId()
+      await c.env.DB.prepare(
+        `INSERT INTO systems (id, workspace_id, name, description, classification, data_sensitivity,
+                              environment, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      )
+        .bind(
+          systemId,
+          workspaceId,
+          item.name,
+          item.description,
+          item.default_classification,
+          item.default_sensitivity,
+          environment ?? 'production',
+          now,
+          now
+        )
+        .run()
+
+      created++
+    }
+
+    return c.json({ created, skipped, total: libItems.length })
+  }
+)
+
 const createSystemSchema = z.object({
   name: z.string().min(1).max(200),
   description: z.string().optional(),
@@ -288,6 +385,62 @@ complianceRoutes.patch(
 // ─── Directory Users ─────────────────────────────────────────────────
 
 /**
+ * GET /directory/library
+ * List all roles in the employee directory library.
+ */
+complianceRoutes.get('/directory/library', async (c) => {
+  const { results } = await c.env.DB.prepare(
+    'SELECT id, name, department, title, category, description FROM employee_directory_library ORDER BY category, department, name'
+  ).bind().all()
+  return c.json({ employees: results })
+})
+
+/**
+ * POST /directory/from-library
+ * Add directory entries from library as employees.
+ */
+const addFromDirectoryLibSchema = z.object({
+  libraryIds: z.array(z.string()).min(1).max(50),
+})
+
+complianceRoutes.post(
+  '/directory/from-library',
+  requireRole('member'),
+  zValidator('json', addFromDirectoryLibSchema),
+  async (c) => {
+    const workspaceId = c.get('workspaceId')
+    const { libraryIds } = c.req.valid('json')
+    const now = new Date().toISOString()
+
+    const placeholders = libraryIds.map(() => '?').join(',')
+    const { results: libItems } = await c.env.DB.prepare(
+      `SELECT * FROM employee_directory_library WHERE id IN (${placeholders})`
+    ).bind(...libraryIds).all()
+
+    let created = 0
+    let skipped = 0
+
+    for (const item of libItems) {
+      const userId = generateId()
+      await c.env.DB.prepare(
+        `INSERT INTO directory_users (id, workspace_id, name, email, department, title, employment_status, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, 'active', ?, ?)`
+      ).bind(
+        userId, workspaceId,
+        (item as any).name,
+        `${(item as any).name.toLowerCase().replace(/[^a-z0-9]/g, '.')}@company.com`,
+        (item as any).department,
+        (item as any).title,
+        now, now
+      ).run()
+      created++
+    }
+
+    return c.json({ created, skipped, total: libItems.length })
+  }
+)
+
+/**
  * GET /directory
  * List directory users. Supports ?status= and ?search= filters.
  */
@@ -430,6 +583,90 @@ complianceRoutes.post(
   }
 )
 
+/**
+ * PUT /directory/:userId
+ * Update a directory user.
+ */
+const updateDirectoryUserSchema = z.object({
+  name: z.string().min(1).optional(),
+  email: z.string().email().optional(),
+  department: z.string().optional(),
+  title: z.string().optional(),
+  employmentStatus: z.string().optional(),
+})
+
+complianceRoutes.put(
+  '/directory/:userId',
+  requireRole('member'),
+  zValidator('json', updateDirectoryUserSchema),
+  async (c) => {
+    const workspaceId = c.get('workspaceId')
+    const userId = c.req.param('userId')
+    const updates = c.req.valid('json')
+    const now = new Date().toISOString()
+
+    // Verify user belongs to workspace
+    const existing = await c.env.DB.prepare(
+      'SELECT id FROM directory_users WHERE id = ? AND workspace_id = ?'
+    ).bind(userId, workspaceId).first()
+
+    if (!existing) return c.json({ error: 'User not found' }, 404)
+
+    const setClauses: string[] = ['updated_at = ?']
+    const values: any[] = [now]
+
+    if (updates.name !== undefined) { setClauses.push('name = ?'); values.push(updates.name) }
+    if (updates.email !== undefined) { setClauses.push('email = ?'); values.push(updates.email) }
+    if (updates.department !== undefined) { setClauses.push('department = ?'); values.push(updates.department) }
+    if (updates.title !== undefined) { setClauses.push('title = ?'); values.push(updates.title) }
+    if (updates.employmentStatus !== undefined) { setClauses.push('employment_status = ?'); values.push(updates.employmentStatus) }
+
+    values.push(userId, workspaceId)
+
+    await c.env.DB.prepare(
+      `UPDATE directory_users SET ${setClauses.join(', ')} WHERE id = ? AND workspace_id = ?`
+    ).bind(...values).run()
+
+    // Fetch updated record
+    const updated = await c.env.DB.prepare(
+      'SELECT * FROM directory_users WHERE id = ? AND workspace_id = ?'
+    ).bind(userId, workspaceId).first()
+
+    return c.json({ user: updated })
+  }
+)
+
+/**
+ * DELETE /directory/:userId
+ * Delete a directory user.
+ */
+complianceRoutes.delete(
+  '/directory/:userId',
+  requireRole('member'),
+  async (c) => {
+    const workspaceId = c.get('workspaceId')
+    const userId = c.req.param('userId')
+
+    const existing = await c.env.DB.prepare(
+      'SELECT id FROM directory_users WHERE id = ? AND workspace_id = ?'
+    ).bind(userId, workspaceId).first()
+
+    if (!existing) return c.json({ error: 'User not found' }, 404)
+
+    // Delete custom field values first
+    await c.env.DB.prepare(
+      'DELETE FROM custom_field_values WHERE workspace_id = ? AND entity_id = ?'
+    ).bind(workspaceId, userId).run()
+
+    // Delete the user
+    await c.env.DB.prepare(
+      'DELETE FROM directory_users WHERE id = ? AND workspace_id = ?'
+    ).bind(userId, workspaceId).run()
+
+    return c.json({ ok: true })
+  }
+)
+
 // ─── Access Records ──────────────────────────────────────────────────
 
 /**
@@ -453,7 +690,9 @@ complianceRoutes.get('/access', async (c) => {
                         ar.access_type, ar.granted_at, ar.granted_by, ar.approved_by,
                         ar.approval_method, ar.ticket_ref, ar.reviewed_at, ar.reviewed_by,
                         ar.revoked_at, ar.revoked_by, ar.revocation_reason, ar.risk_score,
-                        ar.source, ar.created_at,
+                        ar.source, ar.created_at, ar.status,
+                        ar.updated_at, ar.updated_by,
+                        ar.license_type, ar.cost_per_period, ar.cost_currency, ar.cost_frequency,
                         du.name as user_name, du.email as user_email,
                         s.name as system_name
                  FROM access_records ar
@@ -463,12 +702,16 @@ complianceRoutes.get('/access', async (c) => {
 
   const bindings: unknown[] = [workspaceId]
 
-  if (status === 'active') {
-    countSql += ' AND ar.revoked_at IS NULL'
-    dataSql += ' AND ar.revoked_at IS NULL'
-  } else if (status === 'revoked') {
-    countSql += ' AND ar.revoked_at IS NOT NULL'
-    dataSql += ' AND ar.revoked_at IS NOT NULL'
+  if (status && status !== 'all' && status !== '') {
+    // Also match NULL status as 'active' for pre-migration records
+    if (status === 'active') {
+      countSql += " AND (ar.status = 'active' OR ar.status IS NULL)"
+      dataSql += " AND (ar.status = 'active' OR ar.status IS NULL)"
+    } else {
+      countSql += ' AND ar.status = ?'
+      dataSql += ' AND ar.status = ?'
+      bindings.push(status)
+    }
   }
 
   if (systemIdFilter) {
@@ -511,6 +754,13 @@ complianceRoutes.get('/access', async (c) => {
       risk_score: number
       source: string
       created_at: string
+      status: string
+      updated_at: string | null
+      updated_by: string | null
+      license_type: string | null
+      cost_per_period: number | null
+      cost_currency: string | null
+      cost_frequency: string | null
       user_name: string
       user_email: string
       system_name: string
@@ -537,6 +787,13 @@ complianceRoutes.get('/access', async (c) => {
       riskScore: r.risk_score,
       source: r.source,
       createdAt: r.created_at,
+      status: r.status,
+      updatedAt: r.updated_at,
+      updatedBy: r.updated_by,
+      licenseType: r.license_type,
+      costPerPeriod: r.cost_per_period,
+      costCurrency: r.cost_currency,
+      costFrequency: r.cost_frequency,
       userName: r.user_name,
       userEmail: r.user_email,
       systemName: r.system_name,
@@ -556,6 +813,12 @@ const createAccessRecordSchema = z.object({
   approvedBy: z.string().optional(),
   approvalMethod: z.string().optional(),
   ticketRef: z.string().optional(),
+  status: z.enum(['requested', 'approved', 'active', 'pending_review', 'suspended', 'expired', 'revoked']).optional(),
+  licenseType: z.string().optional(),
+  costPerPeriod: z.number().optional(),
+  costCurrency: z.string().optional(),
+  costFrequency: z.enum(['monthly', 'annual', 'one-time']).optional(),
+  customFields: z.record(z.string(), z.string()).optional(),
 })
 
 /**
@@ -603,11 +866,15 @@ complianceRoutes.post(
 
     const riskScore = computeRiskScore(system, body.role, body.approvedBy ?? null)
 
+    const status = body.status ?? 'active'
+
     await c.env.DB.prepare(
       `INSERT INTO access_records (id, workspace_id, user_id, system_id, role, access_type,
                                    granted_at, granted_by, approved_by, approval_method,
-                                   ticket_ref, risk_score, source, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'manual', ?)`
+                                   ticket_ref, risk_score, source, created_at, status,
+                                   license_type, cost_per_period, cost_currency, cost_frequency,
+                                   updated_at, updated_by)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'manual', ?, ?, ?, ?, ?, ?, ?, ?)`
     )
       .bind(
         recordId,
@@ -622,9 +889,29 @@ complianceRoutes.post(
         body.approvalMethod ?? null,
         body.ticketRef ?? null,
         riskScore,
-        now
+        now,
+        status,
+        body.licenseType ?? null,
+        body.costPerPeriod ?? null,
+        body.costCurrency ?? 'USD',
+        body.costFrequency ?? null,
+        now,
+        userId
       )
       .run()
+
+    // Save custom field values if provided
+    if (body.customFields && Object.keys(body.customFields).length > 0) {
+      const cfStmts = Object.entries(body.customFields).map(([fieldId, value]) =>
+        c.env.DB.prepare(
+          `INSERT INTO custom_field_values (id, workspace_id, entity_type, entity_id, field_id, value, created_at, updated_at)
+           VALUES (?, ?, 'access_record', ?, ?, ?, ?, ?)`
+        ).bind(generateId(), workspaceId, recordId, fieldId, value, now, now)
+      )
+      if (cfStmts.length > 0) {
+        await c.env.DB.batch(cfStmts)
+      }
+    }
 
     await emitEvent(c.env.DB, {
       workspaceId,
@@ -636,6 +923,7 @@ complianceRoutes.post(
         systemId: body.systemId,
         role: body.role,
         riskScore,
+        status,
       },
       actorId: userId,
     })
@@ -662,6 +950,13 @@ complianceRoutes.post(
           riskScore,
           source: 'manual',
           createdAt: now,
+          status,
+          updatedAt: now,
+          updatedBy: userId,
+          licenseType: body.licenseType ?? null,
+          costPerPeriod: body.costPerPeriod ?? null,
+          costCurrency: body.costCurrency ?? 'USD',
+          costFrequency: body.costFrequency ?? null,
         },
       },
       201
@@ -1830,6 +2125,172 @@ complianceRoutes.delete('/baselines/:baselineId', requireRole('admin'), async (c
 })
 
 /**
+ * GET /baselines/:baselineId/controls
+ * List controls linked to a baseline.
+ */
+complianceRoutes.get('/baselines/:baselineId/controls', async (c) => {
+  const workspaceId = c.get('workspaceId')
+  const baselineId = c.req.param('baselineId')
+
+  const { results } = await c.env.DB.prepare(
+    `SELECT bc.id as link_id, bc.linked_at,
+       vc.id as control_id, vc.control_id as control_code, vc.title, vc.domain,
+       f.name as framework_name, fv.version as framework_version
+     FROM baseline_controls bc
+     JOIN versioned_controls vc ON vc.id = bc.control_id
+     JOIN framework_versions fv ON fv.id = vc.framework_version_id
+     JOIN frameworks f ON f.id = fv.framework_id
+     WHERE bc.workspace_id = ? AND bc.baseline_id = ?
+     ORDER BY vc.control_id ASC`
+  ).bind(workspaceId, baselineId).all()
+
+  return c.json({
+    controls: (results ?? []).map((r: any) => ({
+      linkId: r.link_id,
+      controlId: r.control_id,
+      controlCode: r.control_code,
+      title: r.title,
+      domain: r.domain,
+      frameworkName: r.framework_name,
+      frameworkVersion: r.framework_version,
+      linkedAt: r.linked_at,
+    })),
+  })
+})
+
+/**
+ * POST /baselines/:baselineId/controls
+ * Link a control to a baseline.
+ */
+complianceRoutes.post(
+  '/baselines/:baselineId/controls',
+  requireRole('member'),
+  zValidator('json', z.object({ controlId: z.string().min(1) })),
+  async (c) => {
+    const workspaceId = c.get('workspaceId')
+    const userId = c.get('userId')
+    const baselineId = c.req.param('baselineId')
+    const { controlId } = c.req.valid('json')
+    const now = new Date().toISOString()
+
+    // Validate baseline
+    const baseline = await c.env.DB.prepare(
+      'SELECT id FROM baselines WHERE id = ? AND workspace_id = ?'
+    ).bind(baselineId, workspaceId).first()
+    if (!baseline) return c.json({ error: 'Baseline not found' }, 404)
+
+    // Validate control exists
+    const control = await c.env.DB.prepare(
+      'SELECT id FROM versioned_controls WHERE id = ?'
+    ).bind(controlId).first()
+    if (!control) return c.json({ error: 'Control not found' }, 404)
+
+    const id = generateId()
+    try {
+      await c.env.DB.prepare(
+        `INSERT INTO baseline_controls (id, workspace_id, baseline_id, control_id, linked_at, linked_by)
+         VALUES (?, ?, ?, ?, ?, ?)`
+      ).bind(id, workspaceId, baselineId, controlId, now, userId).run()
+    } catch (e: any) {
+      if (e.message?.includes('UNIQUE')) {
+        return c.json({ error: 'Already linked' }, 409)
+      }
+      throw e
+    }
+
+    return c.json({ id }, 201)
+  }
+)
+
+/**
+ * DELETE /baselines/:baselineId/controls/:linkId
+ * Unlink a control from a baseline.
+ */
+complianceRoutes.delete(
+  '/baselines/:baselineId/controls/:linkId',
+  requireRole('member'),
+  async (c) => {
+    const workspaceId = c.get('workspaceId')
+    const baselineId = c.req.param('baselineId')
+    const linkId = c.req.param('linkId')
+
+    await c.env.DB.prepare(
+      'DELETE FROM baseline_controls WHERE id = ? AND workspace_id = ? AND baseline_id = ?'
+    ).bind(linkId, workspaceId, baselineId).run()
+
+    return c.json({ ok: true })
+  }
+)
+
+/**
+ * GET /baselines/library
+ * List all baseline templates from the library.
+ */
+complianceRoutes.get('/baselines/library', async (c) => {
+  const { results } = await c.env.DB.prepare(
+    'SELECT * FROM baseline_library ORDER BY category, name'
+  ).bind().all()
+  return c.json({ items: results })
+})
+
+/**
+ * POST /baselines/from-library
+ * Activate baselines from the library into the workspace.
+ */
+const addFromBaselineLibSchema = z.object({
+  libraryIds: z.array(z.string()).min(1).max(50),
+})
+
+complianceRoutes.post(
+  '/baselines/from-library',
+  requireRole('member'),
+  zValidator('json', addFromBaselineLibSchema),
+  async (c) => {
+    const workspaceId = c.get('workspaceId')
+    const userId = c.get('userId')
+    const { libraryIds } = c.req.valid('json')
+    const now = new Date().toISOString()
+
+    const placeholders = libraryIds.map(() => '?').join(',')
+    const { results: libItems } = await c.env.DB.prepare(
+      `SELECT * FROM baseline_library WHERE id IN (${placeholders})`
+    ).bind(...libraryIds).all()
+
+    // Get existing baseline names to avoid duplicates
+    const { results: existing } = await c.env.DB.prepare(
+      'SELECT name FROM baselines WHERE workspace_id = ?'
+    ).bind(workspaceId).all()
+    const existingNames = new Set((existing ?? []).map((e: any) => e.name?.toLowerCase()))
+
+    let created = 0
+    let skipped = 0
+
+    for (const item of libItems) {
+      const lib = item as any
+      if (existingNames.has(lib.name?.toLowerCase())) {
+        skipped++
+        continue
+      }
+
+      const id = generateId()
+      await c.env.DB.prepare(
+        `INSERT INTO baselines (id, workspace_id, name, description, category, rule_type, rule_config, severity, enabled, created_by, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?)`
+      ).bind(
+        id, workspaceId, lib.name, lib.description,
+        lib.category, lib.check_type,
+        JSON.stringify({ check_type: lib.check_type, expected_value: lib.expected_value, framework_hints: lib.framework_hints }),
+        lib.severity,
+        userId, now, now
+      ).run()
+      created++
+    }
+
+    return c.json({ created, skipped, total: libItems.length })
+  }
+)
+
+/**
  * GET /baselines/violations
  * List violations. Supports ?status=open|resolved|exempted&severity=
  */
@@ -2259,13 +2720,14 @@ complianceRoutes.get('/policies', async (c) => {
   const workspaceId = c.get('workspaceId')
 
   const { results } = await c.env.DB.prepare(
-    `SELECT id, workspace_id, title, description, category, version, status,
-            file_ref, file_name, content_text, owner_email,
-            approved_by, approved_at, review_cycle_days, next_review_at,
-            created_at, updated_at
-     FROM policies
-     WHERE workspace_id = ?
-     ORDER BY title ASC`
+    `SELECT p.id, p.workspace_id, p.title, p.description, p.category, p.version, p.status,
+            p.file_ref, p.file_name, p.content_text, p.owner_email,
+            p.approved_by, p.approved_at, p.review_cycle_days, p.next_review_at,
+            p.created_at, p.updated_at,
+            (SELECT COUNT(*) FROM policy_controls pc WHERE pc.policy_id = p.id AND pc.workspace_id = p.workspace_id) as controls_count
+     FROM policies p
+     WHERE p.workspace_id = ?
+     ORDER BY p.title ASC`
   )
     .bind(workspaceId)
     .all<{
@@ -2286,6 +2748,7 @@ complianceRoutes.get('/policies', async (c) => {
       next_review_at: string | null
       created_at: string
       updated_at: string
+      controls_count: number
     }>()
 
   return c.json({
@@ -2300,11 +2763,12 @@ complianceRoutes.get('/policies', async (c) => {
       fileRef: p.file_ref,
       fileName: p.file_name,
       contentText: p.content_text,
-      ownerEmail: p.owner_email,
+      owner: p.owner_email,
       approvedBy: p.approved_by,
       approvedAt: p.approved_at,
       reviewCycleDays: p.review_cycle_days,
-      nextReviewAt: p.next_review_at,
+      nextReviewDate: p.next_review_at,
+      controlsCount: p.controls_count,
       createdAt: p.created_at,
       updatedAt: p.updated_at,
     })),
@@ -2549,6 +3013,26 @@ complianceRoutes.post(
 )
 
 /**
+ * DELETE /policies/:policyId/controls/:linkId
+ * Unlink a control from a policy.
+ */
+complianceRoutes.delete(
+  '/policies/:policyId/controls/:linkId',
+  requireRole('member'),
+  async (c) => {
+    const workspaceId = c.get('workspaceId')
+    const policyId = c.req.param('policyId')
+    const linkId = c.req.param('linkId')
+
+    await c.env.DB.prepare(
+      'DELETE FROM policy_controls WHERE id = ? AND policy_id = ? AND workspace_id = ?'
+    ).bind(linkId, policyId, workspaceId).run()
+
+    return c.json({ ok: true })
+  }
+)
+
+/**
  * GET /policies/:policyId/controls
  * List linked controls for a policy.
  */
@@ -2558,9 +3042,12 @@ complianceRoutes.get('/policies/:policyId/controls', async (c) => {
 
   const { results } = await c.env.DB.prepare(
     `SELECT pc.id, pc.policy_id, pc.control_id, pc.coverage, pc.notes, pc.created_at,
-            vc.control_id as control_ref, vc.title as control_title
+            vc.control_id as control_code, vc.title as control_title,
+            f.name as framework_name
      FROM policy_controls pc
      JOIN versioned_controls vc ON pc.control_id = vc.id
+     JOIN framework_versions fv ON fv.id = vc.framework_version_id
+     JOIN frameworks f ON f.id = fv.framework_id
      WHERE pc.workspace_id = ? AND pc.policy_id = ?
      ORDER BY vc.control_id ASC`
   )
@@ -2572,8 +3059,9 @@ complianceRoutes.get('/policies/:policyId/controls', async (c) => {
       coverage: string
       notes: string | null
       created_at: string
-      control_ref: string
+      control_code: string
       control_title: string
+      framework_name: string
     }>()
 
   return c.json({
@@ -2581,8 +3069,9 @@ complianceRoutes.get('/policies/:policyId/controls', async (c) => {
       id: pc.id,
       policyId: pc.policy_id,
       controlId: pc.control_id,
-      controlRef: pc.control_ref,
+      controlCode: pc.control_code,
       controlTitle: pc.control_title,
+      frameworkName: pc.framework_name,
       coverage: pc.coverage,
       notes: pc.notes,
       createdAt: pc.created_at,
@@ -2899,19 +3388,45 @@ complianceRoutes.get('/snapshots/:snapshotId', async (c) => {
  * List active AI providers configured by super admins.
  */
 complianceRoutes.get('/settings/ai-providers', async (c) => {
-  const { results } = await c.env.DB.prepare(
-    `SELECT id, slug, name, enabled
-     FROM platform_providers
-     WHERE category = 'ai'
-     ORDER BY name ASC`
-  ).all<{ id: string; slug: string; name: string; enabled: number }>()
+  const workspaceId = c.get('workspaceId')
 
-  const providers = results.map((p) => ({
-    id: p.id,
-    slug: p.slug,
-    name: p.name,
-    enabled: p.enabled === 1,
-  }))
+  // Common key names admins use for API keys
+  const apiKeyNames = ['api_key', 'apiKey', 'X-Api-Key', 'x-api-key', 'key', 'API_KEY']
+  const placeholders = apiKeyNames.map(() => '?').join(', ')
+
+  // Get all AI providers with whether they have an admin-configured key (checking common names)
+  const { results } = await c.env.DB.prepare(
+    `SELECT p.id, p.slug, p.name, p.enabled,
+            CASE WHEN pc.value IS NOT NULL AND pc.value != '' THEN 1 ELSE 0 END AS has_admin_key
+     FROM platform_providers p
+     LEFT JOIN platform_provider_configs pc
+       ON pc.provider_id = p.id AND pc.key IN (${placeholders})
+     WHERE p.category = 'ai'
+     GROUP BY p.id
+     ORDER BY p.name ASC`
+  ).bind(...apiKeyNames).all<{ id: string; slug: string; name: string; enabled: number; has_admin_key: number }>()
+
+  // Check workspace settings: user keys + key source preferences
+  const { results: wsSettings } = await c.env.DB.prepare(
+    `SELECT key, value FROM workspace_settings
+     WHERE workspace_id = ? AND (key LIKE 'ai.provider_key.%' OR key LIKE 'ai.key_source.%')`
+  ).bind(workspaceId).all<{ key: string; value: string }>()
+
+  const settingsMap = new Map(wsSettings.map((k) => [k.key, k.value]))
+
+  const providers = results.map((p) => {
+    const userKey = settingsMap.get(`ai.provider_key.${p.slug}`)
+    const keySource = settingsMap.get(`ai.key_source.${p.slug}`) ?? 'platform'
+    return {
+      id: p.id,
+      slug: p.slug,
+      name: p.name,
+      enabled: p.enabled === 1,
+      hasAdminKey: p.has_admin_key === 1,
+      hasUserKey: !!userKey && userKey !== '',
+      keySource, // 'platform' = use admin key, 'user' = require own key
+    }
+  })
 
   const activeProviders = providers.filter((p) => p.enabled)
 
@@ -3372,5 +3887,704 @@ complianceRoutes.post('/risk-recompute', requireRole('admin'), async (c) => {
     highRisk: highRiskCount,
   })
 })
+
+// ─── Custom Field Definitions ────────────────────────────────────────
+
+/**
+ * GET /custom-fields
+ * List custom field definitions. Optional ?entityType= filter.
+ */
+complianceRoutes.get('/custom-fields', async (c) => {
+  const workspaceId = c.get('workspaceId')
+  const entityType = c.req.query('entityType')
+
+  let sql = `SELECT id, workspace_id, entity_type, field_name, field_label, field_type,
+                    field_options, display_order, required, created_at, updated_at
+             FROM custom_field_definitions WHERE workspace_id = ?`
+  const bindings: unknown[] = [workspaceId]
+
+  if (entityType) {
+    sql += ' AND entity_type = ?'
+    bindings.push(entityType)
+  }
+
+  sql += ' ORDER BY entity_type ASC, display_order ASC, field_name ASC'
+
+  const { results } = await c.env.DB.prepare(sql)
+    .bind(...bindings)
+    .all<{
+      id: string
+      workspace_id: string
+      entity_type: string
+      field_name: string
+      field_label: string
+      field_type: string
+      field_options: string | null
+      display_order: number
+      required: number
+      created_at: string
+      updated_at: string
+    }>()
+
+  return c.json({
+    fields: results.map((f) => ({
+      id: f.id,
+      workspaceId: f.workspace_id,
+      entityType: f.entity_type,
+      fieldName: f.field_name,
+      fieldLabel: f.field_label,
+      fieldType: f.field_type,
+      fieldOptions: f.field_options ? JSON.parse(f.field_options) : null,
+      displayOrder: f.display_order,
+      required: Boolean(f.required),
+      createdAt: f.created_at,
+      updatedAt: f.updated_at,
+    })),
+  })
+})
+
+const createCustomFieldSchema = z.object({
+  entityType: z.enum(['person', 'system', 'access_record']),
+  fieldName: z.string().min(1).max(100),
+  fieldLabel: z.string().min(1).max(200),
+  fieldType: z.enum(['text', 'number', 'select', 'date', 'boolean']),
+  fieldOptions: z.array(z.string()).optional(),
+  displayOrder: z.number().int().optional(),
+  required: z.boolean().optional(),
+})
+
+/**
+ * POST /custom-fields
+ * Create a custom field definition. Requires admin+.
+ */
+complianceRoutes.post(
+  '/custom-fields',
+  requireRole('admin'),
+  zValidator('json', createCustomFieldSchema),
+  async (c) => {
+    const workspaceId = c.get('workspaceId')
+    const body = c.req.valid('json')
+    const now = new Date().toISOString()
+    const fieldId = generateId()
+
+    await c.env.DB.prepare(
+      `INSERT INTO custom_field_definitions (id, workspace_id, entity_type, field_name, field_label,
+                                             field_type, field_options, display_order, required, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    )
+      .bind(
+        fieldId,
+        workspaceId,
+        body.entityType,
+        body.fieldName,
+        body.fieldLabel,
+        body.fieldType,
+        body.fieldOptions ? JSON.stringify(body.fieldOptions) : null,
+        body.displayOrder ?? 0,
+        body.required ? 1 : 0,
+        now,
+        now
+      )
+      .run()
+
+    return c.json(
+      {
+        field: {
+          id: fieldId,
+          workspaceId,
+          entityType: body.entityType,
+          fieldName: body.fieldName,
+          fieldLabel: body.fieldLabel,
+          fieldType: body.fieldType,
+          fieldOptions: body.fieldOptions ?? null,
+          displayOrder: body.displayOrder ?? 0,
+          required: body.required ?? false,
+          createdAt: now,
+          updatedAt: now,
+        },
+      },
+      201
+    )
+  }
+)
+
+const updateCustomFieldSchema = z.object({
+  fieldLabel: z.string().min(1).max(200).optional(),
+  fieldOptions: z.array(z.string()).optional(),
+  displayOrder: z.number().int().optional(),
+  required: z.boolean().optional(),
+})
+
+/**
+ * PATCH /custom-fields/:fieldId
+ * Update a custom field definition. Requires admin+.
+ */
+complianceRoutes.patch(
+  '/custom-fields/:fieldId',
+  requireRole('admin'),
+  zValidator('json', updateCustomFieldSchema),
+  async (c) => {
+    const workspaceId = c.get('workspaceId')
+    const fieldId = c.req.param('fieldId')
+    const body = c.req.valid('json')
+    const now = new Date().toISOString()
+
+    const existing = await c.env.DB.prepare(
+      'SELECT id FROM custom_field_definitions WHERE id = ? AND workspace_id = ?'
+    )
+      .bind(fieldId, workspaceId)
+      .first()
+
+    if (!existing) {
+      return c.json({ error: 'Custom field not found' }, 404)
+    }
+
+    const sets: string[] = ['updated_at = ?']
+    const bindings: unknown[] = [now]
+
+    if (body.fieldLabel !== undefined) {
+      sets.push('field_label = ?')
+      bindings.push(body.fieldLabel)
+    }
+    if (body.fieldOptions !== undefined) {
+      sets.push('field_options = ?')
+      bindings.push(JSON.stringify(body.fieldOptions))
+    }
+    if (body.displayOrder !== undefined) {
+      sets.push('display_order = ?')
+      bindings.push(body.displayOrder)
+    }
+    if (body.required !== undefined) {
+      sets.push('required = ?')
+      bindings.push(body.required ? 1 : 0)
+    }
+
+    bindings.push(fieldId, workspaceId)
+
+    await c.env.DB.prepare(
+      `UPDATE custom_field_definitions SET ${sets.join(', ')} WHERE id = ? AND workspace_id = ?`
+    )
+      .bind(...bindings)
+      .run()
+
+    return c.json({ success: true })
+  }
+)
+
+/**
+ * DELETE /custom-fields/:fieldId
+ * Delete a custom field definition and all its values. Requires admin+.
+ */
+complianceRoutes.delete(
+  '/custom-fields/:fieldId',
+  requireRole('admin'),
+  async (c) => {
+    const workspaceId = c.get('workspaceId')
+    const fieldId = c.req.param('fieldId')
+
+    const existing = await c.env.DB.prepare(
+      'SELECT id FROM custom_field_definitions WHERE id = ? AND workspace_id = ?'
+    )
+      .bind(fieldId, workspaceId)
+      .first()
+
+    if (!existing) {
+      return c.json({ error: 'Custom field not found' }, 404)
+    }
+
+    await c.env.DB.batch([
+      c.env.DB.prepare('DELETE FROM custom_field_values WHERE field_id = ? AND workspace_id = ?').bind(
+        fieldId,
+        workspaceId
+      ),
+      c.env.DB.prepare('DELETE FROM custom_field_definitions WHERE id = ? AND workspace_id = ?').bind(
+        fieldId,
+        workspaceId
+      ),
+    ])
+
+    return c.json({ success: true })
+  }
+)
+
+/**
+ * GET /custom-fields/values/:entityType/:entityId
+ * Get custom field values for a specific entity.
+ */
+complianceRoutes.get('/custom-fields/values/:entityType/:entityId', async (c) => {
+  const workspaceId = c.get('workspaceId')
+  const entityType = c.req.param('entityType')
+  const entityId = c.req.param('entityId')
+
+  const { results } = await c.env.DB.prepare(
+    `SELECT cfv.field_id, cfv.value, cfd.field_name, cfd.field_label, cfd.field_type
+     FROM custom_field_values cfv
+     JOIN custom_field_definitions cfd ON cfd.id = cfv.field_id
+     WHERE cfv.workspace_id = ? AND cfv.entity_type = ? AND cfv.entity_id = ?
+     ORDER BY cfd.display_order ASC`
+  )
+    .bind(workspaceId, entityType, entityId)
+    .all<{
+      field_id: string
+      value: string | null
+      field_name: string
+      field_label: string
+      field_type: string
+    }>()
+
+  return c.json({
+    values: results.map((v) => ({
+      fieldId: v.field_id,
+      fieldName: v.field_name,
+      fieldLabel: v.field_label,
+      fieldType: v.field_type,
+      value: v.value,
+    })),
+  })
+})
+
+const saveCustomFieldValuesSchema = z.object({
+  values: z.record(z.string(), z.string().nullable()),
+})
+
+/**
+ * PUT /custom-fields/values/:entityType/:entityId
+ * Upsert custom field values for an entity. Requires member+.
+ */
+complianceRoutes.put(
+  '/custom-fields/values/:entityType/:entityId',
+  requireRole('member'),
+  zValidator('json', saveCustomFieldValuesSchema),
+  async (c) => {
+    const workspaceId = c.get('workspaceId')
+    const entityType = c.req.param('entityType')
+    const entityId = c.req.param('entityId')
+    const body = c.req.valid('json')
+    const now = new Date().toISOString()
+
+    const entries = Object.entries(body.values)
+    if (entries.length === 0) {
+      return c.json({ success: true, saved: 0 })
+    }
+
+    // Validate field IDs belong to this workspace and entity type
+    const fieldIds = entries.map(([fid]) => fid)
+    const placeholders = fieldIds.map(() => '?').join(',')
+    const { results: validFields } = await c.env.DB.prepare(
+      `SELECT id, required FROM custom_field_definitions
+       WHERE id IN (${placeholders}) AND workspace_id = ? AND entity_type = ?`
+    )
+      .bind(...fieldIds, workspaceId, entityType)
+      .all<{ id: string; required: number }>()
+
+    const validFieldIds = new Set(validFields.map((f) => f.id))
+
+    // Check required fields
+    for (const field of validFields) {
+      if (field.required) {
+        const val = body.values[field.id]
+        if (!val || val.trim() === '') {
+          return c.json({ error: `Required field ${field.id} is empty` }, 400)
+        }
+      }
+    }
+
+    const stmts = entries
+      .filter(([fid]) => validFieldIds.has(fid))
+      .map(([fieldId, value]) =>
+        c.env.DB.prepare(
+          `INSERT INTO custom_field_values (id, workspace_id, entity_type, entity_id, field_id, value, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+           ON CONFLICT(workspace_id, entity_id, field_id)
+           DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`
+        ).bind(generateId(), workspaceId, entityType, entityId, fieldId, value, now, now)
+      )
+
+    if (stmts.length > 0) {
+      await c.env.DB.batch(stmts)
+    }
+
+    return c.json({ success: true, saved: stmts.length })
+  }
+)
+
+// ─── Bulk Directory Import ──────────────────────────────────────────
+
+const bulkDirectoryUserSchema = z.object({
+  users: z
+    .array(
+      z.object({
+        name: z.string().min(1),
+        email: z.string().email(),
+        department: z.string().optional(),
+        title: z.string().optional(),
+        employmentStatus: z.string().optional(),
+        customFields: z.record(z.string(), z.string()).optional(),
+      })
+    )
+    .min(1)
+    .max(500),
+})
+
+/**
+ * POST /directory/bulk
+ * Bulk import directory users from CSV. Requires member+.
+ */
+complianceRoutes.post(
+  '/directory/bulk',
+  requireRole('member'),
+  zValidator('json', bulkDirectoryUserSchema),
+  async (c) => {
+    const workspaceId = c.get('workspaceId')
+    const userId = c.get('userId')
+    const body = c.req.valid('json')
+    const now = new Date().toISOString()
+
+    // Get existing emails for dedup
+    const { results: existingUsers } = await c.env.DB.prepare(
+      'SELECT email FROM directory_users WHERE workspace_id = ?'
+    )
+      .bind(workspaceId)
+      .all<{ email: string }>()
+    const existingEmails = new Set(existingUsers.map((u) => u.email.toLowerCase()))
+
+    // Get custom field definitions for person entity type
+    const { results: fieldDefs } = await c.env.DB.prepare(
+      "SELECT id, field_name FROM custom_field_definitions WHERE workspace_id = ? AND entity_type = 'person'"
+    )
+      .bind(workspaceId)
+      .all<{ id: string; field_name: string }>()
+    const fieldNameToId = new Map(fieldDefs.map((f) => [f.field_name, f.id]))
+
+    let created = 0
+    let skipped = 0
+    const errors: { row: number; email: string; reason: string }[] = []
+    const insertStmts: D1PreparedStatement[] = []
+    const cfvStmts: D1PreparedStatement[] = []
+
+    // Dedup within the batch
+    const seenEmails = new Set<string>()
+
+    for (let i = 0; i < body.users.length; i++) {
+      const user = body.users[i]
+      const emailLower = user.email.toLowerCase()
+
+      if (existingEmails.has(emailLower)) {
+        skipped++
+        continue
+      }
+
+      if (seenEmails.has(emailLower)) {
+        errors.push({ row: i + 1, email: user.email, reason: 'Duplicate email in batch' })
+        continue
+      }
+
+      seenEmails.add(emailLower)
+      const newId = generateId()
+
+      insertStmts.push(
+        c.env.DB.prepare(
+          `INSERT INTO directory_users (id, workspace_id, email, name, department, title,
+                                        employment_status, source, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, 'csv-import', ?, ?)`
+        ).bind(
+          newId,
+          workspaceId,
+          user.email,
+          user.name,
+          user.department ?? null,
+          user.title ?? null,
+          user.employmentStatus ?? 'active',
+          now,
+          now
+        )
+      )
+
+      // Custom field values
+      if (user.customFields) {
+        for (const [fieldName, value] of Object.entries(user.customFields)) {
+          const fieldId = fieldNameToId.get(fieldName)
+          if (fieldId && value) {
+            cfvStmts.push(
+              c.env.DB.prepare(
+                `INSERT INTO custom_field_values (id, workspace_id, entity_type, entity_id, field_id, value, created_at, updated_at)
+                 VALUES (?, ?, 'person', ?, ?, ?, ?, ?)`
+              ).bind(generateId(), workspaceId, newId, fieldId, value, now, now)
+            )
+          }
+        }
+      }
+
+      created++
+    }
+
+    // Execute in batches of 80 (D1 limit safety)
+    const allStmts = [...insertStmts, ...cfvStmts]
+    for (let i = 0; i < allStmts.length; i += 80) {
+      const chunk = allStmts.slice(i, i + 80)
+      await c.env.DB.batch(chunk)
+    }
+
+    if (created > 0) {
+      await emitEvent(c.env.DB, {
+        workspaceId,
+        eventType: 'directory_user.bulk_created',
+        entityType: 'directory_user',
+        entityId: workspaceId,
+        data: { created, skipped, errors: errors.length },
+        actorId: userId,
+      })
+    }
+
+    return c.json({ created, skipped, errors }, 201)
+  }
+)
+
+// ─── Access Record Update ───────────────────────────────────────────
+
+const updateAccessRecordSchema = z.object({
+  role: z.string().optional(),
+  accessType: z.string().optional(),
+  approvedBy: z.string().nullable().optional(),
+  approvalMethod: z.string().optional(),
+  ticketRef: z.string().optional(),
+  status: z.enum(['requested', 'approved', 'active', 'pending_review', 'suspended', 'expired', 'revoked']).optional(),
+  licenseType: z.string().nullable().optional(),
+  costPerPeriod: z.number().nullable().optional(),
+  costCurrency: z.string().optional(),
+  costFrequency: z.enum(['monthly', 'annual', 'one-time']).nullable().optional(),
+  customFields: z.record(z.string(), z.string().nullable()).optional(),
+})
+
+/**
+ * PUT /access/:recordId
+ * Update an access record. Requires member+.
+ */
+complianceRoutes.put(
+  '/access/:recordId',
+  requireRole('member'),
+  zValidator('json', updateAccessRecordSchema),
+  async (c) => {
+    const workspaceId = c.get('workspaceId')
+    const userId = c.get('userId')
+    const recordId = c.req.param('recordId')
+    const body = c.req.valid('json')
+    const now = new Date().toISOString()
+
+    const existing = await c.env.DB.prepare(
+      'SELECT id, system_id, role FROM access_records WHERE id = ? AND workspace_id = ?'
+    )
+      .bind(recordId, workspaceId)
+      .first<{ id: string; system_id: string; role: string }>()
+
+    if (!existing) {
+      return c.json({ error: 'Access record not found' }, 404)
+    }
+
+    const sets: string[] = ['updated_at = ?', 'updated_by = ?']
+    const bindings: unknown[] = [now, userId]
+
+    if (body.role !== undefined) {
+      sets.push('role = ?')
+      bindings.push(body.role)
+    }
+    if (body.accessType !== undefined) {
+      sets.push('access_type = ?')
+      bindings.push(body.accessType)
+    }
+    if (body.approvedBy !== undefined) {
+      sets.push('approved_by = ?')
+      bindings.push(body.approvedBy)
+    }
+    if (body.approvalMethod !== undefined) {
+      sets.push('approval_method = ?')
+      bindings.push(body.approvalMethod)
+    }
+    if (body.ticketRef !== undefined) {
+      sets.push('ticket_ref = ?')
+      bindings.push(body.ticketRef)
+    }
+    if (body.licenseType !== undefined) {
+      sets.push('license_type = ?')
+      bindings.push(body.licenseType)
+    }
+    if (body.costPerPeriod !== undefined) {
+      sets.push('cost_per_period = ?')
+      bindings.push(body.costPerPeriod)
+    }
+    if (body.costCurrency !== undefined) {
+      sets.push('cost_currency = ?')
+      bindings.push(body.costCurrency)
+    }
+    if (body.costFrequency !== undefined) {
+      sets.push('cost_frequency = ?')
+      bindings.push(body.costFrequency)
+    }
+    if (body.status !== undefined) {
+      sets.push('status = ?')
+      bindings.push(body.status)
+    }
+
+    // Recompute risk score if role changed
+    if (body.role && body.role !== existing.role) {
+      const system = await c.env.DB.prepare(
+        'SELECT classification, data_sensitivity, mfa_required FROM systems WHERE id = ?'
+      )
+        .bind(existing.system_id)
+        .first<{ classification: string; data_sensitivity: string; mfa_required: number }>()
+
+      if (system) {
+        const riskScore = computeRiskScore(system, body.role, body.approvedBy ?? null)
+        sets.push('risk_score = ?')
+        bindings.push(riskScore)
+      }
+    }
+
+    bindings.push(recordId, workspaceId)
+
+    await c.env.DB.prepare(
+      `UPDATE access_records SET ${sets.join(', ')} WHERE id = ? AND workspace_id = ?`
+    )
+      .bind(...bindings)
+      .run()
+
+    // Save custom field values if provided
+    if (body.customFields && Object.keys(body.customFields).length > 0) {
+      const cfEntries = Object.entries(body.customFields)
+      const cfStmts = cfEntries.map(([fieldId, value]) =>
+        c.env.DB.prepare(
+          `INSERT INTO custom_field_values (id, workspace_id, entity_type, entity_id, field_id, value, created_at, updated_at)
+           VALUES (?, ?, 'access_record', ?, ?, ?, ?, ?)
+           ON CONFLICT(workspace_id, entity_id, field_id)
+           DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`
+        ).bind(generateId(), workspaceId, recordId, fieldId, value, now, now)
+      )
+      if (cfStmts.length > 0) {
+        await c.env.DB.batch(cfStmts)
+      }
+    }
+
+    await emitEvent(c.env.DB, {
+      workspaceId,
+      eventType: 'access.updated',
+      entityType: 'access_record',
+      entityId: recordId,
+      data: body,
+      actorId: userId,
+    })
+
+    return c.json({ success: true })
+  }
+)
+
+// ─── Access Record Status Transition ────────────────────────────────
+
+const VALID_TRANSITIONS: Record<string, Record<string, string>> = {
+  approve: { from: 'requested', to: 'approved' },
+  activate: { from: 'approved,pending_review,suspended', to: 'active' },
+  suspend: { from: 'active', to: 'suspended' },
+  request_review: { from: 'active', to: 'pending_review' },
+  expire: { from: 'active,suspended', to: 'expired' },
+}
+
+const transitionAccessSchema = z.object({
+  action: z.enum(['approve', 'activate', 'suspend', 'request_review', 'expire', 'revoke']),
+  reason: z.string().optional(),
+})
+
+/**
+ * POST /access/:recordId/transition
+ * Transition access record status. Requires member+.
+ */
+complianceRoutes.post(
+  '/access/:recordId/transition',
+  requireRole('member'),
+  zValidator('json', transitionAccessSchema),
+  async (c) => {
+    const workspaceId = c.get('workspaceId')
+    const userId = c.get('userId')
+    const recordId = c.req.param('recordId')
+    const body = c.req.valid('json')
+    const now = new Date().toISOString()
+
+    const record = await c.env.DB.prepare(
+      'SELECT id, status FROM access_records WHERE id = ? AND workspace_id = ?'
+    )
+      .bind(recordId, workspaceId)
+      .first<{ id: string; status: string }>()
+
+    if (!record) {
+      return c.json({ error: 'Access record not found' }, 404)
+    }
+
+    // Handle revoke specially — allowed from any non-revoked status
+    if (body.action === 'revoke') {
+      if (record.status === 'revoked') {
+        return c.json({ error: 'Access already revoked' }, 400)
+      }
+
+      await c.env.DB.prepare(
+        `UPDATE access_records SET status = 'revoked', revoked_at = ?, revoked_by = ?,
+                revocation_reason = ?, updated_at = ?, updated_by = ? WHERE id = ?`
+      )
+        .bind(now, userId, body.reason ?? null, now, userId, recordId)
+        .run()
+
+      await emitEvent(c.env.DB, {
+        workspaceId,
+        eventType: 'access.status_changed',
+        entityType: 'access_record',
+        entityId: recordId,
+        data: { from: record.status, to: 'revoked', reason: body.reason ?? null },
+        actorId: userId,
+      })
+
+      return c.json({ success: true, from: record.status, to: 'revoked' })
+    }
+
+    // Validate transition
+    const transition = VALID_TRANSITIONS[body.action]
+    if (!transition) {
+      return c.json({ error: `Unknown action: ${body.action}` }, 400)
+    }
+
+    const allowedFromStates = transition.from.split(',')
+    if (!allowedFromStates.includes(record.status)) {
+      return c.json(
+        {
+          error: `Cannot ${body.action} from status "${record.status}". Allowed from: ${transition.from}`,
+        },
+        400
+      )
+    }
+
+    const newStatus = transition.to
+
+    // For review-related transitions, also update reviewed_at/reviewed_by
+    const extraSets =
+      body.action === 'request_review' || body.action === 'approve'
+        ? ', reviewed_at = ?, reviewed_by = ?'
+        : ''
+    const extraBindings =
+      body.action === 'request_review' || body.action === 'approve' ? [now, userId] : []
+
+    await c.env.DB.prepare(
+      `UPDATE access_records SET status = ?, updated_at = ?, updated_by = ?${extraSets} WHERE id = ?`
+    )
+      .bind(newStatus, now, userId, ...extraBindings, recordId)
+      .run()
+
+    await emitEvent(c.env.DB, {
+      workspaceId,
+      eventType: 'access.status_changed',
+      entityType: 'access_record',
+      entityId: recordId,
+      data: { from: record.status, to: newStatus, action: body.action, reason: body.reason ?? null },
+      actorId: userId,
+    })
+
+    return c.json({ success: true, from: record.status, to: newStatus })
+  }
+)
 
 export { complianceRoutes }

@@ -21,6 +21,8 @@ export async function executeTool(
       return listAccessRecords(db, workspaceId, toolInput)
     case 'register_access':
       return registerAccess(db, workspaceId, userId, toolInput)
+    case 'show_access_form':
+      return showAccessForm(toolInput)
     case 'check_evidence_gaps':
       return checkEvidenceGaps(db, workspaceId, toolInput)
     case 'list_violations':
@@ -339,6 +341,24 @@ async function registerAccess(
       ticketRef,
       riskScore,
       grantedAt: now,
+    },
+  })
+}
+
+// ─── show_access_form ────────────────────────────────────────────────
+
+function showAccessForm(input: Record<string, unknown>): string {
+  const prefill = (input.prefill as Record<string, unknown>) ?? {}
+  return JSON.stringify({
+    type: 'form',
+    formType: 'access_register',
+    prefill: {
+      userName: prefill.userName ?? '',
+      userEmail: prefill.userEmail ?? '',
+      systemName: prefill.systemName ?? '',
+      role: prefill.role ?? '',
+      approvedBy: prefill.approvedBy ?? '',
+      ticketRef: prefill.ticketRef ?? '',
     },
   })
 }

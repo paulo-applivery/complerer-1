@@ -218,48 +218,215 @@ async function loadConversationHistory(
   return messages
 }
 
-interface ClaudeConfig {
+interface AIConfig {
   model: string
   maxTokens: number
   temperature: number
+  apiKey: string
+  providerSlug: string
 }
 
-async function getAIConfig(db: D1Database, workspaceId: string): Promise<ClaudeConfig> {
+/** Map model IDs to their provider slug */
+function getProviderForModel(model: string): string {
+  if (model.startsWith('claude-')) return 'anthropic'
+  if (model.startsWith('gemini-')) return 'google-gemini'
+  if (model.startsWith('gpt-')) return 'openai'
+  return 'anthropic' // default
+}
+
+/** Common key names admins might use when storing an API key */
+const API_KEY_NAMES = ['api_key', 'apiKey', 'X-Api-Key', 'x-api-key', 'key', 'API_KEY']
+
+/** Get the admin-configured API key for a provider (checking common key names) */
+async function getAdminApiKey(db: D1Database, providerSlug: string): Promise<string | null> {
+  const placeholders = API_KEY_NAMES.map(() => '?').join(', ')
+  const row = await db
+    .prepare(
+      `SELECT pc.value
+       FROM platform_provider_configs pc
+       JOIN platform_providers p ON pc.provider_id = p.id
+       WHERE p.slug = ? AND p.category = 'ai'
+         AND pc.key IN (${placeholders})
+         AND pc.value != ''
+       LIMIT 1`
+    )
+    .bind(providerSlug, ...API_KEY_NAMES)
+    .first<{ value: string }>()
+  return row?.value ?? null
+}
+
+/** Resolve the API key: check workspace setting for key source, then resolve accordingly */
+async function resolveApiKey(
+  db: D1Database,
+  workspaceId: string,
+  providerSlug: string,
+  env: { ANTHROPIC_API_KEY?: string; GEMINI_API_KEY?: string }
+): Promise<string | null> {
+  // Check workspace-level setting: should we use the platform key or require user key?
+  const keySource = await getWorkspaceSetting(
+    db, workspaceId, `ai.key_source.${providerSlug}`, 'platform'
+  )
+
+  if (keySource === 'platform') {
+    // 1. Check admin-configured key from platform_provider_configs
+    const adminKey = await getAdminApiKey(db, providerSlug)
+    if (adminKey) return adminKey
+
+    // 2. Fallback to environment variable (legacy support)
+    if (providerSlug === 'anthropic' && env.ANTHROPIC_API_KEY) return env.ANTHROPIC_API_KEY
+    if (providerSlug === 'google-gemini' && env.GEMINI_API_KEY) return env.GEMINI_API_KEY
+  }
+
+  // 3. Check user-configured key from workspace_settings
+  const userKey = await getWorkspaceSetting(
+    db, workspaceId, `ai.provider_key.${providerSlug}`, ''
+  )
+  if (userKey) return userKey
+
+  return null
+}
+
+async function getAIConfig(
+  db: D1Database,
+  workspaceId: string,
+  env: { ANTHROPIC_API_KEY?: string; GEMINI_API_KEY?: string }
+): Promise<AIConfig> {
   const model = await getWorkspaceSetting(db, workspaceId, SETTING_KEYS.AI_MODEL, DEFAULTS[SETTING_KEYS.AI_MODEL])
   const maxTokens = parseInt(await getWorkspaceSetting(db, workspaceId, SETTING_KEYS.AI_MAX_TOKENS, DEFAULTS[SETTING_KEYS.AI_MAX_TOKENS]), 10)
   const temperature = parseFloat(await getWorkspaceSetting(db, workspaceId, SETTING_KEYS.AI_TEMPERATURE, DEFAULTS[SETTING_KEYS.AI_TEMPERATURE]))
-  return { model, maxTokens, temperature }
-}
 
-async function callClaude(
-  apiKey: string,
-  systemPrompt: string,
-  messages: ClaudeMessage[],
-  config: ClaudeConfig
-): Promise<ClaudeResponse> {
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-    },
-    body: JSON.stringify({
-      model: config.model,
-      max_tokens: config.maxTokens,
-      temperature: config.temperature,
-      system: systemPrompt,
-      tools: complianceTools,
-      messages,
-    }),
-  })
+  const providerSlug = getProviderForModel(model)
+  const apiKey = await resolveApiKey(db, workspaceId, providerSlug, env)
 
-  if (!response.ok) {
-    const errorText = await response.text()
-    throw new Error(`Claude API error (${response.status}): ${errorText}`)
+  if (!apiKey) {
+    throw new Error(
+      `No API key configured for provider "${providerSlug}". ` +
+      `Ask a super admin to set the key in Admin > Providers, or add your own key in Settings > AI Configuration.`
+    )
   }
 
-  return response.json() as Promise<ClaudeResponse>
+  return { model, maxTokens, temperature, apiKey, providerSlug }
+}
+
+async function callAI(
+  systemPrompt: string,
+  messages: ClaudeMessage[],
+  config: AIConfig
+): Promise<ClaudeResponse> {
+  // Route to the correct provider API
+  if (config.providerSlug === 'anthropic') {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': config.apiKey,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model: config.model,
+        max_tokens: config.maxTokens,
+        temperature: config.temperature,
+        system: systemPrompt,
+        tools: complianceTools,
+        messages,
+      }),
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      throw new Error(`Anthropic API error (${response.status}): ${errorText}`)
+    }
+
+    return response.json() as Promise<ClaudeResponse>
+  }
+
+  if (config.providerSlug === 'google-gemini') {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${config.model}:generateContent?key=${config.apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          system_instruction: { parts: [{ text: systemPrompt }] },
+          contents: messages.map((m) => ({
+            role: m.role === 'assistant' ? 'model' : 'user',
+            parts: [{ text: typeof m.content === 'string' ? m.content : m.content.map((b) => b.text ?? '').join('\n') }],
+          })),
+          generationConfig: {
+            maxOutputTokens: config.maxTokens,
+            temperature: config.temperature,
+          },
+        }),
+      }
+    )
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      throw new Error(`Gemini API error (${response.status}): ${errorText}`)
+    }
+
+    const geminiResp = await response.json() as {
+      candidates: Array<{ content: { parts: Array<{ text: string }> } }>
+      usageMetadata?: { promptTokenCount?: number; candidatesTokenCount?: number }
+    }
+
+    // Normalize Gemini response to our ClaudeResponse shape
+    const text = geminiResp.candidates?.[0]?.content?.parts?.map((p) => p.text).join('') ?? ''
+    return {
+      id: 'gemini-' + Date.now(),
+      content: [{ type: 'text', text }],
+      stop_reason: 'end_turn',
+      usage: {
+        input_tokens: geminiResp.usageMetadata?.promptTokenCount ?? 0,
+        output_tokens: geminiResp.usageMetadata?.candidatesTokenCount ?? 0,
+      },
+    }
+  }
+
+  if (config.providerSlug === 'openai') {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${config.apiKey}`,
+      },
+      body: JSON.stringify({
+        model: config.model,
+        max_tokens: config.maxTokens,
+        temperature: config.temperature,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          ...messages.map((m) => ({
+            role: m.role,
+            content: typeof m.content === 'string' ? m.content : m.content.map((b) => b.text ?? '').join('\n'),
+          })),
+        ],
+      }),
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      throw new Error(`OpenAI API error (${response.status}): ${errorText}`)
+    }
+
+    const openaiResp = await response.json() as {
+      id: string
+      choices: Array<{ message: { content: string } }>
+      usage?: { prompt_tokens?: number; completion_tokens?: number }
+    }
+
+    return {
+      id: openaiResp.id,
+      content: [{ type: 'text', text: openaiResp.choices?.[0]?.message?.content ?? '' }],
+      stop_reason: 'end_turn',
+      usage: {
+        input_tokens: openaiResp.usage?.prompt_tokens ?? 0,
+        output_tokens: openaiResp.usage?.completion_tokens ?? 0,
+      },
+    }
+  }
+
+  throw new Error(`Unsupported AI provider: ${config.providerSlug}`)
 }
 
 // ─── POST /chat ───────────────────────────────────────────────────────
@@ -273,17 +440,6 @@ chatRoutes.post('/', zValidator('json', chatSchema), async (c) => {
   const workspaceId = c.get('workspaceId')
   const userId = c.get('userId')
   const { conversationId: inputConvId, message } = c.req.valid('json')
-
-  // Check API key
-  if (!c.env.ANTHROPIC_API_KEY) {
-    return c.json(
-      {
-        error:
-          'AI chat is not configured. Please set the ANTHROPIC_API_KEY secret.',
-      },
-      503
-    )
-  }
 
   const now = new Date().toISOString()
   const db = c.env.DB
@@ -334,7 +490,14 @@ chatRoutes.post('/', zValidator('json', chatSchema), async (c) => {
 
   // Build system prompt + load AI config from workspace settings
   const systemPrompt = await buildSystemPrompt(db, workspaceId)
-  const aiConfig = await getAIConfig(db, workspaceId)
+
+  let aiConfig: AIConfig
+  try {
+    aiConfig = await getAIConfig(db, workspaceId, c.env)
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : 'AI not configured'
+    return c.json({ error: msg }, 503)
+  }
 
   // Prepare messages for Claude (history already includes the user message we just saved)
   const claudeMessages: ClaudeMessage[] = [...history]
@@ -350,8 +513,7 @@ chatRoutes.post('/', zValidator('json', chatSchema), async (c) => {
   try {
     while (iterations < maxIterations) {
       iterations++
-      const claudeResponse = await callClaude(
-        c.env.ANTHROPIC_API_KEY,
+      const claudeResponse = await callAI(
         systemPrompt,
         claudeMessages,
         aiConfig
@@ -426,7 +588,7 @@ chatRoutes.post('/', zValidator('json', chatSchema), async (c) => {
   } catch (err) {
     const errorMessage =
       err instanceof Error ? err.message : 'Unknown error calling AI'
-    return c.json({ error: errorMessage }, 502)
+    return c.json({ error: errorMessage }, 422)
   }
 
   // Save assistant message with tool metadata
@@ -456,6 +618,7 @@ chatRoutes.post('/', zValidator('json', chatSchema), async (c) => {
       role: 'assistant',
       content: finalText,
       toolCalls: allToolCalls.length > 0 ? allToolCalls : undefined,
+      toolResults: allToolResults.length > 0 ? allToolResults : undefined,
       tokensUsed: totalTokens,
       createdAt: msgNow,
     },

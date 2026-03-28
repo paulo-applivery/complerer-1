@@ -114,8 +114,40 @@ export function useUpdateBaseline(workspaceId: string | undefined) {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id, ...payload }: { id: string; enabled?: boolean; name?: string }) =>
+    mutationFn: ({ id, ...payload }: { id: string; enabled?: boolean; name?: string; description?: string; category?: string; severity?: string; ruleType?: string; ruleConfig?: any }) =>
       api.patch(`/workspaces/${workspaceId}/baselines/${id}`, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['baselines', workspaceId] })
+    },
+  })
+}
+
+export function useDeleteBaseline(workspaceId: string | undefined) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (id: string) =>
+      api.delete(`/workspaces/${workspaceId}/baselines/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['baselines', workspaceId] })
+    },
+  })
+}
+
+export function useBaselineLibrary(workspaceId: string | undefined) {
+  const { data, isLoading } = useQuery<{ items: any[] }>({
+    queryKey: ['baseline-library', workspaceId],
+    queryFn: () => api.get(`/workspaces/${workspaceId}/baselines/library`),
+    enabled: !!workspaceId,
+  })
+  return { library: data?.items ?? [], isLoading }
+}
+
+export function useAddFromBaselineLibrary(workspaceId: string | undefined) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (payload: { libraryIds: string[] }) =>
+      api.post(`/workspaces/${workspaceId}/baselines/from-library`, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['baselines', workspaceId] })
     },
@@ -244,9 +276,22 @@ export function useLinkPolicyControl(workspaceId: string | undefined) {
 
   return useMutation({
     mutationFn: (payload: { policyId: string; controlId: string }) =>
-      api.post(`/workspaces/${workspaceId}/policies/${payload.policyId}/link`, {
+      api.post(`/workspaces/${workspaceId}/policies/${payload.policyId}/controls`, {
         controlId: payload.controlId,
       }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['policies', workspaceId] })
+      queryClient.invalidateQueries({ queryKey: ['policy-controls', workspaceId] })
+    },
+  })
+}
+
+export function useUnlinkPolicyControl(workspaceId: string | undefined) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (payload: { policyId: string; linkId: string }) =>
+      api.delete(`/workspaces/${workspaceId}/policies/${payload.policyId}/controls/${payload.linkId}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['policies', workspaceId] })
       queryClient.invalidateQueries({ queryKey: ['policy-controls', workspaceId] })

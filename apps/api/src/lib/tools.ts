@@ -50,7 +50,7 @@ export const complianceTools = [
   {
     name: 'register_access',
     description:
-      'Register a new access grant. Use when user says they gave someone access to a system.',
+      'Register a new access grant directly (non-interactive). Only use this if the user has explicitly provided ALL required fields (userName, userEmail, systemName, role). If any field is missing or the user asks to "register" or "add" access without providing all details, use show_access_form instead.',
     input_schema: {
       type: 'object' as const,
       properties: {
@@ -75,6 +75,28 @@ export const complianceTools = [
         },
       },
       required: ['userName', 'userEmail', 'systemName', 'role'],
+    },
+  },
+  {
+    name: 'show_access_form',
+    description:
+      'Show an interactive access registration form to the user. Use this when the user wants to register, add, or grant access but has NOT provided all required details. Pre-fill any fields the user mentioned. This is the PREFERRED way to register access — always use this instead of register_access unless the user explicitly provided all 4 required fields.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        prefill: {
+          type: 'object',
+          description: 'Pre-fill form fields extracted from the conversation',
+          properties: {
+            userName: { type: 'string', description: 'Name of the person' },
+            userEmail: { type: 'string', description: 'Email of the person' },
+            systemName: { type: 'string', description: 'System name' },
+            role: { type: 'string', enum: ['admin', 'write', 'read'], description: 'Access role' },
+            approvedBy: { type: 'string', description: 'Approver name' },
+            ticketRef: { type: 'string', description: 'Ticket reference' },
+          },
+        },
+      },
     },
   },
   {
