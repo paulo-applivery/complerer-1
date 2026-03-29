@@ -17,26 +17,33 @@ export function VariablePlaceholderView({ node, selected }: NodeViewProps) {
 
   if (displayMode === 'resolved') {
     return (
-      <NodeViewWrapper as="span" className="inline">
-        <span className="text-zinc-100">{variableKey}</span>
+      <NodeViewWrapper as="span" style={{ display: 'inline' }}>
+        <span style={{ color: '#111' }}>{variableKey}</span>
       </NodeViewWrapper>
     )
   }
 
   return (
-    <NodeViewWrapper as="span" className="inline">
+    <NodeViewWrapper as="span" style={{ display: 'inline' }}>
       <span
-        className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-xs font-medium transition-colors ${
-          selected
-            ? 'bg-primary-400/20 text-primary-300 ring-1 ring-primary-400/40'
-            : 'bg-primary-400/10 text-primary-400'
-        }`}
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '3px',
+          borderRadius: '4px',
+          padding: '1px 6px',
+          fontSize: '11px',
+          fontWeight: 500,
+          backgroundColor: selected ? '#dbeafe' : '#eff6ff',
+          color: '#1d4ed8',
+          border: selected ? '1px solid #93c5fd' : '1px solid #bfdbfe',
+        }}
       >
-        <span className="text-[10px] opacity-60">{'{'}</span>
+        <span style={{ fontSize: '9px', opacity: 0.6 }}>{'{'}</span>
         {label}
-        <span className="text-[10px] opacity-60">{'}'}</span>
+        <span style={{ fontSize: '9px', opacity: 0.6 }}>{'}'}</span>
         {variableType !== 'text' && (
-          <span className="rounded bg-zinc-700/50 px-1 py-px text-[9px] text-zinc-400">
+          <span style={{ borderRadius: '3px', backgroundColor: '#e5e7eb', padding: '0 4px', fontSize: '9px', color: '#6b7280' }}>
             {variableType}
           </span>
         )}

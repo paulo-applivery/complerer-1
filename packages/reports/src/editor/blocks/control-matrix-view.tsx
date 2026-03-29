@@ -1,40 +1,32 @@
 import { NodeViewWrapper } from '@tiptap/react'
 import type { NodeViewProps } from '@tiptap/react'
 
-const RESULT_STYLES: Record<string, { bg: string; text: string }> = {
-  pass: { bg: 'bg-emerald-400/10', text: 'text-emerald-400' },
-  fail: { bg: 'bg-red-400/10', text: 'text-red-400' },
-  partial: { bg: 'bg-amber-400/10', text: 'text-amber-400' },
-  not_tested: { bg: 'bg-zinc-700', text: 'text-zinc-400' },
-}
-
 const COL_LABELS: Record<string, string> = {
-  criteria: 'Criteria', control: 'Control Description', test_procedure: 'Test Procedure',
-  result: 'Result', exceptions: 'Exceptions',
+  criteria: 'Criteria', control: 'Control Description', test_procedure: 'Test Procedure', result: 'Result', exceptions: 'Exceptions',
 }
 
 export function ControlMatrixView({ node, selected }: NodeViewProps) {
   const cols = (node.attrs.columns || []) as string[]
+  const border = selected ? '2px solid #3b82f6' : '1px solid #d1d5db'
+
   return (
     <NodeViewWrapper>
-      <div className={`my-3 rounded-xl border bg-zinc-900 transition-colors ${selected ? 'border-primary-400/40 ring-1 ring-primary-400/20' : 'border-zinc-800'}`}>
-        <div className="flex items-center justify-between border-b border-zinc-800 px-4 py-2.5">
-          <span className="text-sm">Control Testing Matrix</span>
-          {node.attrs.sectionScope && <span className="rounded-full bg-zinc-800 px-2 py-0.5 text-[10px] text-zinc-400">{node.attrs.sectionScope}</span>}
+      <div style={{ margin: '12px 0', borderRadius: '8px', border, backgroundColor: '#fafafa', overflow: 'hidden' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e5e7eb', padding: '8px 16px', backgroundColor: '#f3f4f6' }}>
+          <span style={{ fontSize: '12px', fontWeight: 600, color: '#111' }}>Control Testing Matrix</span>
+          {node.attrs.sectionScope && <span style={{ borderRadius: '10px', backgroundColor: '#e5e7eb', padding: '1px 8px', fontSize: '10px', color: '#6b7280' }}>{node.attrs.sectionScope}</span>}
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-xs">
-            <thead><tr className="border-b border-zinc-800">{cols.map(c => <th key={c} className="px-4 py-2 text-left font-medium text-zinc-400">{COL_LABELS[c] || c}</th>)}</tr></thead>
-            <tbody>
-              {[1, 2, 3].map(i => (
-                <tr key={i} className="border-b border-zinc-800/50">
-                  {cols.map(c => <td key={c} className="px-4 py-2"><div className="h-3 w-20 animate-pulse rounded bg-zinc-800" /></td>)}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <div className="px-4 py-2 text-center text-[10px] text-zinc-600">Data loads from compliance project controls</div>
+        <table style={{ width: '100%', fontSize: '11px', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr>{cols.map(c => <th key={c} style={{ padding: '6px 12px', textAlign: 'left', fontWeight: 600, color: '#374151', borderBottom: '1px solid #e5e7eb', backgroundColor: '#f9fafb' }}>{COL_LABELS[c] || c}</th>)}</tr>
+          </thead>
+          <tbody>
+            {[1, 2, 3].map(i => (
+              <tr key={i}>{cols.map(c => <td key={c} style={{ padding: '6px 12px', borderBottom: '1px solid #f3f4f6' }}><div style={{ height: '12px', width: '80px', borderRadius: '4px', backgroundColor: '#e5e7eb' }} /></td>)}</tr>
+            ))}
+          </tbody>
+        </table>
+        <div style={{ padding: '8px', textAlign: 'center', fontSize: '10px', color: '#9ca3af' }}>Data loads from compliance project controls</div>
       </div>
     </NodeViewWrapper>
   )

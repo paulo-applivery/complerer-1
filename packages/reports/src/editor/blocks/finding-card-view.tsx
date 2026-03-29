@@ -1,70 +1,47 @@
 import { NodeViewWrapper } from '@tiptap/react'
 import type { NodeViewProps } from '@tiptap/react'
 
-const SEVERITY_STYLES: Record<string, { bg: string; text: string; label: string }> = {
-  critical: { bg: 'bg-red-400/10', text: 'text-red-400', label: 'Critical' },
-  high: { bg: 'bg-orange-400/10', text: 'text-orange-400', label: 'High' },
-  medium: { bg: 'bg-amber-400/10', text: 'text-amber-400', label: 'Medium' },
-  low: { bg: 'bg-blue-400/10', text: 'text-blue-400', label: 'Low' },
-  informational: { bg: 'bg-zinc-700', text: 'text-zinc-400', label: 'Info' },
+const SEVERITY_STYLES: Record<string, { bg: string; color: string; label: string }> = {
+  critical: { bg: '#fef2f2', color: '#dc2626', label: 'Critical' },
+  high: { bg: '#fff7ed', color: '#ea580c', label: 'High' },
+  medium: { bg: '#fffbeb', color: '#d97706', label: 'Medium' },
+  low: { bg: '#eff6ff', color: '#2563eb', label: 'Low' },
+  informational: { bg: '#f3f4f6', color: '#6b7280', label: 'Info' },
 }
 
-interface FieldRowProps {
-  label: string
-  value: string
-}
-
-function FieldRow({ label, value }: FieldRowProps) {
+function FieldRow({ label, value }: { label: string; value: string }) {
   if (!value) return null
   return (
-    <div className="border-t border-zinc-800/50 px-4 py-2.5">
-      <p className="mb-0.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
-        {label}
-      </p>
-      <p className="text-xs text-zinc-300">{value}</p>
+    <div style={{ borderTop: '1px solid #e5e7eb', padding: '8px 16px' }}>
+      <p style={{ marginBottom: '2px', fontSize: '9px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#6b7280' }}>{label}</p>
+      <p style={{ fontSize: '11px', color: '#111', margin: 0 }}>{value}</p>
     </div>
   )
 }
 
 export function FindingCardView({ node, selected }: NodeViewProps) {
-  const { severity, title, condition, criteria, cause, effect, recommendation, mode, findingId } =
-    node.attrs
-
+  const { severity, title, condition, criteria, cause, effect, recommendation, mode, findingId } = node.attrs
   const sev = SEVERITY_STYLES[severity] || SEVERITY_STYLES.medium
+  const border = selected ? '2px solid #3b82f6' : '1px solid #d1d5db'
 
   return (
     <NodeViewWrapper>
-      <div
-        className={`my-3 rounded-xl border bg-zinc-900 transition-colors ${
-          selected ? 'border-primary-400/40 ring-1 ring-primary-400/20' : 'border-zinc-800'
-        }`}
-      >
-        {/* Header */}
-        <div className="flex items-center gap-2.5 px-4 py-3">
-          <span className={`rounded-md px-2 py-0.5 text-[10px] font-bold uppercase ${sev.bg} ${sev.text}`}>
-            {sev.label}
-          </span>
-          <span className="text-sm font-medium text-zinc-100">{title || 'Untitled Finding'}</span>
+      <div style={{ margin: '12px 0', borderRadius: '8px', border, backgroundColor: '#fafafa', overflow: 'hidden' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 16px', backgroundColor: '#f9fafb' }}>
+          <span style={{ borderRadius: '4px', padding: '2px 8px', fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', backgroundColor: sev.bg, color: sev.color }}>{sev.label}</span>
+          <span style={{ fontSize: '13px', fontWeight: 600, color: '#111' }}>{title || 'Untitled Finding'}</span>
           {mode === 'linked' && findingId && (
-            <span className="ml-auto rounded bg-zinc-800 px-1.5 py-0.5 text-[10px] text-zinc-500">
-              Linked: {findingId.slice(0, 8)}
-            </span>
+            <span style={{ marginLeft: 'auto', borderRadius: '4px', backgroundColor: '#e5e7eb', padding: '1px 6px', fontSize: '9px', color: '#6b7280' }}>Linked: {findingId.slice(0, 8)}</span>
           )}
         </div>
-
-        {/* Fields */}
         <FieldRow label="Condition" value={condition} />
         <FieldRow label="Criteria" value={criteria} />
         <FieldRow label="Cause" value={cause} />
         <FieldRow label="Effect" value={effect} />
         <FieldRow label="Recommendation" value={recommendation} />
-
-        {/* Empty inline state */}
         {mode === 'inline' && !condition && !criteria && !cause && !effect && !recommendation && (
-          <div className="border-t border-zinc-800/50 px-4 py-4 text-center">
-            <p className="text-[10px] text-zinc-600">
-              Select this block to edit finding details in the properties panel
-            </p>
+          <div style={{ borderTop: '1px solid #e5e7eb', padding: '16px', textAlign: 'center' }}>
+            <p style={{ fontSize: '10px', color: '#9ca3af', margin: 0 }}>Select this block to edit finding details in the properties panel</p>
           </div>
         )}
       </div>

@@ -5,26 +5,27 @@ export function EvidenceGalleryView({ node, selected }: NodeViewProps) {
   const ids = (node.attrs.evidenceIds || []) as string[]
   const layout = node.attrs.layout || 'grid'
   const isEmpty = ids.length === 0
+  const border = selected ? '2px solid #3b82f6' : '1px solid #d1d5db'
 
   return (
     <NodeViewWrapper>
-      <div className={`my-3 rounded-xl border bg-zinc-900 transition-colors ${selected ? 'border-primary-400/40 ring-1 ring-primary-400/20' : 'border-zinc-800'}`}>
-        <div className="flex items-center justify-between border-b border-zinc-800 px-4 py-2.5">
-          <span className="text-sm">Evidence Gallery</span>
-          <span className="rounded bg-zinc-800 px-1.5 py-0.5 text-[10px] text-zinc-400">{layout}</span>
+      <div style={{ margin: '12px 0', borderRadius: '8px', border, backgroundColor: '#fafafa', overflow: 'hidden' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e5e7eb', padding: '8px 16px', backgroundColor: '#f3f4f6' }}>
+          <span style={{ fontSize: '12px', fontWeight: 600, color: '#111' }}>Evidence Gallery</span>
+          <span style={{ borderRadius: '4px', backgroundColor: '#e5e7eb', padding: '1px 6px', fontSize: '10px', color: '#6b7280' }}>{layout}</span>
         </div>
         {isEmpty ? (
-          <div className="flex flex-col items-center justify-center py-10">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-zinc-800 text-lg text-zinc-600">{'\u25A3'}</div>
-            <p className="mt-3 text-xs text-zinc-500">No evidence selected</p>
-            <p className="mt-1 text-[10px] text-zinc-600">Configure evidence IDs in the properties panel</p>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 0' }}>
+            <div style={{ width: '40px', height: '40px', borderRadius: '8px', backgroundColor: '#e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', color: '#9ca3af' }}>{'\u25A3'}</div>
+            <p style={{ marginTop: '12px', fontSize: '11px', color: '#6b7280' }}>No evidence selected</p>
+            <p style={{ marginTop: '4px', fontSize: '10px', color: '#9ca3af' }}>Configure evidence IDs in the properties panel</p>
           </div>
         ) : (
-          <div className={`p-4 ${layout === 'grid' ? 'grid grid-cols-3 gap-3' : 'space-y-2'}`}>
+          <div style={{ padding: '12px', display: 'grid', gridTemplateColumns: layout === 'grid' ? 'repeat(3, 1fr)' : '1fr', gap: '12px' }}>
             {ids.map((id, i) => (
-              <div key={i} className="rounded-lg border border-zinc-800 bg-zinc-800/50 p-3">
-                <div className="aspect-video rounded bg-zinc-700 flex items-center justify-center text-zinc-500 text-xs">Preview</div>
-                {node.attrs.showMetadata && <p className="mt-2 truncate text-[10px] text-zinc-500">{id}</p>}
+              <div key={i} style={{ borderRadius: '6px', border: '1px solid #e5e7eb', backgroundColor: '#fff', padding: '8px' }}>
+                <div style={{ aspectRatio: '16/9', borderRadius: '4px', backgroundColor: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', color: '#9ca3af' }}>Preview</div>
+                {node.attrs.showMetadata && <p style={{ marginTop: '6px', fontSize: '10px', color: '#6b7280', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{id}</p>}
               </div>
             ))}
           </div>
