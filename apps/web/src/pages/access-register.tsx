@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import { useParams } from '@tanstack/react-router'
 import Papa from 'papaparse'
@@ -47,6 +47,151 @@ import {
 
 type Tab = 'access' | 'systems' | 'people'
 
+// ── Getting Started Tutorial ────────────────────────────────────────────────
+
+const TUTORIAL_STORAGE_KEY = 'access-register-tutorial-dismissed'
+
+const TUTORIAL_STEPS = [
+  {
+    step: 1,
+    title: 'Add People',
+    description: 'Start by adding the people in your organization. Import from a CSV, add them manually, or pick from the employee directory library.',
+    tab: 'people' as Tab,
+    icon: UserGroupIcon,
+  },
+  {
+    step: 2,
+    title: 'Add Systems & Tools',
+    description: 'Register the systems, applications, and tools your organization uses. Pick from the library of common tools or create your own.',
+    tab: 'systems' as Tab,
+    icon: DashboardBrowsingIcon,
+  },
+  {
+    step: 3,
+    title: 'Register Access',
+    description: 'Grant and track who has access to what. Create access records linking people to systems with specific roles and approval info.',
+    tab: 'access' as Tab,
+    icon: Key01Icon,
+  },
+]
+
+function GettingStartedTutorial({
+  onGoToTab,
+  workspaceId,
+}: {
+  onGoToTab: (tab: Tab) => void
+  workspaceId: string | undefined
+}) {
+  const [dismissed, setDismissed] = useState(() => {
+    const key = workspaceId ? `${TUTORIAL_STORAGE_KEY}-${workspaceId}` : TUTORIAL_STORAGE_KEY
+    return localStorage.getItem(key) === 'true'
+  })
+
+  const { systems } = useSystemsList(workspaceId)
+  const { users } = useDirectoryUsers(workspaceId)
+  const { records } = useAccessRecords(workspaceId)
+
+  const completedSteps = useMemo(() => {
+    const completed = new Set<number>()
+    if (users && users.length > 0) completed.add(1)
+    if (systems && systems.length > 0) completed.add(2)
+    if (records && records.length > 0) completed.add(3)
+    return completed
+  }, [users, systems, records])
+
+  const allDone = completedSteps.size === 3
+
+  if (dismissed) return null
+
+  const handleDismiss = () => {
+    const key = workspaceId ? `${TUTORIAL_STORAGE_KEY}-${workspaceId}` : TUTORIAL_STORAGE_KEY
+    localStorage.setItem(key, 'true')
+    setDismissed(true)
+  }
+
+  return (
+    <div className="relative rounded-xl border border-primary-400/20 bg-gradient-to-br from-primary-400/5 via-zinc-900 to-zinc-900 p-5">
+      <button
+        onClick={handleDismiss}
+        className="absolute right-3 top-3 rounded-md p-1 text-zinc-500 transition-colors hover:bg-zinc-800 hover:text-zinc-300"
+        title="Dismiss tutorial"
+      >
+        <HugeiconsIcon icon={Cancel01Icon} size={16} />
+      </button>
+
+      <div className="mb-4">
+        <h2 className="text-base font-semibold text-zinc-100">
+          {allDone ? 'All set!' : 'Getting Started'}
+        </h2>
+        <p className="mt-0.5 text-sm text-zinc-400">
+          {allDone
+            ? 'You\'ve completed all the setup steps. You can dismiss this guide.'
+            : 'Follow these steps to set up your access register.'}
+        </p>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-3">
+        {TUTORIAL_STEPS.map((s) => {
+          const done = completedSteps.has(s.step)
+          return (
+            <button
+              key={s.step}
+              onClick={() => onGoToTab(s.tab)}
+              className={`group relative flex flex-col rounded-lg border p-4 text-left transition-all ${
+                done
+                  ? 'border-emerald-500/30 bg-emerald-500/5'
+                  : 'border-zinc-800 bg-zinc-900/80 hover:border-zinc-700 hover:bg-zinc-800/60'
+              }`}
+            >
+              <div className="mb-3 flex items-center gap-2.5">
+                <div
+                  className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${
+                    done
+                      ? 'bg-emerald-500/20 text-emerald-400'
+                      : 'bg-primary-400/10 text-primary-400'
+                  }`}
+                >
+                  {done ? (
+                    <HugeiconsIcon icon={CheckmarkCircle01Icon} size={16} />
+                  ) : (
+                    s.step
+                  )}
+                </div>
+                <div className={`flex items-center gap-1.5 ${done ? 'text-emerald-400' : 'text-zinc-200'}`}>
+                  <HugeiconsIcon icon={s.icon} size={14} />
+                  <span className="text-sm font-medium">{s.title}</span>
+                </div>
+              </div>
+              <p className="text-xs leading-relaxed text-zinc-500">{s.description}</p>
+              {!done && (
+                <span className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-primary-400 opacity-0 transition-opacity group-hover:opacity-100">
+                  Go to {s.title}
+                  <HugeiconsIcon icon={ArrowRight01Icon} size={12} />
+                </span>
+              )}
+            </button>
+          )
+        })}
+      </div>
+
+      {/* Progress bar */}
+      <div className="mt-4 flex items-center gap-3">
+        <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-zinc-800">
+          <div
+            className="h-full rounded-full bg-primary-400 transition-all duration-500"
+            style={{ width: `${(completedSteps.size / 3) * 100}%` }}
+          />
+        </div>
+        <span className="text-xs font-medium text-zinc-500">
+          {completedSteps.size}/3 complete
+        </span>
+      </div>
+    </div>
+  )
+}
+
+// ── Main Page ──────────────────────────────────────────────────────────────
+
 export function AccessRegisterPage() {
   const params = useParams({ strict: false }) as { workspaceId?: string }
   const workspaceId = params.workspaceId
@@ -66,6 +211,9 @@ export function AccessRegisterPage() {
           Manage systems, people, and access grants across your organization.
         </p>
       </div>
+
+      {/* Getting Started Tutorial */}
+      <GettingStartedTutorial onGoToTab={setActiveTab} workspaceId={workspaceId} />
 
       {/* Tabs */}
       <div className="flex gap-1 rounded-lg border border-zinc-800 bg-zinc-900 p-1">
