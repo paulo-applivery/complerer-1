@@ -1524,4 +1524,59 @@ adminRoutes.delete('/libraries/frameworks/:fwId/versions/:verId/controls/:ctrlId
   return c.json({ ok: true })
 })
 
+// ─── Report Template Library ─────────────────────────────────────────────────
+
+adminRoutes.get('/libraries/reports', async (c) => {
+  const { results } = await c.env.DB.prepare(
+    'SELECT * FROM report_template_library ORDER BY category, name'
+  ).all()
+  return c.json({ items: results })
+})
+
+adminRoutes.post('/libraries/reports', async (c) => {
+  const body = await c.req.json<{ name: string; frameworkSlug?: string; category?: string; description?: string; content?: string; variables?: string; sections?: string; version?: string }>()
+  if (!body.name) return c.json({ error: 'name is required' }, 400)
+
+  const id = 'rt_' + generateId().slice(0, 12)
+  const ts = new Date().toISOString()
+  await c.env.DB.prepare(
+    `INSERT INTO report_template_library (id, name, framework_slug, category, description, content, variables, sections, version, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  ).bind(id, body.name, body.frameworkSlug || null, body.category || 'compliance',
+    body.description || null, body.content || '{"type":"doc","content":[]}',
+    body.variables || '[]', body.sections || '[]', body.version || '1.0', ts, ts).run()
+
+  return c.json({ id }, 201)
+})
+
+adminRoutes.put('/libraries/reports/:id', async (c) => {
+  const id = c.req.param('id')
+  const body = await c.req.json<any>()
+
+  const sets: string[] = []
+  const vals: any[] = []
+  const fieldMap: Record<string, string> = {
+    name: 'name', frameworkSlug: 'framework_slug', category: 'category',
+    description: 'description', content: 'content', variables: 'variables',
+    sections: 'sections', version: 'version',
+  }
+  for (const [jsKey, dbKey] of Object.entries(fieldMap)) {
+    if (body[jsKey] !== undefined) { sets.push(`${dbKey} = ?`); vals.push(body[jsKey]) }
+  }
+  if (sets.length === 0) return c.json({ error: 'No fields to update' }, 400)
+  sets.push('updated_at = ?'); vals.push(new Date().toISOString())
+  vals.push(id)
+
+  await c.env.DB.prepare(
+    `UPDATE report_template_library SET ${sets.join(', ')} WHERE id = ?`
+  ).bind(...vals).run()
+  return c.json({ ok: true })
+})
+
+adminRoutes.delete('/libraries/reports/:id', async (c) => {
+  const id = c.req.param('id')
+  await c.env.DB.prepare('DELETE FROM report_template_library WHERE id = ?').bind(id).run()
+  return c.json({ ok: true })
+})
+
 export { adminRoutes }

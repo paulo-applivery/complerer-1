@@ -49,19 +49,21 @@ const SLASH_ITEMS: SlashMenuItem[] = [
   { id: 'finding-card', label: 'Finding Card', description: 'Structured audit finding', category: 'Data Blocks', icon: '\u26A0',
     action: (editor) => editor.chain().focus().insertContent({ type: 'findingCard', attrs: { mode: 'inline', severity: 'medium', title: 'New Finding' } }).run() },
   { id: 'control-matrix', label: 'Control Matrix', description: 'Control testing results', category: 'Data Blocks', icon: '\u2611',
-    action: (editor) => {} /* Phase 8 */ },
+    action: (editor) => editor.chain().focus().insertContent({ type: 'controlMatrix', attrs: {} }).run() },
   { id: 'risk-heatmap', label: 'Risk Heatmap', description: 'Risk likelihood vs impact', category: 'Data Blocks', icon: '\u2588',
-    action: (editor) => {} /* Phase 8 */ },
+    action: (editor) => editor.chain().focus().insertContent({ type: 'riskHeatmap', attrs: {} }).run() },
   { id: 'chart', label: 'Chart', description: 'Visual data chart', category: 'Data Blocks', icon: '\u2593',
-    action: (editor) => {} /* Phase 8 */ },
+    action: (editor) => editor.chain().focus().insertContent({ type: 'chart', attrs: { chartType: 'bar', title: 'Chart' } }).run() },
 
   // References
   { id: 'variable', label: 'Variable', description: 'Insert template variable', category: 'References', icon: '{ }',
     action: (editor) => editor.chain().focus().insertContent({ type: 'variablePlaceholder', attrs: { variableKey: 'org.name', variableType: 'text', displayMode: 'placeholder' } }).run() },
+  { id: 'timeline', label: 'Timeline', description: 'Audit timeline of events', category: 'Data Blocks', icon: '\u23F0',
+    action: (editor) => editor.chain().focus().insertContent({ type: 'timeline', attrs: {} }).run() },
   { id: 'policy-ref', label: 'Policy Reference', description: 'Link to a policy', category: 'References', icon: '\u2693',
-    action: (editor) => {} /* Phase 8 */ },
+    action: (editor) => editor.chain().focus().insertContent({ type: 'policyReference', attrs: {} }).run() },
   { id: 'evidence-gallery', label: 'Evidence Gallery', description: 'Evidence image grid', category: 'References', icon: '\u25A3',
-    action: (editor) => {} /* Phase 8 */ },
+    action: (editor) => editor.chain().focus().insertContent({ type: 'evidenceGallery', attrs: {} }).run() },
 
   // AI
   { id: 'ai-draft', label: 'Draft Section', description: 'AI-generate section content', category: 'AI', icon: '\u2728',

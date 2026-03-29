@@ -17,6 +17,12 @@ import { useEffect, useRef, useCallback } from 'react'
 import { VariablePlaceholderExtension } from './blocks/variable-placeholder.js'
 import { EvidenceTableExtension } from './blocks/evidence-table.js'
 import { FindingCardExtension } from './blocks/finding-card.js'
+import { ControlMatrixExtension } from './blocks/control-matrix.js'
+import { RiskHeatmapExtension } from './blocks/risk-heatmap.js'
+import { ChartExtension } from './blocks/chart.js'
+import { TimelineExtension } from './blocks/timeline.js'
+import { EvidenceGalleryExtension } from './blocks/evidence-gallery.js'
+import { PolicyReferenceExtension } from './blocks/policy-reference.js'
 import { SlashMenuExtension } from './slash-menu.js'
 
 export interface ReportEditorProps {
@@ -69,6 +75,12 @@ export function ReportEditor({
       VariablePlaceholderExtension.configure({ mode }),
       EvidenceTableExtension,
       FindingCardExtension,
+      ControlMatrixExtension,
+      RiskHeatmapExtension,
+      ChartExtension,
+      TimelineExtension,
+      EvidenceGalleryExtension,
+      PolicyReferenceExtension,
       SlashMenuExtension,
     ],
     content: content || undefined,

@@ -14,9 +14,10 @@ import {
   UserGroupIcon,
   Settings01Icon,
   Layers01Icon,
+  FileAttachmentIcon,
 } from '@hugeicons/core-free-icons'
 
-type LibraryTab = 'systems' | 'roles' | 'baselines' | 'policies' | 'frameworks'
+type LibraryTab = 'systems' | 'roles' | 'baselines' | 'policies' | 'frameworks' | 'reports'
 
 // ── Generic hooks ─────────────────────────────────────────────────────
 
@@ -104,7 +105,7 @@ export function AdminLibrariesPage() {
     return matchSearch && matchCat
   })
 
-  const categories = tab === 'systems' ? SYSTEM_CATEGORIES : tab === 'roles' ? ROLE_CATEGORIES : tab === 'baselines' ? BASELINE_CATEGORIES : tab === 'policies' ? POLICY_CATEGORIES : []
+  const categories = tab === 'systems' ? SYSTEM_CATEGORIES : tab === 'roles' ? ROLE_CATEGORIES : tab === 'baselines' ? BASELINE_CATEGORIES : tab === 'policies' ? POLICY_CATEGORIES : tab === 'reports' ? REPORT_CATEGORIES : []
 
   const openCreate = () => { setEditItem(null); setShowModal(true) }
   const openEdit = (item: any) => { setEditItem(item); setShowModal(true) }
@@ -119,6 +120,7 @@ export function AdminLibrariesPage() {
     { key: 'baselines', label: 'Baselines', icon: Settings01Icon },
     { key: 'policies', label: 'Policies', icon: Shield01Icon },
     { key: 'frameworks', label: 'Frameworks', icon: Layers01Icon },
+    { key: 'reports', label: 'Report Templates', icon: FileAttachmentIcon },
   ]
 
   return (
@@ -207,6 +209,7 @@ export function AdminLibrariesPage() {
             {tab === 'baselines' && <BaselinesTable items={filtered} onEdit={openEdit} onDelete={handleDelete} />}
             {tab === 'policies' && <PoliciesTable items={filtered} onEdit={openEdit} onDelete={handleDelete} />}
             {tab === 'frameworks' && <FrameworksTable items={filtered} onEdit={openEdit} onDelete={handleDelete} />}
+            {tab === 'reports' && <ReportTemplatesTable items={filtered} onEdit={openEdit} onDelete={handleDelete} />}
           </div>
         )}
       </div>
@@ -433,6 +436,51 @@ function FrameworksTable({ items, onEdit, onDelete }: { items: any[]; onEdit: (i
         </tbody>
       </table>
     </div>
+  )
+}
+
+const REPORT_CATEGORIES = ['compliance', 'privacy', 'risk']
+
+function ReportTemplatesTable({ items, onEdit, onDelete }: { items: any[]; onEdit: (i: any) => void; onDelete: (id: string) => void }) {
+  return (
+    <table className="w-full text-left text-sm">
+      <thead>
+        <tr className="border-b border-zinc-800 text-xs text-zinc-500">
+          <th className="px-5 py-3 font-medium">Name</th>
+          <th className="px-5 py-3 font-medium">Framework</th>
+          <th className="px-5 py-3 font-medium">Category</th>
+          <th className="px-5 py-3 font-medium">Version</th>
+          <th className="px-5 py-3 font-medium">Sections</th>
+          <th className="w-24 px-3 py-3"></th>
+        </tr>
+      </thead>
+      <tbody className="divide-y divide-zinc-800/50">
+        {items.map((item) => {
+          let sectionCount = 0
+          try { sectionCount = JSON.parse(item.sections || '[]').length } catch {}
+          return (
+            <tr key={item.id} className="transition-colors hover:bg-zinc-800/30">
+              <td className="px-5 py-3">
+                <p className="font-medium text-zinc-100">{item.name}</p>
+                {item.description && <p className="mt-0.5 text-xs text-zinc-500 line-clamp-1">{item.description}</p>}
+              </td>
+              <td className="px-5 py-3">
+                {item.framework_slug ? <code className="rounded bg-zinc-800 px-2 py-0.5 text-xs text-zinc-400">{item.framework_slug}</code> : <span className="text-zinc-600">—</span>}
+              </td>
+              <td className="px-5 py-3"><span className="rounded-full bg-zinc-800 px-2 py-0.5 text-xs text-zinc-400">{item.category}</span></td>
+              <td className="px-5 py-3 text-zinc-400">{item.version}</td>
+              <td className="px-5 py-3 text-zinc-300">{sectionCount}</td>
+              <td className="px-3 py-3">
+                <div className="flex items-center gap-1">
+                  <button onClick={() => onEdit(item)} className="rounded p-1.5 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"><HugeiconsIcon icon={Edit01Icon} size={14} /></button>
+                  <button onClick={() => onDelete(item.id)} className="rounded p-1.5 text-zinc-500 hover:bg-zinc-800 hover:text-red-400"><HugeiconsIcon icon={Delete02Icon} size={14} /></button>
+                </div>
+              </td>
+            </tr>
+          )
+        })}
+      </tbody>
+    </table>
   )
 }
 
@@ -702,10 +750,10 @@ function LibraryModal({ tab, item, onClose, onCreate, onUpdate, isPending }: {
     }
   }
 
-  const entityName = tab === 'roles' ? 'Role' : tab === 'baselines' ? 'Baseline' : tab === 'policies' ? 'Policy' : tab === 'frameworks' ? 'Framework' : 'System'
+  const entityName = tab === 'roles' ? 'Role' : tab === 'baselines' ? 'Baseline' : tab === 'policies' ? 'Policy' : tab === 'frameworks' ? 'Framework' : tab === 'reports' ? 'Report Template' : 'System'
   const title = isEdit ? `Edit ${entityName}` : `Add ${entityName}`
 
-  const categories = tab === 'systems' ? SYSTEM_CATEGORIES : tab === 'roles' ? ROLE_CATEGORIES : tab === 'baselines' ? BASELINE_CATEGORIES : tab === 'policies' ? POLICY_CATEGORIES : []
+  const categories = tab === 'systems' ? SYSTEM_CATEGORIES : tab === 'roles' ? ROLE_CATEGORIES : tab === 'baselines' ? BASELINE_CATEGORIES : tab === 'policies' ? POLICY_CATEGORIES : tab === 'reports' ? REPORT_CATEGORIES : []
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={onClose}>
