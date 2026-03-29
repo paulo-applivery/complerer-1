@@ -5,6 +5,7 @@ import Papa from 'papaparse'
 import {
   useSystemsList,
   useCreateSystem,
+  useUpdateSystem,
   useSystemLibrary,
   useAddFromLibrary,
   useDirectoryUsers,
@@ -35,12 +36,13 @@ import {
   Search01Icon,
   ArrowLeft01Icon,
   ArrowRight01Icon,
+  ArrowDown01Icon,
+  ArrowUp01Icon,
   LoaderPinwheelIcon,
   CancelCircleIcon,
   ClipboardIcon,
   Upload04Icon,
   Edit01Icon,
-  Tick01Icon,
 } from '@hugeicons/core-free-icons'
 
 type Tab = 'access' | 'systems' | 'people'
@@ -133,6 +135,14 @@ function SystemsSection({ workspaceId }: { workspaceId: string | undefined }) {
   const [libCategoryFilter, setLibCategoryFilter] = useState('')
   const [libSearch, setLibSearch] = useState('')
   const [libResult, setLibResult] = useState<{ created: number; skipped: number } | null>(null)
+
+  // Systems search/filter
+  const [systemSearch, setSystemSearch] = useState('')
+  const [systemClassFilter, setSystemClassFilter] = useState('')
+
+  // Edit system modal
+  const [editingSystem, setEditingSystem] = useState<any>(null)
+  const updateSystem = useUpdateSystem(workspaceId)
 
   // Environment options from workspace settings
   const { value: envSettingRaw } = useWorkspaceSetting(workspaceId, 'system_environments')
@@ -434,6 +444,31 @@ function SystemsSection({ workspaceId }: { workspaceId: string | undefined }) {
         </div>
       )}
 
+      {/* Systems search/filter */}
+      {systems.length > 0 && (
+        <div className="flex items-center gap-3">
+          <div className="relative flex-1">
+            <HugeiconsIcon icon={Search01Icon} size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
+            <input
+              value={systemSearch}
+              onChange={(e) => setSystemSearch(e.target.value)}
+              className="w-full rounded-lg border border-zinc-700 bg-zinc-800 pl-9 pr-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus:border-primary-400 focus:outline-none"
+              placeholder="Search systems..."
+            />
+          </div>
+          <select
+            value={systemClassFilter}
+            onChange={(e) => setSystemClassFilter(e.target.value)}
+            className="appearance-none rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-xs text-zinc-300 focus:border-primary-400 focus:outline-none"
+          >
+            <option value="">All classifications</option>
+            <option value="critical">Critical</option>
+            <option value="standard">Standard</option>
+            <option value="low">Low</option>
+          </select>
+        </div>
+      )}
+
       {/* Systems table or empty state */}
       <div className="rounded-xl border border-zinc-800 bg-zinc-900">
         {systems.length === 0 ? (
@@ -469,12 +504,24 @@ function SystemsSection({ workspaceId }: { workspaceId: string | undefined }) {
                   <th className="px-5 py-3 font-medium">Environment</th>
                   <th className="px-5 py-3 font-medium">MFA</th>
                   <th className="px-5 py-3 font-medium">Owner</th>
+                  <th className="w-16 px-3 py-3"></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-800/50">
-                {systems.map((system) => (
+                {systems
+                  .filter((s) => {
+                    if (systemSearch && !s.name.toLowerCase().includes(systemSearch.toLowerCase())) return false
+                    if (systemClassFilter && s.classification !== systemClassFilter) return false
+                    return true
+                  })
+                  .map((system) => (
                   <tr key={system.id} className="transition-colors hover:bg-zinc-800/30">
-                    <td className="px-5 py-3 font-medium text-zinc-100">{system.name}</td>
+                    <td className="px-5 py-3">
+                      <span className="font-medium text-zinc-100">{system.name}</span>
+                      {(system as any).templateId && (
+                        <span className="ml-2 rounded bg-blue-500/10 px-1.5 py-0.5 text-[10px] font-medium text-blue-400">Library</span>
+                      )}
+                    </td>
                     <td className="px-5 py-3">
                       <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${classificationBadge(system.classification)}`}>
                         {system.classification}
@@ -490,12 +537,112 @@ function SystemsSection({ workspaceId }: { workspaceId: string | undefined }) {
                       )}
                     </td>
                     <td className="px-5 py-3 text-zinc-400">{system.owner ?? '—'}</td>
+                    <td className="px-3 py-3">
+                      <button
+                        onClick={() => setEditingSystem(system)}
+                        className="rounded p-1.5 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"
+                      >
+                        <HugeiconsIcon icon={Edit01Icon} size={14} />
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
         )}
+      </div>
+
+      {/* Edit System Modal */}
+      {editingSystem && (
+        <EditSystemModal
+          system={editingSystem}
+          envOptions={envOptions}
+          onClose={() => setEditingSystem(null)}
+          onSave={(data) => {
+            updateSystem.mutate(
+              { systemId: editingSystem.id, ...data },
+              { onSuccess: () => setEditingSystem(null) }
+            )
+          }}
+          isPending={updateSystem.isPending}
+        />
+      )}
+    </div>
+  )
+}
+
+function EditSystemModal({ system, envOptions, onClose, onSave, isPending }: {
+  system: any
+  envOptions: string[]
+  onClose: () => void
+  onSave: (data: any) => void
+  isPending: boolean
+}) {
+  const [form, setForm] = useState({
+    name: system.name ?? '',
+    classification: system.classification ?? 'standard',
+    sensitivity: system.sensitivity ?? '',
+    environment: system.environment ?? '',
+    mfaRequired: system.mfaRequired ?? false,
+    owner: system.owner ?? '',
+  })
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={onClose}>
+      <div className="w-full max-w-lg rounded-2xl border border-zinc-800 bg-zinc-900 p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <div className="mb-5 flex items-center justify-between">
+          <h3 className="text-lg font-semibold text-zinc-100">Edit System</h3>
+          <button onClick={onClose} className="text-zinc-500 hover:text-zinc-300"><HugeiconsIcon icon={Cancel01Icon} size={18} /></button>
+        </div>
+        <div className="space-y-4">
+          <div>
+            <label className="mb-1 block text-xs text-zinc-400">Name</label>
+            <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 focus:border-primary-400 focus:outline-none" />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="mb-1 block text-xs text-zinc-400">Classification</label>
+              <select value={form.classification} onChange={(e) => setForm({ ...form, classification: e.target.value })} className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 focus:border-primary-400 focus:outline-none">
+                <option value="critical">Critical</option>
+                <option value="standard">Standard</option>
+                <option value="low">Low</option>
+              </select>
+            </div>
+            <div>
+              <label className="mb-1 block text-xs text-zinc-400">Sensitivity</label>
+              <select value={form.sensitivity} onChange={(e) => setForm({ ...form, sensitivity: e.target.value })} className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 focus:border-primary-400 focus:outline-none">
+                <option value="">None</option>
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
+              </select>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="mb-1 block text-xs text-zinc-400">Environment</label>
+              <select value={form.environment} onChange={(e) => setForm({ ...form, environment: e.target.value })} className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 focus:border-primary-400 focus:outline-none">
+                <option value="">Select...</option>
+                {envOptions.map((e) => <option key={e} value={e}>{e}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="mb-1 block text-xs text-zinc-400">Owner</label>
+              <input value={form.owner} onChange={(e) => setForm({ ...form, owner: e.target.value })} className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus:border-primary-400 focus:outline-none" placeholder="Owner email" />
+            </div>
+          </div>
+          <label className="flex items-center gap-2 text-sm text-zinc-300">
+            <input type="checkbox" checked={form.mfaRequired} onChange={(e) => setForm({ ...form, mfaRequired: e.target.checked })} className="rounded border-zinc-600" />
+            MFA Required
+          </label>
+        </div>
+        <div className="mt-6 flex justify-end gap-2">
+          <button onClick={onClose} className="rounded-lg border border-zinc-700 px-4 py-2 text-sm text-zinc-400 hover:border-zinc-600">Cancel</button>
+          <button onClick={() => onSave(form)} disabled={isPending} className="rounded-lg bg-primary-400 px-4 py-2 text-sm font-medium text-zinc-950 hover:bg-primary-300 disabled:opacity-50">
+            {isPending ? 'Saving...' : 'Save'}
+          </button>
+        </div>
       </div>
     </div>
   )
@@ -1390,6 +1537,204 @@ function GroupedAccessView({ records, formatCost }: { records: AccessRecord[]; f
   )
 }
 
+function DepartmentAccessView({ records, users, formatCost }: { records: AccessRecord[]; users: any[]; formatCost: (r: AccessRecord) => string }) {
+  const [expandedDept, setExpandedDept] = useState<string | null>(null)
+
+  // Build department map from users
+  const userDeptMap = new Map(users.map((u: any) => [u.id, u.department ?? 'Unassigned']))
+
+  // Group records by department
+  const grouped = new Map<string, AccessRecord[]>()
+  for (const r of records) {
+    const dept = userDeptMap.get(r.userId) ?? 'Unassigned'
+    if (!grouped.has(dept)) grouped.set(dept, [])
+    grouped.get(dept)!.push(r)
+  }
+
+  const departments = Array.from(grouped.entries()).sort((a, b) => a[0].localeCompare(b[0]))
+
+  return (
+    <div className="space-y-2">
+      {departments.map(([dept, recs]) => {
+        const isExpanded = expandedDept === dept
+        return (
+          <div key={dept} className="rounded-xl border border-zinc-800 bg-zinc-900 overflow-hidden">
+            <button
+              onClick={() => setExpandedDept(isExpanded ? null : dept)}
+              className="flex w-full items-center justify-between px-5 py-3 text-left transition-colors hover:bg-zinc-800/30"
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-medium text-zinc-100">{dept}</span>
+                <span className="rounded-full bg-zinc-800 px-2 py-0.5 text-[10px] text-zinc-500">{recs.length} record{recs.length !== 1 ? 's' : ''}</span>
+              </div>
+              <HugeiconsIcon icon={isExpanded ? ArrowUp01Icon : ArrowDown01Icon} size={14} className="text-zinc-500" />
+            </button>
+            {isExpanded && (
+              <div className="border-t border-zinc-800">
+                <table className="w-full text-left text-sm">
+                  <thead>
+                    <tr className="border-b border-zinc-800/50 text-[11px] text-zinc-500">
+                      <th className="px-5 py-2 font-medium">Person</th>
+                      <th className="px-5 py-2 font-medium">System</th>
+                      <th className="px-5 py-2 font-medium">Role</th>
+                      <th className="px-5 py-2 font-medium">License</th>
+                      <th className="px-5 py-2 font-medium">Cost</th>
+                      <th className="px-5 py-2 font-medium">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-800/30">
+                    {recs.map((r) => (
+                      <tr key={r.id} className="transition-colors hover:bg-zinc-800/20">
+                        <td className="px-5 py-2.5">
+                          <p className="text-sm text-zinc-200">{r.userName}</p>
+                          <p className="text-[11px] text-zinc-500">{r.userEmail}</p>
+                        </td>
+                        <td className="px-5 py-2.5 text-sm text-zinc-300">{r.systemName}</td>
+                        <td className="px-5 py-2.5">
+                          <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${r.role === 'admin' ? 'bg-red-500/10 text-red-400' : r.role === 'write' ? 'bg-amber-500/10 text-amber-400' : 'bg-primary-400/10 text-primary-400'}`}>
+                            {r.role}
+                          </span>
+                        </td>
+                        <td className="px-5 py-2.5 text-xs text-zinc-400">{r.licenseType ?? '—'}</td>
+                        <td className="px-5 py-2.5 text-xs text-zinc-400">{formatCost(r)}</td>
+                        <td className="px-5 py-2.5">
+                          <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${r.status === 'active' ? 'bg-green-500/10 text-green-400' : r.status === 'revoked' ? 'bg-red-500/10 text-red-400' : 'bg-zinc-500/10 text-zinc-400'}`}>
+                            {r.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+function EditAccessModal({ record, users, systems, onClose, onSave, isPending }: {
+  record: AccessRecord
+  users: any[]
+  systems: any[]
+  onClose: () => void
+  onSave: (data: any) => void
+  isPending: boolean
+}) {
+  const [form, setForm] = useState({
+    role: record.role,
+    approvedBy: record.approvedBy ?? '',
+    ticketRef: record.ticketRef ?? '',
+    status: record.status ?? 'active',
+    licenseType: record.licenseType ?? '',
+    costPerPeriod: record.costPerPeriod?.toString() ?? '',
+    costCurrency: record.costCurrency ?? 'USD',
+    costFrequency: record.costFrequency ?? '',
+  })
+
+  const handleSubmit = () => {
+    onSave({
+      role: form.role || undefined,
+      approvedBy: form.approvedBy || null,
+      ticketRef: form.ticketRef || undefined,
+      status: form.status || undefined,
+      licenseType: form.licenseType || null,
+      costPerPeriod: form.costPerPeriod ? parseFloat(form.costPerPeriod) : null,
+      costCurrency: form.costCurrency || undefined,
+      costFrequency: form.costFrequency || null,
+    })
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={onClose}>
+      <div className="w-full max-w-lg rounded-2xl border border-zinc-800 bg-zinc-900 p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <div className="mb-5 flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-semibold text-zinc-100">Edit Access Record</h3>
+            <p className="text-xs text-zinc-500">{record.userName} → {record.systemName}</p>
+          </div>
+          <button onClick={onClose} className="text-zinc-500 hover:text-zinc-300"><HugeiconsIcon icon={Cancel01Icon} size={18} /></button>
+        </div>
+
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="mb-1 block text-xs text-zinc-400">Role</label>
+              <select value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 focus:border-primary-400 focus:outline-none">
+                <option value="admin">Admin</option>
+                <option value="write">Write</option>
+                <option value="read">Read</option>
+              </select>
+            </div>
+            <div>
+              <label className="mb-1 block text-xs text-zinc-400">Status</label>
+              <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value as AccessStatus })} className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 focus:border-primary-400 focus:outline-none">
+                {Object.entries(STATUS_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="mb-1 block text-xs text-zinc-400">Approved By</label>
+              <SearchableSelect
+                value={form.approvedBy}
+                onChange={(v) => setForm({ ...form, approvedBy: v })}
+                options={users.map((u: any) => ({ id: u.name, label: u.name, sublabel: u.title ? `${u.title} · ${u.email}` : u.email }))}
+                placeholder="Approver..."
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs text-zinc-400">Ticket Reference</label>
+              <input value={form.ticketRef} onChange={(e) => setForm({ ...form, ticketRef: e.target.value })} className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus:border-primary-400 focus:outline-none" placeholder="JIRA-123" />
+            </div>
+          </div>
+
+          <div className="border-t border-zinc-800 pt-4">
+            <p className="mb-3 text-xs font-medium text-zinc-500">Cost Details</p>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="mb-1 block text-xs text-zinc-400">License Type</label>
+                <input value={form.licenseType} onChange={(e) => setForm({ ...form, licenseType: e.target.value })} className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus:border-primary-400 focus:outline-none" placeholder="e.g. Enterprise" />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs text-zinc-400">Frequency</label>
+                <select value={form.costFrequency} onChange={(e) => setForm({ ...form, costFrequency: e.target.value })} className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 focus:border-primary-400 focus:outline-none">
+                  <option value="">None</option>
+                  <option value="monthly">Monthly</option>
+                  <option value="annual">Annual</option>
+                  <option value="one-time">One-time</option>
+                </select>
+              </div>
+              <div>
+                <label className="mb-1 block text-xs text-zinc-400">Cost per Period</label>
+                <input type="number" value={form.costPerPeriod} onChange={(e) => setForm({ ...form, costPerPeriod: e.target.value })} className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus:border-primary-400 focus:outline-none" placeholder="0.00" step="0.01" />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs text-zinc-400">Currency</label>
+                <select value={form.costCurrency} onChange={(e) => setForm({ ...form, costCurrency: e.target.value })} className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 focus:border-primary-400 focus:outline-none">
+                  <option value="USD">USD</option>
+                  <option value="EUR">EUR</option>
+                  <option value="GBP">GBP</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-6 flex justify-end gap-2">
+          <button onClick={onClose} className="rounded-lg border border-zinc-700 px-4 py-2 text-sm text-zinc-400 hover:border-zinc-600">Cancel</button>
+          <button onClick={handleSubmit} disabled={isPending} className="rounded-lg bg-primary-400 px-4 py-2 text-sm font-medium text-zinc-950 hover:bg-primary-300 disabled:opacity-50">
+            {isPending ? 'Saving...' : 'Save Changes'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function AccessSection({ workspaceId }: { workspaceId: string | undefined }) {
   const { systems } = useSystemsList(workspaceId)
   const { users } = useDirectoryUsers(workspaceId)
@@ -1397,7 +1742,7 @@ function AccessSection({ workspaceId }: { workspaceId: string | undefined }) {
   const [statusFilter, setStatusFilter] = useState('active')
   const [systemFilter, setSystemFilter] = useState('')
   const [page, setPage] = useState(1)
-  const [viewMode, setViewMode] = useState<'list' | 'grouped'>('list')
+  const [viewMode, setViewMode] = useState<'list' | 'grouped' | 'department'>('list')
   const limit = 25
 
   const { records, total, isLoading } = useAccessRecords(workspaceId, {
@@ -1413,7 +1758,7 @@ function AccessSection({ workspaceId }: { workspaceId: string | undefined }) {
   const saveCfMutation = useSaveCustomFieldValues(workspaceId)
 
   const [showForm, setShowForm] = useState(false)
-  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editingRecord, setEditingRecord] = useState<AccessRecord | null>(null)
   const [confirmAction, setConfirmAction] = useState<{ recordId: string; action: string } | null>(null)
   const [form, setForm] = useState({
     userId: '',
@@ -1428,16 +1773,7 @@ function AccessSection({ workspaceId }: { workspaceId: string | undefined }) {
     costFrequency: '',
   })
   const [cfValues, setCfValues] = useState<Record<string, string>>({})
-  const [editForm, setEditForm] = useState({
-    role: '',
-    approvedBy: '',
-    ticketRef: '',
-    status: '' as string,
-    licenseType: '',
-    costPerPeriod: '',
-    costCurrency: 'USD',
-    costFrequency: '',
-  })
+  // Edit form is now in EditAccessModal
 
   const [openMenuId, setOpenMenuId] = useState<string | null>(null)
   const [menuPos, setMenuPos] = useState<{ top: number; left: number }>({ top: 0, left: 0 })
@@ -1502,36 +1838,7 @@ function AccessSection({ workspaceId }: { workspaceId: string | undefined }) {
   }
 
   const startEdit = (record: AccessRecord) => {
-    setEditingId(record.id)
-    setEditForm({
-      role: record.role,
-      approvedBy: record.approvedBy ?? '',
-      ticketRef: record.ticketRef ?? '',
-      status: record.status ?? 'active',
-      licenseType: record.licenseType ?? '',
-      costPerPeriod: record.costPerPeriod?.toString() ?? '',
-      costCurrency: record.costCurrency ?? 'USD',
-      costFrequency: record.costFrequency ?? '',
-    })
-  }
-
-  const handleSaveEdit = (recordId: string) => {
-    updateMutation.mutate(
-      {
-        recordId,
-        data: {
-          role: editForm.role || undefined,
-          approvedBy: editForm.approvedBy || null,
-          ticketRef: editForm.ticketRef || undefined,
-          status: editForm.status || undefined,
-          licenseType: editForm.licenseType || null,
-          costPerPeriod: editForm.costPerPeriod ? parseFloat(editForm.costPerPeriod) : null,
-          costCurrency: editForm.costCurrency || undefined,
-          costFrequency: (editForm.costFrequency as any) || null,
-        },
-      },
-      { onSuccess: () => setEditingId(null) },
-    )
+    setEditingRecord(record)
   }
 
   const riskScoreColor = (score: number) => {
@@ -1743,6 +2050,12 @@ function AccessSection({ workspaceId }: { workspaceId: string | undefined }) {
           >
             By Person
           </button>
+          <button
+            onClick={() => setViewMode('department')}
+            className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${viewMode === 'department' ? 'bg-zinc-800 text-zinc-100' : 'text-zinc-500 hover:text-zinc-300'}`}
+          >
+            By Department
+          </button>
         </div>
         <select
           value={systemFilter}
@@ -1777,6 +2090,9 @@ function AccessSection({ workspaceId }: { workspaceId: string | undefined }) {
       {/* Table */}
       {viewMode === 'grouped' && (
         <GroupedAccessView records={records} formatCost={formatCost} />
+      )}
+      {viewMode === 'department' && (
+        <DepartmentAccessView records={records} users={users} formatCost={formatCost} />
       )}
       {viewMode === 'list' && <div className="rounded-xl border border-zinc-800 bg-zinc-900">
         {isLoading ? (
@@ -1818,123 +2134,33 @@ function AccessSection({ workspaceId }: { workspaceId: string | undefined }) {
                       </td>
                       <td className="px-5 py-3 text-zinc-300">{record.systemName}</td>
                       <td className="px-5 py-3">
-                        {editingId === record.id ? (
-                          <select
-                            value={editForm.role}
-                            onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
-                            className="appearance-none rounded border border-zinc-700 bg-zinc-800 px-2 py-1 text-xs text-zinc-100"
-                          >
-                            <option value="admin">Admin</option>
-                            <option value="write">Write</option>
-                            <option value="read">Read</option>
-                          </select>
-                        ) : (
-                          <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${roleBadge(record.role)}`}>
-                            {record.role}
-                          </span>
-                        )}
+                        <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${roleBadge(record.role)}`}>
+                          {record.role}
+                        </span>
                       </td>
-                      <td className="px-5 py-3 text-zinc-400">
-                        {editingId === record.id ? (
-                          <input
-                            value={editForm.approvedBy}
-                            onChange={(e) => setEditForm({ ...editForm, approvedBy: e.target.value })}
-                            className="w-24 rounded border border-zinc-700 bg-zinc-800 px-2 py-1 text-xs text-zinc-100"
-                            placeholder="Approver"
-                          />
-                        ) : (
-                          record.approvedBy ?? '—'
-                        )}
-                      </td>
-                      <td className="px-5 py-3 text-zinc-400">
-                        {editingId === record.id ? (
-                          <input
-                            value={editForm.ticketRef}
-                            onChange={(e) => setEditForm({ ...editForm, ticketRef: e.target.value })}
-                            className="w-24 rounded border border-zinc-700 bg-zinc-800 px-2 py-1 text-xs text-zinc-100"
-                            placeholder="JIRA-123"
-                          />
-                        ) : (
-                          record.ticketRef ?? '—'
-                        )}
-                      </td>
-                      <td className="px-5 py-3 text-zinc-400">
-                        {editingId === record.id ? (
-                          <input
-                            value={editForm.licenseType}
-                            onChange={(e) => setEditForm({ ...editForm, licenseType: e.target.value })}
-                            className="w-20 rounded border border-zinc-700 bg-zinc-800 px-2 py-1 text-xs text-zinc-100"
-                            placeholder="Type"
-                          />
-                        ) : (
-                          record.licenseType ?? '—'
-                        )}
-                      </td>
-                      <td className="px-5 py-3 text-zinc-400">
-                        {editingId === record.id ? (
-                          <input
-                            type="number"
-                            value={editForm.costPerPeriod}
-                            onChange={(e) => setEditForm({ ...editForm, costPerPeriod: e.target.value })}
-                            className="w-20 rounded border border-zinc-700 bg-zinc-800 px-2 py-1 text-xs text-zinc-100"
-                            placeholder="0"
-                          />
-                        ) : (
-                          formatCost(record)
-                        )}
-                      </td>
-                      <td className="px-5 py-3 text-zinc-400">
-                        {new Date(record.grantedAt).toLocaleDateString()}
-                      </td>
+                      <td className="px-5 py-3 text-zinc-400">{record.approvedBy ?? '—'}</td>
+                      <td className="px-5 py-3 text-zinc-400">{record.ticketRef ?? '—'}</td>
+                      <td className="px-5 py-3 text-zinc-400">{record.licenseType ?? '—'}</td>
+                      <td className="px-5 py-3 text-zinc-400">{formatCost(record)}</td>
+                      <td className="px-5 py-3 text-zinc-400">{new Date(record.grantedAt).toLocaleDateString()}</td>
                       <td className="px-5 py-3">
                         <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${riskScoreBg(record.riskScore)} ${riskScoreColor(record.riskScore)}`}>
                           {record.riskScore.toFixed(2)}
                         </span>
                       </td>
                       <td className="px-5 py-3">
-                        {editingId === record.id ? (
-                          <select
-                            value={editForm.status}
-                            onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
-                            className="appearance-none rounded border border-zinc-700 bg-zinc-800 px-2 py-1 text-xs text-zinc-100"
-                          >
-                            {Object.entries(STATUS_LABELS).map(([value, label]) => (
-                              <option key={value} value={value}>{label}</option>
-                            ))}
-                          </select>
-                        ) : (
-                          <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_COLORS[record.status ?? 'active'] ?? 'bg-zinc-500/10 text-zinc-400'}`}>
-                            {STATUS_LABELS[record.status ?? 'active'] ?? record.status ?? 'active'}
-                          </span>
-                        )}
+                        <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_COLORS[record.status ?? 'active'] ?? 'bg-zinc-500/10 text-zinc-400'}`}>
+                          {STATUS_LABELS[record.status ?? 'active'] ?? record.status ?? 'active'}
+                        </span>
                       </td>
                       <td className="relative px-2 py-3 text-center">
-                        {editingId === record.id ? (
-                          <div className="flex items-center justify-center gap-1.5">
-                            <button
-                              onClick={() => handleSaveEdit(record.id)}
-                              disabled={updateMutation.isPending}
-                              className="flex items-center gap-1 rounded-lg border border-primary-400/20 px-2 py-1 text-xs text-primary-400 hover:bg-primary-400/5"
-                            >
-                              <HugeiconsIcon icon={Tick01Icon} size={12} />
-                              Save
-                            </button>
-                            <button
-                              onClick={() => setEditingId(null)}
-                              className="rounded-lg border border-zinc-700 px-2 py-1 text-xs text-zinc-400 hover:border-zinc-600"
-                            >
-                              Cancel
-                            </button>
-                          </div>
-                        ) : (
-                          <button
-                            onClick={(e) => openMenu(record.id, e.currentTarget)}
-                            className="inline-flex h-7 w-7 items-center justify-center rounded-md text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-200"
-                            title="Actions"
-                          >
-                            <span className="text-base leading-none">&#8942;</span>
-                          </button>
-                        )}
+                        <button
+                          onClick={(e) => openMenu(record.id, e.currentTarget)}
+                          className="inline-flex h-7 w-7 items-center justify-center rounded-md text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-200"
+                          title="Actions"
+                        >
+                          <span className="text-base leading-none">&#8942;</span>
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -2020,6 +2246,23 @@ function AccessSection({ workspaceId }: { workspaceId: string | undefined }) {
           })()}
         </div>,
         document.body
+      )}
+
+      {/* Edit Access Modal */}
+      {editingRecord && (
+        <EditAccessModal
+          record={editingRecord}
+          users={users}
+          systems={systems}
+          onClose={() => setEditingRecord(null)}
+          onSave={(data) => {
+            updateMutation.mutate(
+              { recordId: editingRecord.id, data },
+              { onSuccess: () => setEditingRecord(null) }
+            )
+          }}
+          isPending={updateMutation.isPending}
+        />
       )}
     </div>
   )

@@ -199,6 +199,26 @@ export function useCreateSystem(workspaceId: string | undefined) {
   })
 }
 
+export function useUpdateSystem(workspaceId: string | undefined) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ systemId, ...data }: {
+      systemId: string
+      name?: string
+      classification?: string
+      sensitivity?: string
+      environment?: string
+      mfaRequired?: boolean
+      owner?: string
+      description?: string
+    }) => api.patch(`/workspaces/${workspaceId}/systems/${systemId}`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['systems', workspaceId] })
+    },
+  })
+}
+
 // ── Directory Users ─────────────────────────────────────────────────────────
 
 interface UseDirectoryUsersOptions {
