@@ -19,6 +19,8 @@ import {
   ArrowDown01Icon,
   Building06Icon,
   CrownIcon,
+  Book02Icon,
+  Folder01Icon,
 } from '@hugeicons/core-free-icons'
 import {
   Sidebar,
@@ -34,35 +36,44 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar'
 import { useAuth } from '@/hooks/use-auth'
-import { useWorkspace } from '@/hooks/use-workspace'
+import { useWorkspace, useFeatureFlags } from '@/hooks/use-workspace'
 
 interface NavItem {
   label: string
   icon: typeof DashboardSquare01Icon
   path: string
+  featureFlag?: string
 }
 
-const platformItems: NavItem[] = [
+const overviewItems: NavItem[] = [
   { label: 'Dashboard', icon: DashboardSquare01Icon, path: '/dashboard' },
-  { label: 'Chat', icon: Message01Icon, path: '/chat' },
-  { label: 'Frameworks', icon: Layers01Icon, path: '/frameworks' },
-  { label: 'Trust Score', icon: SecurityCheckIcon, path: '/trust' },
+  { label: 'How it Works', icon: SecurityCheckIcon, path: '/welcome' },
 ]
 
 const complianceItems: NavItem[] = [
-  { label: 'Access Register', icon: ClipboardIcon, path: '/access' },
-  { label: 'Evidence', icon: FileValidationIcon, path: '/evidence' },
-  { label: 'Baselines', icon: Shield01Icon, path: '/baselines' },
-  { label: 'Risk Register', icon: Alert02Icon, path: '/risks' },
+  { label: 'Projects', icon: Folder01Icon, path: '/projects' },
+  { label: 'Frameworks', icon: Layers01Icon, path: '/frameworks' },
   { label: 'Policies', icon: File01Icon, path: '/policies' },
+  { label: 'Baselines', icon: Shield01Icon, path: '/baselines' },
+  { label: 'Evidence', icon: FileValidationIcon, path: '/evidence' },
   { label: 'Gap Analysis', icon: Search01Icon, path: '/gap-analysis' },
+  { label: 'Risk Register', icon: Alert02Icon, path: '/risks' },
+]
+
+const accessItems: NavItem[] = [
+  { label: 'Access Register', icon: ClipboardIcon, path: '/access' },
+]
+
+const toolsItems: NavItem[] = [
+  { label: 'Chat', icon: Message01Icon, path: '/chat', featureFlag: 'ai-chat' },
+  { label: 'Trust Score', icon: SecurityCheckIcon, path: '/trust', featureFlag: 'trust-score' },
+  { label: 'Playbooks', icon: Book02Icon, path: '/playbooks', featureFlag: 'playbooks' },
   { label: 'Events', icon: Clock01Icon, path: '/events' },
-  { label: 'Integrations', icon: Link01Icon, path: '/integrations' },
 ]
 
 function NavItemButton({ item, workspaceId }: { item: NavItem; workspaceId: string }) {
   const navigate = useNavigate()
-  const { state } = useSidebar()
+  const { setOpenMobile } = useSidebar()
   const location = useLocation()
   const fullPath = `/w/${workspaceId}${item.path}`
   const isActive = location.pathname === fullPath || location.pathname.startsWith(fullPath + '/')
@@ -71,10 +82,13 @@ function NavItemButton({ item, workspaceId }: { item: NavItem; workspaceId: stri
     <SidebarMenuItem>
       <SidebarMenuButton
         isActive={isActive}
-        onClick={() => navigate({ to: `/w/${workspaceId}${item.path}` })}
+        onClick={() => {
+          navigate({ to: `/w/${workspaceId}${item.path}` })
+          if (window.innerWidth < 768) setOpenMobile(false)
+        }}
       >
         <HugeiconsIcon icon={item.icon} size={16} className="shrink-0" />
-        {state === 'expanded' && <span>{item.label}</span>}
+        <span>{item.label}</span>
       </SidebarMenuButton>
     </SidebarMenuItem>
   )
@@ -84,10 +98,12 @@ export function AppSidebar() {
   const params = useParams({ strict: false }) as { workspaceId?: string }
   const workspaceId = params.workspaceId ?? ''
   const { workspace } = useWorkspace(workspaceId)
+  const { isEnabled } = useFeatureFlags(workspaceId)
   const { user, logout } = useAuth()
-  const { state } = useSidebar()
+  const { state, setOpenMobile } = useSidebar()
   const navigate = useNavigate()
   const [profileOpen, setProfileOpen] = useState(false)
+  const isMobileWidth = () => window.innerWidth < 768
 
   return (
     <Sidebar>
@@ -99,7 +115,10 @@ export function AppSidebar() {
               {state === 'expanded' ? (
                 <img src="/logo-color.svg" alt="Complerer" className="h-5" />
               ) : (
-                <img src="/icon-color.svg" alt="Complerer" className="h-6 w-6" />
+                <>
+                  <img src="/logo-color.svg" alt="Complerer" className="h-5 md:hidden" />
+                  <img src="/icon-color.svg" alt="Complerer" className="hidden md:block h-6 w-6" />
+                </>
               )}
             </div>
           </SidebarMenuItem>
@@ -109,25 +128,33 @@ export function AppSidebar() {
       <SidebarSeparator />
 
       <SidebarContent>
-        {/* Platform group */}
         <SidebarGroup>
-          <SidebarGroupLabel>Platform</SidebarGroupLabel>
+          <SidebarGroupLabel>Overview</SidebarGroupLabel>
           <SidebarMenu>
-            {platformItems.map((item) => (
+            {overviewItems.filter(item => !item.featureFlag || isEnabled(item.featureFlag)).map(item => (
               <NavItemButton key={item.label} item={item} workspaceId={workspaceId} />
             ))}
           </SidebarMenu>
         </SidebarGroup>
 
-        {/* Compliance group */}
         <SidebarGroup>
-          <SidebarGroupLabel>Compliance</SidebarGroupLabel>
+          <SidebarGroupLabel>Compliance Program</SidebarGroupLabel>
           <SidebarMenu>
-            {complianceItems.map((item) => (
+            {complianceItems.filter(item => !item.featureFlag || isEnabled(item.featureFlag)).map(item => (
               <NavItemButton key={item.label} item={item} workspaceId={workspaceId} />
             ))}
           </SidebarMenu>
         </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Access & Assets</SidebarGroupLabel>
+          <SidebarMenu>
+            {accessItems.filter(item => !item.featureFlag || isEnabled(item.featureFlag)).map(item => (
+              <NavItemButton key={item.label} item={item} workspaceId={workspaceId} />
+            ))}
+          </SidebarMenu>
+        </SidebarGroup>
+
       </SidebarContent>
 
       <SidebarSeparator />
@@ -147,27 +174,23 @@ export function AppSidebar() {
                     {user?.name?.[0]?.toUpperCase() ?? 'U'}
                   </span>
                 </div>
-                {state === 'expanded' && (
-                  <>
-                    <div className="flex min-w-0 flex-1 flex-col gap-0.5 leading-none">
-                      <span className="truncate text-sm font-medium text-zinc-100">
-                        {user?.name ?? 'User'}
-                      </span>
-                      <span className="truncate text-xs text-zinc-500">
-                        {user?.email ?? 'user@example.com'}
-                      </span>
-                    </div>
-                    <HugeiconsIcon
-                      icon={ArrowDown01Icon}
-                      size={14}
-                      className={`ml-auto text-zinc-500 transition-transform ${profileOpen ? 'rotate-180' : ''}`}
-                    />
-                  </>
-                )}
+                <div className="flex min-w-0 flex-1 flex-col gap-0.5 leading-none overflow-hidden">
+                  <span className="truncate text-sm font-medium text-zinc-100">
+                    {user?.name ?? 'User'}
+                  </span>
+                  <span className="truncate text-xs text-zinc-500">
+                    {user?.email ?? 'user@example.com'}
+                  </span>
+                </div>
+                <HugeiconsIcon
+                  icon={ArrowDown01Icon}
+                  size={14}
+                  className={`ml-auto shrink-0 text-zinc-500 transition-transform ${profileOpen ? 'rotate-180' : ''}`}
+                />
               </button>
 
               {/* Dropdown */}
-              {profileOpen && state === 'expanded' && (
+              {profileOpen && (
                 <div className="absolute bottom-full left-0 mb-1 w-full rounded-xl border border-zinc-800 bg-zinc-900 p-1.5 shadow-xl shadow-black/40">
                   {/* Workspace */}
                   <div className="mb-1 rounded-lg bg-zinc-800/50 px-3 py-2.5">
@@ -186,6 +209,7 @@ export function AppSidebar() {
                   <button
                     onClick={() => {
                       setProfileOpen(false)
+                      if (isMobileWidth()) setOpenMobile(false)
                       navigate({ to: `/w/${workspaceId}/settings` })
                     }}
                     className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-200"
@@ -194,10 +218,28 @@ export function AppSidebar() {
                     Workspace settings
                   </button>
 
+                  {/* Tools */}
+                  <div className="my-1 border-t border-zinc-800" />
+                  {toolsItems.filter(item => !item.featureFlag || isEnabled(item.featureFlag)).map(item => (
+                    <button
+                      key={item.label}
+                      onClick={() => {
+                        setProfileOpen(false)
+                        if (isMobileWidth()) setOpenMobile(false)
+                        navigate({ to: `/w/${workspaceId}${item.path}` })
+                      }}
+                      className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-200"
+                    >
+                      <HugeiconsIcon icon={item.icon} size={14} />
+                      {item.label}
+                    </button>
+                  ))}
+
                   {user?.isSuperAdmin && (
                     <button
                       onClick={() => {
                         setProfileOpen(false)
+                        if (isMobileWidth()) setOpenMobile(false)
                         navigate({ to: '/admin' })
                       }}
                       className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-amber-400/80 transition-colors hover:bg-amber-500/10 hover:text-amber-400"
@@ -212,6 +254,7 @@ export function AppSidebar() {
                   <button
                     onClick={() => {
                       setProfileOpen(false)
+                      if (isMobileWidth()) setOpenMobile(false)
                       logout()
                       navigate({ to: '/login' })
                     }}

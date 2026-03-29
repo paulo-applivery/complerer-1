@@ -29,7 +29,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         </header>
 
         {/* Main content area */}
-        <div className="flex flex-1 flex-col gap-4 p-4">
+        <div className="flex flex-1 flex-col gap-4 p-4 min-w-0">
           {children}
         </div>
       </SidebarInset>

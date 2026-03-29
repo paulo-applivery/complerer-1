@@ -1,4 +1,5 @@
-import { useParams, Link } from '@tanstack/react-router'
+import { useEffect } from 'react'
+import { useParams, Link, useNavigate } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { useWorkspace } from '@/hooks/use-workspace'
 import { api } from '@/lib/api'
@@ -19,6 +20,7 @@ import {
   SecurityCheckIcon,
   File01Icon,
   RefreshIcon,
+  Search01Icon,
 } from '@hugeicons/core-free-icons'
 
 // ── Types ──────────────────────────────────────────────────────────────
@@ -117,8 +119,18 @@ function getEventConfig(eventType: string) {
 
 export function DashboardPage() {
   const params = useParams({ strict: false }) as { workspaceId?: string }
+  const navigate = useNavigate()
   const { workspace } = useWorkspace(params.workspaceId)
   const { dashboard, isLoading } = useDashboard(params.workspaceId)
+
+  // Redirect to welcome page on first visit
+  useEffect(() => {
+    const key = `welcomed_${params.workspaceId}`
+    if (params.workspaceId && !localStorage.getItem(key)) {
+      localStorage.setItem(key, '1')
+      navigate({ to: '/w/$workspaceId/welcome', params: { workspaceId: params.workspaceId } })
+    }
+  }, [params.workspaceId, navigate])
 
   // Aggregate totals across frameworks
   const totalControls = dashboard?.adoptions.frameworks.reduce((s, f) => s + f.totalControls, 0) ?? 0
@@ -159,7 +171,7 @@ export function DashboardPage() {
   if (isLoading) {
     return (
       <>
-        <div className="grid auto-rows-min gap-4 md:grid-cols-4">
+        <div className="grid auto-rows-min gap-4 grid-cols-2 md:grid-cols-4">
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className="h-28 animate-pulse rounded-xl border border-zinc-800 bg-zinc-900" />
           ))}
@@ -176,7 +188,7 @@ export function DashboardPage() {
   return (
     <>
       {/* Row 1: Stats cards */}
-      <div className="grid auto-rows-min gap-4 md:grid-cols-4">
+      <div className="grid auto-rows-min gap-4 grid-cols-2 md:grid-cols-4">
         {stats.map((stat) => {
           return (
             <div
@@ -194,9 +206,67 @@ export function DashboardPage() {
         })}
       </div>
 
+      {/* Row 1.5: Compliance Flow — Setup Progress */}
+      <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-6">
+        <div className="flex items-center justify-between mb-5">
+          <div>
+            <h2 className="text-lg font-semibold text-zinc-100">Compliance Setup</h2>
+            <p className="mt-0.5 text-xs text-zinc-500">Your compliance program at a glance</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-8">
+          {[
+            { icon: Layers01Icon, label: 'Frameworks', value: dashboard?.adoptions.count ?? 0, href: 'frameworks', color: 'text-primary-400', bgColor: 'bg-primary-400/10' },
+            { icon: Shield01Icon, label: 'Policies', value: null, href: 'policies', color: 'text-blue-400', bgColor: 'bg-blue-400/10' },
+            { icon: Settings01Icon, label: 'Baselines', value: null, href: 'baselines', color: 'text-purple-400', bgColor: 'bg-purple-400/10' },
+            { icon: Link01Icon, label: 'Integrations', value: null, href: 'integrations', color: 'text-cyan-400', bgColor: 'bg-cyan-400/10' },
+            { icon: FileValidationIcon, label: 'Evidence', value: dashboard?.evidence.total ?? 0, href: 'evidence', color: 'text-amber-400', bgColor: 'bg-amber-400/10' },
+            { icon: Search01Icon, label: 'Gap Analysis', value: null, href: 'gap-analysis', color: 'text-orange-400', bgColor: 'bg-orange-400/10' },
+            { icon: Alert02Icon, label: 'Risks', value: null, href: 'risks', color: 'text-red-400', bgColor: 'bg-red-400/10' },
+            { icon: Key01Icon, label: 'Access', value: dashboard?.access.totalActive ?? 0, href: 'access', color: 'text-green-400', bgColor: 'bg-green-400/10' },
+          ].map((node) => (
+            <a
+              key={node.label}
+              href={`/w/${params.workspaceId}/${node.href}`}
+              className="group flex flex-col items-center gap-2 rounded-xl border border-zinc-800/60 bg-zinc-800/20 p-3 transition-all hover:border-zinc-700 hover:bg-zinc-800/40"
+            >
+              <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${node.bgColor}`}>
+                <HugeiconsIcon icon={node.icon} size={18} className={node.color} />
+              </div>
+              <div className="text-center">
+                <p className="text-[11px] font-medium text-zinc-300 group-hover:text-zinc-100">{node.label}</p>
+                {node.value !== null && (
+                  <p className={`mt-0.5 text-sm font-bold ${node.value > 0 ? node.color : 'text-zinc-600'}`}>{node.value}</p>
+                )}
+              </div>
+            </a>
+          ))}
+        </div>
+
+        {/* Connection line */}
+        <div className="mt-4 flex flex-wrap items-center justify-center gap-1 text-[10px] text-zinc-600">
+          <span>Frameworks</span>
+          <span>&rarr;</span>
+          <span>Policies</span>
+          <span>&rarr;</span>
+          <span>Baselines</span>
+          <span>&rarr;</span>
+          <span>Integrations</span>
+          <span>&rarr;</span>
+          <span>Evidence</span>
+          <span>&rarr;</span>
+          <span>Gaps</span>
+          <span>&rarr;</span>
+          <span>Risks</span>
+          <span>&rarr;</span>
+          <span>Access</span>
+        </div>
+      </div>
+
       {/* Row 2: Framework Coverage */}
       <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-lg font-semibold text-zinc-100">Framework Coverage</h2>
           <Link
             to="/w/$workspaceId/gap-analysis"
@@ -211,8 +281,8 @@ export function DashboardPage() {
         {dashboard && dashboard.adoptions.frameworks.length > 0 ? (
           <div className="mt-4 space-y-4">
             {dashboard.adoptions.frameworks.map((fw) => (
-              <div key={`${fw.slug}-${fw.version}`} className="flex items-center gap-4">
-                <div className="w-40 shrink-0">
+              <div key={`${fw.slug}-${fw.version}`} className="space-y-1.5 md:space-y-0 md:flex md:items-center md:gap-4">
+                <div className="md:w-40 md:shrink-0">
                   <p className="text-sm font-medium text-zinc-200">
                     {fw.name}{' '}
                     <span className="text-zinc-500">{fw.version}</span>
@@ -226,8 +296,8 @@ export function DashboardPage() {
                     />
                   </div>
                 </div>
-                <div className="w-44 shrink-0 text-right">
-                  <span className="text-sm text-zinc-400">
+                <div className="md:w-44 md:shrink-0 md:text-right">
+                  <span className="text-xs md:text-sm text-zinc-400">
                     {fw.coveredControls} / {fw.totalControls} controls covered
                   </span>
                 </div>

@@ -9,8 +9,28 @@ import {
   type ReactNode,
 } from 'react'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { PanelLeftIcon } from '@hugeicons/core-free-icons'
+import { PanelLeftIcon, Cancel01Icon } from '@hugeicons/core-free-icons'
 import { cn } from '@/lib/utils'
+
+// ── Hooks ─────────────────────────────────────────────────────────────────────
+
+const MOBILE_BREAKPOINT = 768
+
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(
+    typeof window !== 'undefined' ? window.innerWidth < MOBILE_BREAKPOINT : false
+  )
+
+  useEffect(() => {
+    const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`)
+    const onChange = (e: MediaQueryListEvent) => setIsMobile(e.matches)
+    mql.addEventListener('change', onChange)
+    setIsMobile(mql.matches)
+    return () => mql.removeEventListener('change', onChange)
+  }, [])
+
+  return isMobile
+}
 
 // ── Context ──────────────────────────────────────────────────────────────────
 
@@ -21,6 +41,9 @@ interface SidebarContextValue {
   open: boolean
   setOpen: (open: boolean) => void
   toggleSidebar: () => void
+  isMobile: boolean
+  openMobile: boolean
+  setOpenMobile: (open: boolean) => void
 }
 
 const SidebarContext = createContext<SidebarContextValue | null>(null)
@@ -43,6 +66,9 @@ interface SidebarProviderProps {
 }
 
 export function SidebarProvider({ defaultOpen = true, children }: SidebarProviderProps) {
+  const isMobile = useIsMobile()
+  const [openMobile, setOpenMobile] = useState(false)
+
   const [open, setOpenState] = useState(() => {
     const stored = localStorage.getItem(SIDEBAR_COOKIE_KEY)
     return stored ? stored === 'true' : defaultOpen
@@ -53,7 +79,13 @@ export function SidebarProvider({ defaultOpen = true, children }: SidebarProvide
     localStorage.setItem(SIDEBAR_COOKIE_KEY, String(value))
   }, [])
 
-  const toggleSidebar = useCallback(() => setOpen(!open), [open, setOpen])
+  const toggleSidebar = useCallback(() => {
+    if (window.innerWidth < MOBILE_BREAKPOINT) {
+      setOpenMobile(prev => !prev)
+    } else {
+      setOpen(!open)
+    }
+  }, [open, setOpen])
 
   // Keyboard shortcut: Cmd+B / Ctrl+B
   useEffect(() => {
@@ -67,9 +99,22 @@ export function SidebarProvider({ defaultOpen = true, children }: SidebarProvide
     return () => window.removeEventListener('keydown', handler)
   }, [toggleSidebar])
 
+  // Close mobile sidebar on resize to desktop
+  useEffect(() => {
+    if (!isMobile) setOpenMobile(false)
+  }, [isMobile])
+
   const value = useMemo<SidebarContextValue>(
-    () => ({ state: open ? 'expanded' : 'collapsed', open, setOpen, toggleSidebar }),
-    [open, setOpen, toggleSidebar]
+    () => ({
+      state: open ? 'expanded' : 'collapsed',
+      open,
+      setOpen,
+      toggleSidebar,
+      isMobile,
+      openMobile,
+      setOpenMobile,
+    }),
+    [open, setOpen, toggleSidebar, isMobile, openMobile]
   )
 
   return (
@@ -97,33 +142,65 @@ interface SidebarProps extends ComponentProps<'div'> {
 }
 
 export function Sidebar({ className, children, ...props }: SidebarProps) {
-  const { state } = useSidebar()
+  const { state, isMobile, openMobile, setOpenMobile } = useSidebar()
 
   return (
-    <div
-      className="group peer hidden md:block"
-      data-state={state}
-      data-collapsible={state === 'collapsed' ? 'icon' : ''}
-    >
-      {/* This div reserves space in the layout */}
-      <div
-        className={cn(
-          'relative h-svh w-(--sidebar-width) bg-transparent transition-[width] duration-200 ease-linear',
-          'group-data-[collapsible=icon]:w-(--sidebar-width-collapsed)'
+    <>
+      {/* ── Mobile sidebar (sheet) ── */}
+      <div className="md:hidden">
+        {/* Backdrop */}
+        {openMobile && (
+          <div
+            className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
+            onClick={() => setOpenMobile(false)}
+          />
         )}
-      />
-      {/* Actual sidebar, positioned fixed */}
-      <div
-        className={cn(
-          'fixed inset-y-0 left-0 z-10 flex h-svh w-(--sidebar-width) flex-col border-r border-zinc-800 bg-zinc-900 transition-[width] duration-200 ease-linear',
-          'group-data-[collapsible=icon]:w-(--sidebar-width-collapsed)',
-          className
-        )}
-        {...props}
-      >
-        {children}
+        {/* Sheet */}
+        <div
+          className={cn(
+            'fixed inset-y-0 left-0 z-50 flex h-svh w-[280px] flex-col border-r border-zinc-800 bg-zinc-900 transition-transform duration-300 ease-in-out',
+            openMobile ? 'translate-x-0' : '-translate-x-full',
+            className
+          )}
+          {...props}
+        >
+          {/* Close button */}
+          <button
+            onClick={() => setOpenMobile(false)}
+            className="absolute right-2 top-2 z-10 inline-flex h-8 w-8 items-center justify-center rounded-md text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"
+          >
+            <HugeiconsIcon icon={Cancel01Icon} size={16} />
+          </button>
+          {children}
+        </div>
       </div>
-    </div>
+
+      {/* ── Desktop sidebar (fixed) ── */}
+      <div
+        className="group peer hidden md:block"
+        data-state={state}
+        data-collapsible={state === 'collapsed' ? 'icon' : ''}
+      >
+        {/* This div reserves space in the layout */}
+        <div
+          className={cn(
+            'relative h-svh w-(--sidebar-width) bg-transparent transition-[width] duration-200 ease-linear',
+            'group-data-[collapsible=icon]:w-(--sidebar-width-collapsed)'
+          )}
+        />
+        {/* Actual sidebar, positioned fixed */}
+        <div
+          className={cn(
+            'fixed inset-y-0 left-0 z-10 flex h-svh w-(--sidebar-width) flex-col border-r border-zinc-800 bg-zinc-900 transition-[width] duration-200 ease-linear',
+            'group-data-[collapsible=icon]:w-(--sidebar-width-collapsed)',
+            className
+          )}
+          {...props}
+        >
+          {children}
+        </div>
+      </div>
+    </>
   )
 }
 
@@ -133,7 +210,7 @@ export function SidebarInset({ className, children, ...props }: ComponentProps<'
   return (
     <main
       className={cn(
-        'relative flex min-h-svh flex-1 flex-col bg-zinc-950',
+        'relative flex min-h-svh min-w-0 flex-1 flex-col bg-zinc-950 overflow-x-hidden',
         'peer-data-[state=collapsed]:ml-0',
         className
       )}
@@ -195,7 +272,7 @@ export function SidebarGroupLabel({ className, children, ...props }: ComponentPr
     <div
       className={cn(
         'flex h-8 shrink-0 items-center rounded-md px-2 text-xs font-medium text-zinc-500 transition-[margin,opacity] duration-200 ease-linear',
-        state === 'collapsed' && 'opacity-0',
+        state === 'collapsed' && 'md:opacity-0',
         className
       )}
       {...props}
@@ -248,7 +325,7 @@ export function SidebarMenuButton({
         'hover:bg-zinc-800 hover:text-zinc-100',
         'data-[active=true]:bg-primary-400/10 data-[active=true]:text-primary-400 data-[active=true]:font-medium',
         !isActive && 'text-zinc-400',
-        state === 'collapsed' && 'justify-center px-0',
+        state === 'collapsed' && 'md:justify-center md:px-0',
         className
       )}
       {...props}

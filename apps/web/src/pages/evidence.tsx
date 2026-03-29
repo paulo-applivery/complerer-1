@@ -36,6 +36,9 @@ export function EvidencePage() {
   const { evidence, total, isLoading } = useEvidence(workspaceId, { page, limit })
   const createMutation = useCreateEvidence(workspaceId)
 
+  const linkMutation = useLinkEvidence(workspaceId)
+  const { adoptions } = useAdoptions(workspaceId)
+
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState({
     title: '',
@@ -44,9 +47,24 @@ export function EvidencePage() {
     fileName: '',
     expiresAt: '',
   })
+  // Control linking during creation
+  const [linkControlId, setLinkControlId] = useState('')
+  const [linkFvId, setLinkFvId] = useState('')
+  const [createCtrlSearch, setCreateCtrlSearch] = useState('')
 
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [linkingId, setLinkingId] = useState<string | null>(null)
+
+  // For the control picker in create form
+  const firstAdoption = adoptions[0]
+  const [selectedCreateAdoption, setSelectedCreateAdoption] = useState<{ slug: string; version: string } | null>(null)
+  const createAdoption = selectedCreateAdoption ?? (firstAdoption ? { slug: firstAdoption.frameworkSlug, version: firstAdoption.frameworkVersion } : null)
+  const { controls: createControls } = useControls(workspaceId, createAdoption?.slug ?? '', createAdoption?.version ?? '', { page: 1, limit: 200 })
+  const filteredCreateControls = createControls.filter(c => {
+    if (!createCtrlSearch) return true
+    const q = createCtrlSearch.toLowerCase()
+    return c.controlId.toLowerCase().includes(q) || c.title.toLowerCase().includes(q)
+  })
 
   const totalPages = Math.max(1, Math.ceil(total / limit))
 
@@ -61,8 +79,16 @@ export function EvidencePage() {
         expiresAt: form.expiresAt || undefined,
       },
       {
-        onSuccess: () => {
+        onSuccess: (data: any) => {
+          // If a control was selected, link it
+          const evidenceId = data?.evidence?.id
+          if (evidenceId && linkControlId && linkFvId) {
+            linkMutation.mutate({ evidenceId, controlId: linkControlId, frameworkVersionId: linkFvId })
+          }
           setForm({ title: '', description: '', source: '', fileName: '', expiresAt: '' })
+          setLinkControlId('')
+          setLinkFvId('')
+          setCreateCtrlSearch('')
           setShowForm(false)
         },
       },
@@ -142,13 +168,88 @@ export function EvidencePage() {
               />
             </div>
           </div>
-          <div className="mt-4 flex justify-end">
+
+          {/* Link to Control (optional) */}
+          {adoptions.length > 0 && (
+            <div className="mt-4 rounded-lg border border-zinc-800 bg-zinc-800/50 p-4">
+              <div className="mb-3 flex items-center justify-between">
+                <div>
+                  <h4 className="text-xs font-semibold text-zinc-300">Link to Control <span className="font-normal text-zinc-500">(optional)</span></h4>
+                  <p className="mt-0.5 text-[10px] text-zinc-500">Automatically link this evidence to a control when created</p>
+                </div>
+                {linkControlId && (
+                  <button onClick={() => { setLinkControlId(''); setLinkFvId('') }} className="text-[10px] text-zinc-500 hover:text-zinc-300">Clear</button>
+                )}
+              </div>
+              <div className="flex items-center gap-2 mb-2">
+                <select
+                  value={createAdoption ? `${createAdoption.slug}|${createAdoption.version}` : ''}
+                  onChange={(e) => {
+                    const [slug, version] = e.target.value.split('|')
+                    setSelectedCreateAdoption({ slug, version })
+                    setLinkControlId('')
+                    setLinkFvId('')
+                  }}
+                  className="appearance-none rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-1.5 text-xs text-zinc-300 focus:border-primary-400 focus:outline-none"
+                >
+                  {adoptions.map((a) => (
+                    <option key={a.id} value={`${a.frameworkSlug}|${a.frameworkVersion}`}>
+                      {a.frameworkName} v{a.frameworkVersion}
+                    </option>
+                  ))}
+                </select>
+                <div className="relative flex-1">
+                  <HugeiconsIcon icon={Search01Icon} size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-500" />
+                  <input
+                    value={createCtrlSearch}
+                    onChange={(e) => setCreateCtrlSearch(e.target.value)}
+                    className="w-full rounded-lg border border-zinc-700 bg-zinc-800 py-1.5 pl-8 pr-3 text-xs text-zinc-300 placeholder-zinc-500 focus:border-primary-400 focus:outline-none"
+                    placeholder="Search controls..."
+                  />
+                </div>
+              </div>
+              <div className="max-h-40 overflow-y-auto rounded-lg border border-zinc-800">
+                <table className="w-full text-left text-xs">
+                  <tbody className="divide-y divide-zinc-800/50">
+                    {filteredCreateControls.slice(0, 30).map((ctrl) => (
+                      <tr
+                        key={ctrl.id}
+                        onClick={() => { setLinkControlId(ctrl.id); setLinkFvId(ctrl.frameworkVersionId) }}
+                        className={`cursor-pointer transition-colors ${linkControlId === ctrl.id ? 'bg-primary-400/10' : 'hover:bg-zinc-800/50'}`}
+                      >
+                        <td className="px-3 py-1.5">
+                          <code className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${linkControlId === ctrl.id ? 'bg-primary-400/20 text-primary-400' : 'bg-zinc-800 text-zinc-400'}`}>{ctrl.controlId}</code>
+                        </td>
+                        <td className="px-3 py-1.5 text-zinc-400 truncate max-w-[300px]">{ctrl.title}</td>
+                        <td className="px-3 py-1.5 text-zinc-600">{ctrl.domain ?? ''}</td>
+                        <td className="px-3 py-1.5 text-right">
+                          {linkControlId === ctrl.id && <span className="text-[10px] text-primary-400">✓ Selected</span>}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {filteredCreateControls.length === 0 && (
+                  <p className="py-3 text-center text-[10px] text-zinc-500">No controls found</p>
+                )}
+              </div>
+            </div>
+          )}
+
+          <div className="mt-4 flex items-center justify-between">
+            {linkControlId ? (
+              <p className="text-xs text-primary-400">
+                Will link to control after creation
+              </p>
+            ) : (
+              <p className="text-xs text-zinc-500">No control selected — you can link later</p>
+            )}
             <button
               onClick={handleSubmit}
               disabled={!form.title.trim() || createMutation.isPending}
               className="rounded-lg bg-primary-400 px-4 py-2 text-sm font-medium text-zinc-950 transition-colors hover:bg-primary-300 disabled:opacity-50"
             >
-              {createMutation.isPending ? 'Creating...' : 'Create Evidence'}
+              {createMutation.isPending ? 'Creating...' : linkControlId ? 'Create & Link' : 'Create Evidence'}
             </button>
           </div>
         </div>

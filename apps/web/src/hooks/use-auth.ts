@@ -41,6 +41,8 @@ export function useAuth() {
     queryKey: ['auth', 'me'],
     queryFn: () => api.get<AuthResponse>('/auth/me'),
     retry: false,
+    staleTime: 10 * 60 * 1000,   // 10 min — auth rarely changes
+    gcTime: 30 * 60 * 1000,
     enabled: !!localStorage.getItem('userId'),
   })
 

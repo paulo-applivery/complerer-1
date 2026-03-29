@@ -417,6 +417,51 @@ frameworkRoutes.post(
   }
 )
 
+/**
+ * DELETE /api/workspaces/:workspaceId/adoptions/:adoptionId
+ * Unenroll / remove a framework adoption from the workspace.
+ */
+frameworkRoutes.delete('/adoptions/:adoptionId', requireRole('admin'), async (c) => {
+  const workspaceId = c.get('workspaceId')
+  const userId = c.get('userId')
+  const adoptionId = c.req.param('adoptionId')
+  const db = c.env.DB
+
+  // Verify adoption exists and belongs to this workspace
+  const adoption = await db
+    .prepare('SELECT id, framework_version_id FROM workspace_adoptions WHERE id = ? AND workspace_id = ?')
+    .bind(adoptionId, workspaceId)
+    .first<{ id: string; framework_version_id: string }>()
+
+  if (!adoption) {
+    return c.json({ error: 'Adoption not found' }, 404)
+  }
+
+  // Delete related workspace controls (mv_control_status) for this framework version
+  await db
+    .prepare('DELETE FROM mv_control_status WHERE workspace_id = ? AND control_id IN (SELECT id FROM versioned_controls WHERE framework_version_id = ?)')
+    .bind(workspaceId, adoption.framework_version_id)
+    .run()
+    .catch(() => {}) // Table may not exist
+
+  // Delete the adoption
+  await db
+    .prepare('DELETE FROM workspace_adoptions WHERE id = ?')
+    .bind(adoptionId)
+    .run()
+
+  await emitEvent(db, {
+    workspaceId,
+    eventType: 'framework.unenrolled',
+    entityType: 'workspace_adoption',
+    entityId: adoptionId,
+    data: { frameworkVersionId: adoption.framework_version_id },
+    actorId: userId,
+  })
+
+  return c.json({ success: true })
+})
+
 // ─── Control CRUD ───────────────────────────────────────────────────
 
 const createControlSchema = z.object({
@@ -1125,6 +1170,66 @@ frameworkRoutes.get('/gap-analysis', async (c) => {
       },
       controls: controlResults,
     },
+  })
+})
+
+// ─── Adopted Controls (for Playbooks browsing) ──────────────────────────────
+
+/**
+ * GET /api/workspaces/:workspaceId/controls
+ * List all controls from adopted frameworks in this workspace.
+ */
+frameworkRoutes.get('/controls', async (c) => {
+  const workspaceId = c.get('workspaceId')
+  const search = c.req.query('search') ?? ''
+  const page = parseInt(c.req.query('page') ?? '1', 10)
+  const limit = parseInt(c.req.query('limit') ?? '50', 10)
+  const offset = (page - 1) * limit
+
+  let searchClause = ''
+  const binds: any[] = [workspaceId]
+
+  if (search) {
+    searchClause = ` AND (vc.title LIKE ? OR vc.control_id LIKE ?)`
+    binds.push(`%${search}%`, `%${search}%`)
+  }
+
+  binds.push(limit, offset)
+
+  const { results } = await c.env.DB.prepare(
+    `SELECT vc.id, vc.control_id, vc.title, vc.requirement_text, vc.domain, vc.subdomain,
+            vc.framework_version_id, f.name as framework_name, fv.version as framework_version
+     FROM versioned_controls vc
+     JOIN framework_versions fv ON fv.id = vc.framework_version_id
+     JOIN frameworks f ON f.id = fv.framework_id
+     JOIN workspace_adoptions wa ON wa.framework_version_id = fv.id AND wa.workspace_id = ?
+     WHERE 1=1${searchClause}
+     ORDER BY f.name, vc.domain, vc.control_id
+     LIMIT ? OFFSET ?`
+  )
+    .bind(...binds)
+    .all()
+
+  const countBinds: any[] = [workspaceId]
+  if (search) {
+    countBinds.push(`%${search}%`, `%${search}%`)
+  }
+
+  const countResult = await c.env.DB.prepare(
+    `SELECT COUNT(*) as total
+     FROM versioned_controls vc
+     JOIN framework_versions fv ON fv.id = vc.framework_version_id
+     JOIN workspace_adoptions wa ON wa.framework_version_id = fv.id AND wa.workspace_id = ?
+     WHERE 1=1${searchClause}`
+  )
+    .bind(...countBinds)
+    .first<{ total: number }>()
+
+  return c.json({
+    controls: results,
+    total: countResult?.total ?? 0,
+    page,
+    limit,
   })
 })
 

@@ -224,21 +224,24 @@ export function SettingsPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 rounded-lg bg-zinc-900 p-1">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
-              activeTab === tab.id
-                ? 'bg-zinc-800 text-zinc-100'
-                : 'text-zinc-400 hover:text-zinc-300'
-            }`}
-          >
-            <HugeiconsIcon icon={tab.icon} size={16} />
-            {tab.label}
-          </button>
-        ))}
+      <div className="overflow-x-auto -mx-4 px-4">
+        <div className="flex gap-1 rounded-lg bg-zinc-900 p-1 min-w-max">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors ${
+                activeTab === tab.id
+                  ? 'bg-zinc-800 text-zinc-100'
+                  : 'text-zinc-400 hover:text-zinc-300'
+              }`}
+            >
+              <HugeiconsIcon icon={tab.icon} size={16} />
+              <span className="hidden sm:inline">{tab.label}</span>
+              <span className="sm:hidden">{tab.label.split(' ')[0]}</span>
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* AI Configuration Tab */}
@@ -873,7 +876,7 @@ function MembersTab({ workspaceId }: { workspaceId: string | undefined }) {
             const canEdit = isAdmin && !isOwner && !isSelf
 
             return (
-              <div key={member.id} className="flex items-center justify-between rounded-lg border border-zinc-800 bg-zinc-800/50 px-4 py-3">
+              <div key={member.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-zinc-800 bg-zinc-800/50 px-4 py-3">
                 <div className="flex items-center gap-3">
                   <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-zinc-600 to-zinc-700 text-xs font-medium text-zinc-200">
                     {member.name.split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase()}

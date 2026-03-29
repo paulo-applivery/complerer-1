@@ -12,6 +12,7 @@ import {
   ArrowDown01Icon,
   ArrowLeft01Icon,
   Link01Icon,
+  Layers01Icon,
 } from '@hugeicons/core-free-icons'
 import {
   Sidebar,
@@ -41,11 +42,12 @@ const adminItems: NavItem[] = [
   { label: 'Feature Flags', icon: Flag01Icon, path: '/admin/feature-flags' },
   { label: 'Workspaces', icon: Building06Icon, path: '/admin/workspaces' },
   { label: 'Members', icon: UserGroupIcon, path: '/admin/members' },
+  { label: 'Libraries', icon: Layers01Icon, path: '/admin/libraries' },
 ]
 
 function AdminNavItem({ item }: { item: NavItem }) {
   const navigate = useNavigate()
-  const { state } = useSidebar()
+  const { setOpenMobile } = useSidebar()
   const location = useLocation()
   const isActive = item.path === '/admin'
     ? location.pathname === '/admin'
@@ -55,10 +57,13 @@ function AdminNavItem({ item }: { item: NavItem }) {
     <SidebarMenuItem>
       <SidebarMenuButton
         isActive={isActive}
-        onClick={() => navigate({ to: item.path })}
+        onClick={() => {
+          navigate({ to: item.path })
+          if (window.innerWidth < 768) setOpenMobile(false)
+        }}
       >
         <HugeiconsIcon icon={item.icon} size={16} className="shrink-0" />
-        {state === 'expanded' && <span>{item.label}</span>}
+        <span>{item.label}</span>
       </SidebarMenuButton>
     </SidebarMenuItem>
   )
@@ -66,9 +71,10 @@ function AdminNavItem({ item }: { item: NavItem }) {
 
 export function AdminSidebar() {
   const { user, logout } = useAuth()
-  const { state } = useSidebar()
+  const { state, setOpenMobile } = useSidebar()
   const navigate = useNavigate()
   const [profileOpen, setProfileOpen] = useState(false)
+  const isMobileWidth = () => window.innerWidth < 768
 
   return (
     <Sidebar>
@@ -85,7 +91,13 @@ export function AdminSidebar() {
                   </span>
                 </>
               ) : (
-                <img src="/icon-color.svg" alt="Complerer" className="h-6 w-6" />
+                <>
+                  <img src="/logo-color.svg" alt="Complerer" className="h-5 md:hidden" />
+                  <span className="rounded-md bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-amber-400 md:hidden">
+                    Super Admin
+                  </span>
+                  <img src="/icon-color.svg" alt="Complerer" className="hidden md:block h-6 w-6" />
+                </>
               )}
             </div>
           </SidebarMenuItem>
@@ -109,6 +121,7 @@ export function AdminSidebar() {
             <SidebarMenuItem>
               <SidebarMenuButton
                 onClick={() => {
+                  if (isMobileWidth()) setOpenMobile(false)
                   const workspaceId = localStorage.getItem('workspaceId')
                   if (workspaceId) {
                     navigate({ to: `/w/${workspaceId}/dashboard` })
@@ -118,7 +131,7 @@ export function AdminSidebar() {
                 }}
               >
                 <HugeiconsIcon icon={ArrowLeft01Icon} size={16} className="shrink-0" />
-                {state === 'expanded' && <span>Back to App</span>}
+                <span>Back to App</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
@@ -142,31 +155,28 @@ export function AdminSidebar() {
                     {user?.name?.[0]?.toUpperCase() ?? 'A'}
                   </span>
                 </div>
-                {state === 'expanded' && (
-                  <>
-                    <div className="flex min-w-0 flex-1 flex-col gap-0.5 leading-none">
-                      <span className="truncate text-sm font-medium text-zinc-100">
-                        {user?.name ?? 'Admin'}
-                      </span>
-                      <span className="truncate text-xs text-zinc-500">
-                        {user?.email ?? 'admin@example.com'}
-                      </span>
-                    </div>
-                    <HugeiconsIcon
-                      icon={ArrowDown01Icon}
-                      size={14}
-                      className={`ml-auto text-zinc-500 transition-transform ${profileOpen ? 'rotate-180' : ''}`}
-                    />
-                  </>
-                )}
+                <div className="flex min-w-0 flex-1 flex-col gap-0.5 leading-none overflow-hidden">
+                  <span className="truncate text-sm font-medium text-zinc-100">
+                    {user?.name ?? 'Admin'}
+                  </span>
+                  <span className="truncate text-xs text-zinc-500">
+                    {user?.email ?? 'admin@example.com'}
+                  </span>
+                </div>
+                <HugeiconsIcon
+                  icon={ArrowDown01Icon}
+                  size={14}
+                  className={`ml-auto shrink-0 text-zinc-500 transition-transform ${profileOpen ? 'rotate-180' : ''}`}
+                />
               </button>
 
               {/* Dropdown */}
-              {profileOpen && state === 'expanded' && (
+              {profileOpen && (
                 <div className="absolute bottom-full left-0 mb-1 w-full rounded-xl border border-zinc-800 bg-zinc-900 p-1.5 shadow-xl shadow-black/40">
                   <button
                     onClick={() => {
                       setProfileOpen(false)
+                      if (isMobileWidth()) setOpenMobile(false)
                       logout()
                       navigate({ to: '/login' })
                     }}

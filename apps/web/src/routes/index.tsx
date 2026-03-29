@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react'
 import {
   createRootRoute,
   createRoute,
@@ -9,27 +10,53 @@ import {
 } from '@tanstack/react-router'
 import { useAuth } from '@/hooks/use-auth'
 import { AppLayout } from '@/components/layout/app-layout'
-import { LoginPage } from '@/pages/login'
-import { DashboardPage } from '@/pages/dashboard'
-import { FrameworksPage } from '@/pages/frameworks'
-import { AccessRegisterPage } from '@/pages/access-register'
-import { EvidencePage } from '@/pages/evidence'
-import { BaselinesPage } from '@/pages/baselines'
-import { RiskRegisterPage } from '@/pages/risk-register'
-import { PoliciesPage } from '@/pages/policies'
-import { ChatPage } from '@/pages/chat'
-import { SettingsPage } from '@/pages/settings'
-import { GapAnalysisPage } from '@/pages/gap-analysis'
-import { EventsPage } from '@/pages/events'
-import { IntegrationsPage } from '@/pages/integrations'
-import { TrustScorePage } from '@/pages/trust-score'
-import { AdminLayout } from '@/components/layout/admin-layout'
-import { AdminDashboardPage } from '@/pages/admin/dashboard'
-import { AdminProvidersPage } from '@/pages/admin/providers'
-import { AdminEmailTemplatesPage } from '@/pages/admin/email-templates'
-import { AdminFeatureFlagsPage } from '@/pages/admin/feature-flags'
-import { AdminWorkspacesPage } from '@/pages/admin/workspaces'
-import { AdminMembersPage } from '@/pages/admin/members'
+
+// ── Lazy page imports (code-splitting) ──────────────────────────────────────
+
+const LoginPage = lazy(() => import('@/pages/login').then(m => ({ default: m.LoginPage })))
+const SignupPage = lazy(() => import('@/pages/signup').then(m => ({ default: m.SignupPage })))
+const OnboardingPage = lazy(() => import('@/pages/onboarding').then(m => ({ default: m.OnboardingPage })))
+const PendingPage = lazy(() => import('@/pages/pending').then(m => ({ default: m.PendingPage })))
+const DashboardPage = lazy(() => import('@/pages/dashboard').then(m => ({ default: m.DashboardPage })))
+const FrameworksPage = lazy(() => import('@/pages/frameworks').then(m => ({ default: m.FrameworksPage })))
+const AccessRegisterPage = lazy(() => import('@/pages/access-register').then(m => ({ default: m.AccessRegisterPage })))
+const EvidencePage = lazy(() => import('@/pages/evidence').then(m => ({ default: m.EvidencePage })))
+const BaselinesPage = lazy(() => import('@/pages/baselines').then(m => ({ default: m.BaselinesPage })))
+const RiskRegisterPage = lazy(() => import('@/pages/risk-register').then(m => ({ default: m.RiskRegisterPage })))
+const PoliciesPage = lazy(() => import('@/pages/policies').then(m => ({ default: m.PoliciesPage })))
+const ChatPage = lazy(() => import('@/pages/chat').then(m => ({ default: m.ChatPage })))
+const SettingsPage = lazy(() => import('@/pages/settings').then(m => ({ default: m.SettingsPage })))
+const GapAnalysisPage = lazy(() => import('@/pages/gap-analysis').then(m => ({ default: m.GapAnalysisPage })))
+const EventsPage = lazy(() => import('@/pages/events').then(m => ({ default: m.EventsPage })))
+const IntegrationsPage = lazy(() => import('@/pages/integrations').then(m => ({ default: m.IntegrationsPage })))
+const TrustScorePage = lazy(() => import('@/pages/trust-score').then(m => ({ default: m.TrustScorePage })))
+const TrustCenterPage = lazy(() => import('@/pages/trust-center').then(m => ({ default: m.TrustCenterPage })))
+const PlaybooksPage = lazy(() => import('@/pages/playbooks').then(m => ({ default: m.PlaybooksPage })))
+const WelcomePage = lazy(() => import('@/pages/welcome').then(m => ({ default: m.WelcomePage })))
+const ProjectsPage = lazy(() => import('@/pages/projects').then(m => ({ default: m.ProjectsPage })))
+const ProjectDetailPage = lazy(() => import('@/pages/project-detail').then(m => ({ default: m.ProjectDetailPage })))
+const AdminLayout = lazy(() => import('@/components/layout/admin-layout').then(m => ({ default: m.AdminLayout })))
+const AdminDashboardPage = lazy(() => import('@/pages/admin/dashboard').then(m => ({ default: m.AdminDashboardPage })))
+const AdminProvidersPage = lazy(() => import('@/pages/admin/providers').then(m => ({ default: m.AdminProvidersPage })))
+const AdminEmailTemplatesPage = lazy(() => import('@/pages/admin/email-templates').then(m => ({ default: m.AdminEmailTemplatesPage })))
+const AdminFeatureFlagsPage = lazy(() => import('@/pages/admin/feature-flags').then(m => ({ default: m.AdminFeatureFlagsPage })))
+const AdminWorkspacesPage = lazy(() => import('@/pages/admin/workspaces').then(m => ({ default: m.AdminWorkspacesPage })))
+const AdminMembersPage = lazy(() => import('@/pages/admin/members').then(m => ({ default: m.AdminMembersPage })))
+const AdminLibrariesPage = lazy(() => import('@/pages/admin/libraries').then(m => ({ default: m.AdminLibrariesPage })))
+
+// ── Loading fallback ────────────────────────────────────────────────────────
+
+function PageLoader() {
+  return (
+    <div className="flex items-center justify-center py-20">
+      <div className="h-5 w-5 animate-spin rounded-full border-2 border-zinc-700 border-t-primary-400" />
+    </div>
+  )
+}
+
+function LazyPage({ children }: { children: React.ReactNode }) {
+  return <Suspense fallback={<PageLoader />}>{children}</Suspense>
+}
 
 // ── Root ────────────────────────────────────────────────────────────────────
 
@@ -42,7 +69,29 @@ const rootRoute = createRootRoute({
 const loginRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/login',
-  component: LoginPage,
+  component: () => <LazyPage><LoginPage /></LazyPage>,
+})
+
+const signupRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/signup',
+  component: () => <LazyPage><SignupPage /></LazyPage>,
+})
+
+const onboardingRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/onboarding',
+  component: () => <LazyPage><OnboardingPage /></LazyPage>,
+  beforeLoad: () => {
+    const userId = localStorage.getItem('userId')
+    if (!userId) throw redirect({ to: '/signup' })
+  },
+})
+
+const pendingRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/pending',
+  component: () => <LazyPage><PendingPage /></LazyPage>,
 })
 
 const indexRoute = createRoute({
@@ -149,79 +198,103 @@ const workspaceLayoutRoute = createRoute({
 const dashboardRoute = createRoute({
   getParentRoute: () => workspaceLayoutRoute,
   path: '/dashboard',
-  component: DashboardPage,
+  component: () => <LazyPage><DashboardPage /></LazyPage>,
 })
 
 const frameworksRoute = createRoute({
   getParentRoute: () => workspaceLayoutRoute,
   path: '/frameworks',
-  component: FrameworksPage,
+  component: () => <LazyPage><FrameworksPage /></LazyPage>,
 })
 
 const accessRoute = createRoute({
   getParentRoute: () => workspaceLayoutRoute,
   path: '/access',
-  component: AccessRegisterPage,
+  component: () => <LazyPage><AccessRegisterPage /></LazyPage>,
 })
 
 const evidenceRoute = createRoute({
   getParentRoute: () => workspaceLayoutRoute,
   path: '/evidence',
-  component: EvidencePage,
+  component: () => <LazyPage><EvidencePage /></LazyPage>,
 })
 
 const baselinesRoute = createRoute({
   getParentRoute: () => workspaceLayoutRoute,
   path: '/baselines',
-  component: BaselinesPage,
+  component: () => <LazyPage><BaselinesPage /></LazyPage>,
 })
 
 const risksRoute = createRoute({
   getParentRoute: () => workspaceLayoutRoute,
   path: '/risks',
-  component: RiskRegisterPage,
+  component: () => <LazyPage><RiskRegisterPage /></LazyPage>,
 })
 
 const policiesRoute = createRoute({
   getParentRoute: () => workspaceLayoutRoute,
   path: '/policies',
-  component: PoliciesPage,
+  component: () => <LazyPage><PoliciesPage /></LazyPage>,
 })
 
 const chatRoute = createRoute({
   getParentRoute: () => workspaceLayoutRoute,
   path: '/chat',
-  component: ChatPage,
+  component: () => <LazyPage><ChatPage /></LazyPage>,
 })
 
 const settingsRoute = createRoute({
   getParentRoute: () => workspaceLayoutRoute,
   path: '/settings',
-  component: SettingsPage,
+  component: () => <LazyPage><SettingsPage /></LazyPage>,
 })
 
 const gapAnalysisRoute = createRoute({
   getParentRoute: () => workspaceLayoutRoute,
   path: '/gap-analysis',
-  component: GapAnalysisPage,
+  component: () => <LazyPage><GapAnalysisPage /></LazyPage>,
 })
 
 const eventsRoute = createRoute({
   getParentRoute: () => workspaceLayoutRoute,
   path: '/events',
-  component: EventsPage,
+  component: () => <LazyPage><EventsPage /></LazyPage>,
 })
 
 const integrationsRoute = createRoute({
   getParentRoute: () => workspaceLayoutRoute,
   path: '/integrations',
-  component: IntegrationsPage,
+  component: () => <LazyPage><IntegrationsPage /></LazyPage>,
 })
 
 const trustScoreRoute = createRoute({
   getParentRoute: () => workspaceLayoutRoute,
   path: '/trust',
-  component: TrustScorePage,
+  component: () => <LazyPage><TrustScorePage /></LazyPage>,
+})
+
+const playbooksRoute = createRoute({
+  getParentRoute: () => workspaceLayoutRoute,
+  path: '/playbooks',
+  component: () => <LazyPage><PlaybooksPage /></LazyPage>,
+})
+
+const welcomeRoute = createRoute({
+  getParentRoute: () => workspaceLayoutRoute,
+  path: '/welcome',
+  component: () => <LazyPage><WelcomePage /></LazyPage>,
+})
+
+const projectsRoute = createRoute({
+  getParentRoute: () => workspaceLayoutRoute,
+  path: '/projects',
+  component: () => <LazyPage><ProjectsPage /></LazyPage>,
+})
+
+const projectDetailRoute = createRoute({
+  getParentRoute: () => workspaceLayoutRoute,
+  path: '/projects/$projectId',
+  component: () => <LazyPage><ProjectDetailPage /></LazyPage>,
 })
 
 // ── Admin layout ───────────────────────────────────────────────────────────
@@ -230,9 +303,11 @@ const adminLayoutRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin',
   component: () => (
-    <AdminLayout>
-      <Outlet />
-    </AdminLayout>
+    <LazyPage>
+      <AdminLayout>
+        <Outlet />
+      </AdminLayout>
+    </LazyPage>
   ),
   beforeLoad: () => {
     const userId = localStorage.getItem('userId')
@@ -243,37 +318,51 @@ const adminLayoutRoute = createRoute({
 const adminDashboardRoute = createRoute({
   getParentRoute: () => adminLayoutRoute,
   path: '/',
-  component: AdminDashboardPage,
+  component: () => <LazyPage><AdminDashboardPage /></LazyPage>,
 })
 
 const adminProvidersRoute = createRoute({
   getParentRoute: () => adminLayoutRoute,
   path: '/providers',
-  component: AdminProvidersPage,
+  component: () => <LazyPage><AdminProvidersPage /></LazyPage>,
 })
 
 const adminEmailTemplatesRoute = createRoute({
   getParentRoute: () => adminLayoutRoute,
   path: '/email-templates',
-  component: AdminEmailTemplatesPage,
+  component: () => <LazyPage><AdminEmailTemplatesPage /></LazyPage>,
 })
 
 const adminFeatureFlagsRoute = createRoute({
   getParentRoute: () => adminLayoutRoute,
   path: '/feature-flags',
-  component: AdminFeatureFlagsPage,
+  component: () => <LazyPage><AdminFeatureFlagsPage /></LazyPage>,
 })
 
 const adminWorkspacesRoute = createRoute({
   getParentRoute: () => adminLayoutRoute,
   path: '/workspaces',
-  component: AdminWorkspacesPage,
+  component: () => <LazyPage><AdminWorkspacesPage /></LazyPage>,
 })
 
 const adminMembersRoute = createRoute({
   getParentRoute: () => adminLayoutRoute,
   path: '/members',
-  component: AdminMembersPage,
+  component: () => <LazyPage><AdminMembersPage /></LazyPage>,
+})
+
+const adminLibrariesRoute = createRoute({
+  getParentRoute: () => adminLayoutRoute,
+  path: '/libraries',
+  component: () => <LazyPage><AdminLibrariesPage /></LazyPage>,
+})
+
+// ── Public Trust Center ─────────────────────────────────────────────────────
+
+const trustCenterRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/trust/$slug',
+  component: () => <LazyPage><TrustCenterPage /></LazyPage>,
 })
 
 // ── Tree + Router ───────────────────────────────────────────────────────────
@@ -281,9 +370,13 @@ const adminMembersRoute = createRoute({
 export const routeTree = rootRoute.addChildren([
   indexRoute,
   loginRoute,
+  signupRoute,
+  onboardingRoute,
+  pendingRoute,
   workspacesRoute,
-  workspaceLayoutRoute.addChildren([dashboardRoute, frameworksRoute, accessRoute, evidenceRoute, baselinesRoute, risksRoute, policiesRoute, chatRoute, settingsRoute, gapAnalysisRoute, eventsRoute, integrationsRoute, trustScoreRoute]),
-  adminLayoutRoute.addChildren([adminDashboardRoute, adminProvidersRoute, adminEmailTemplatesRoute, adminFeatureFlagsRoute, adminWorkspacesRoute, adminMembersRoute]),
+  trustCenterRoute,
+  workspaceLayoutRoute.addChildren([dashboardRoute, frameworksRoute, accessRoute, evidenceRoute, baselinesRoute, risksRoute, policiesRoute, chatRoute, settingsRoute, gapAnalysisRoute, eventsRoute, integrationsRoute, trustScoreRoute, playbooksRoute, welcomeRoute, projectsRoute, projectDetailRoute]),
+  adminLayoutRoute.addChildren([adminDashboardRoute, adminProvidersRoute, adminEmailTemplatesRoute, adminFeatureFlagsRoute, adminWorkspacesRoute, adminMembersRoute, adminLibrariesRoute]),
 ])
 
 export const router = createRouter({

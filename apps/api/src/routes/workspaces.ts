@@ -418,4 +418,287 @@ workspaceRoutes.post('/invitations/:invitationId/accept', async (c) => {
   })
 })
 
+/**
+ * GET /api/workspaces/:workspaceId/features
+ * List enabled feature flags for this workspace.
+ */
+workspaceRoutes.get(
+  '/:workspaceId/features',
+  workspaceMiddleware,
+  async (c) => {
+    const workspaceId = c.get('workspaceId')
+
+    const { results } = await c.env.DB.prepare(
+      'SELECT slug, enabled, rollout_percentage, target_workspaces FROM feature_flags'
+    ).all<{
+      slug: string
+      enabled: number
+      rollout_percentage: number
+      target_workspaces: string | null
+    }>()
+
+    // Compute which flags are active for this workspace
+    const features: Record<string, boolean> = {}
+    for (const flag of results) {
+      let active = flag.enabled === 1
+
+      // Check workspace targeting
+      if (active && flag.target_workspaces) {
+        try {
+          const targets = JSON.parse(flag.target_workspaces) as string[]
+          if (targets.length > 0) {
+            active = targets.includes(workspaceId)
+          }
+        } catch {}
+      }
+
+      // Check rollout percentage (simple hash-based)
+      if (active && flag.rollout_percentage < 100) {
+        const hash = Array.from(workspaceId + flag.slug).reduce((acc, c) => acc + c.charCodeAt(0), 0)
+        active = (hash % 100) < flag.rollout_percentage
+      }
+
+      features[flag.slug] = active
+    }
+
+    return c.json({ features })
+  }
+)
+
+// ─── Update Workspace ────────────────────────────────────────────────────────
+
+const updateWorkspaceSchema = z.object({
+  name: z.string().min(1).max(100).optional(),
+  slug: z.string().min(1).max(100).optional(),
+})
+
+/**
+ * PATCH /api/workspaces/:workspaceId
+ * Update workspace name (owner only).
+ */
+workspaceRoutes.patch(
+  '/:workspaceId',
+  workspaceMiddleware,
+  requireRole('owner'),
+  zValidator('json', updateWorkspaceSchema),
+  async (c) => {
+    const workspaceId = c.get('workspaceId')
+    const { name, slug } = c.req.valid('json')
+    const now = new Date().toISOString()
+
+    const setClauses: string[] = ['updated_at = ?']
+    const values: any[] = [now]
+    if (name) { setClauses.push('name = ?'); values.push(name) }
+    if (slug) { setClauses.push('slug = ?'); values.push(slug.toLowerCase().replace(/[^a-z0-9-]/g, '-')) }
+    values.push(workspaceId)
+
+    await c.env.DB.prepare(
+      `UPDATE workspaces SET ${setClauses.join(', ')} WHERE id = ?`
+    ).bind(...values).run()
+
+    const workspace = await c.env.DB.prepare(
+      'SELECT id, name, slug, plan, created_at, updated_at FROM workspaces WHERE id = ?'
+    )
+      .bind(workspaceId)
+      .first()
+
+    return c.json({ workspace })
+  }
+)
+
+// ─── Member Role Change ──────────────────────────────────────────────────────
+
+const updateRoleSchema = z.object({
+  role: z.enum(['admin', 'auditor', 'member', 'viewer']),
+})
+
+/**
+ * PATCH /api/workspaces/:workspaceId/members/:memberId
+ * Change a member's role (admin+ only).
+ */
+workspaceRoutes.patch(
+  '/:workspaceId/members/:memberId',
+  workspaceMiddleware,
+  requireRole('admin'),
+  zValidator('json', updateRoleSchema),
+  async (c) => {
+    const workspaceId = c.get('workspaceId')
+    const userId = c.get('userId')
+    const memberId = c.req.param('memberId')
+    const { role: newRole } = c.req.valid('json')
+    const db = c.env.DB
+
+    const member = await db
+      .prepare('SELECT id, user_id, role FROM workspace_members WHERE id = ? AND workspace_id = ?')
+      .bind(memberId, workspaceId)
+      .first<{ id: string; user_id: string; role: string }>()
+
+    if (!member) {
+      return c.json({ error: 'Member not found' }, 404)
+    }
+
+    if (member.role === 'owner') {
+      return c.json({ error: 'Cannot change the owner role' }, 403)
+    }
+
+    if (member.user_id === userId) {
+      return c.json({ error: 'Cannot change your own role' }, 403)
+    }
+
+    await db
+      .prepare('UPDATE workspace_members SET role = ? WHERE id = ?')
+      .bind(newRole, memberId)
+      .run()
+
+    await emitEvent(db, {
+      workspaceId,
+      eventType: 'member.role_changed',
+      entityType: 'workspace_member',
+      entityId: memberId,
+      data: { oldRole: member.role, newRole },
+      actorId: userId,
+    })
+
+    return c.json({ success: true, role: newRole })
+  }
+)
+
+// ─── Remove Member ───────────────────────────────────────────────────────────
+
+/**
+ * DELETE /api/workspaces/:workspaceId/members/:memberId
+ * Remove a member from the workspace (admin+ only).
+ */
+workspaceRoutes.delete(
+  '/:workspaceId/members/:memberId',
+  workspaceMiddleware,
+  requireRole('admin'),
+  async (c) => {
+    const workspaceId = c.get('workspaceId')
+    const userId = c.get('userId')
+    const memberId = c.req.param('memberId')
+    const db = c.env.DB
+
+    const member = await db
+      .prepare('SELECT id, user_id, role FROM workspace_members WHERE id = ? AND workspace_id = ?')
+      .bind(memberId, workspaceId)
+      .first<{ id: string; user_id: string; role: string }>()
+
+    if (!member) {
+      return c.json({ error: 'Member not found' }, 404)
+    }
+
+    if (member.role === 'owner') {
+      return c.json({ error: 'Cannot remove the workspace owner' }, 403)
+    }
+
+    if (member.user_id === userId) {
+      return c.json({ error: 'Cannot remove yourself' }, 403)
+    }
+
+    await db
+      .prepare('DELETE FROM workspace_members WHERE id = ?')
+      .bind(memberId)
+      .run()
+
+    await emitEvent(db, {
+      workspaceId,
+      eventType: 'member.removed',
+      entityType: 'workspace_member',
+      entityId: memberId,
+      data: { removedUserId: member.user_id, role: member.role },
+      actorId: userId,
+    })
+
+    return c.json({ success: true })
+  }
+)
+
+// ─── List Direct Invitations ─────────────────────────────────────────────────
+
+/**
+ * GET /api/workspaces/:workspaceId/invitations/direct
+ * List pending direct invitations (admin+ only).
+ */
+workspaceRoutes.get(
+  '/:workspaceId/invitations/direct',
+  workspaceMiddleware,
+  requireRole('admin'),
+  async (c) => {
+    const workspaceId = c.get('workspaceId')
+
+    const { results } = await c.env.DB.prepare(
+      `SELECT id, email, role, invited_by, status, expires_at, created_at
+       FROM invitations
+       WHERE workspace_id = ? AND status = 'pending'
+       ORDER BY created_at DESC`
+    )
+      .bind(workspaceId)
+      .all<{
+        id: string
+        email: string
+        role: string
+        invited_by: string
+        status: string
+        expires_at: string
+        created_at: string
+      }>()
+
+    return c.json({
+      invitations: results.map((inv) => ({
+        id: inv.id,
+        email: inv.email,
+        role: inv.role,
+        invitedBy: inv.invited_by,
+        status: inv.status,
+        expiresAt: inv.expires_at,
+        createdAt: inv.created_at,
+      })),
+    })
+  }
+)
+
+// ─── Cancel Invitation ───────────────────────────────────────────────────────
+
+/**
+ * DELETE /api/workspaces/:workspaceId/invitations/:invitationId
+ * Cancel a pending invitation (admin+ only).
+ */
+workspaceRoutes.delete(
+  '/:workspaceId/invitations/:invitationId',
+  workspaceMiddleware,
+  requireRole('admin'),
+  async (c) => {
+    const workspaceId = c.get('workspaceId')
+    const userId = c.get('userId')
+    const invitationId = c.req.param('invitationId')
+    const db = c.env.DB
+
+    const inv = await db
+      .prepare("SELECT id, email FROM invitations WHERE id = ? AND workspace_id = ? AND status = 'pending'")
+      .bind(invitationId, workspaceId)
+      .first<{ id: string; email: string }>()
+
+    if (!inv) {
+      return c.json({ error: 'Invitation not found or already processed' }, 404)
+    }
+
+    await db
+      .prepare("UPDATE invitations SET status = 'cancelled' WHERE id = ?")
+      .bind(invitationId)
+      .run()
+
+    await emitEvent(db, {
+      workspaceId,
+      eventType: 'invitation.cancelled',
+      entityType: 'invitation',
+      entityId: invitationId,
+      data: { email: inv.email },
+      actorId: userId,
+    })
+
+    return c.json({ success: true })
+  }
+)
+
 export { workspaceRoutes }

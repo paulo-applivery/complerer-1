@@ -6,6 +6,7 @@ import {
   useAdoptions,
   useControls,
   useAdoptFramework,
+  useUnadoptFramework,
   useCreateControl,
   useUpdateControl,
   useDeleteControl,
@@ -84,6 +85,8 @@ function CatalogTab({ workspaceId }: { workspaceId: string | undefined }) {
   const { frameworks, isLoading: frameworksLoading } = useFrameworks(workspaceId)
   const { adoptions, isLoading: adoptionsLoading } = useAdoptions(workspaceId)
   const adoptMutation = useAdoptFramework(workspaceId)
+  const unadoptMutation = useUnadoptFramework(workspaceId)
+  const [confirmUnenroll, setConfirmUnenroll] = useState<string | null>(null)
   const adoptedSlugs = new Set(adoptions.map((a) => a.frameworkSlug))
   const isLoading = frameworksLoading || adoptionsLoading
 
@@ -120,8 +123,38 @@ function CatalogTab({ workspaceId }: { workspaceId: string | undefined }) {
                     v{adoption.frameworkVersion}
                   </span>
                 </div>
-                <div className="mt-3 text-xs text-zinc-500">
-                  Adopted {new Date(adoption.adoptedAt).toLocaleDateString()}
+                <div className="mt-3 flex items-center justify-between">
+                  <span className="text-xs text-zinc-500">
+                    Adopted {new Date(adoption.adoptedAt).toLocaleDateString()}
+                  </span>
+                  {confirmUnenroll === adoption.id ? (
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={() => {
+                          unadoptMutation.mutate(adoption.id, {
+                            onSuccess: () => setConfirmUnenroll(null),
+                          })
+                        }}
+                        disabled={unadoptMutation.isPending}
+                        className="rounded-lg bg-red-500/10 px-2.5 py-1 text-xs font-medium text-red-400 hover:bg-red-500/20"
+                      >
+                        {unadoptMutation.isPending ? 'Removing...' : 'Confirm'}
+                      </button>
+                      <button
+                        onClick={() => setConfirmUnenroll(null)}
+                        className="rounded-lg border border-zinc-700 px-2.5 py-1 text-xs text-zinc-400 hover:border-zinc-600"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setConfirmUnenroll(adoption.id)}
+                      className="rounded-lg border border-zinc-700 px-2.5 py-1 text-xs text-zinc-500 transition-colors hover:border-red-500/30 hover:text-red-400"
+                    >
+                      Unenroll
+                    </button>
+                  )}
                 </div>
               </div>
             ))}

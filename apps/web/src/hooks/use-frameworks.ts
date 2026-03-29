@@ -131,6 +131,19 @@ export function useAdoptFramework(workspaceId: string | undefined) {
   })
 }
 
+export function useUnadoptFramework(workspaceId: string | undefined) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (adoptionId: string) =>
+      api.delete(`/workspaces/${workspaceId}/adoptions/${adoptionId}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['adoptions', workspaceId] })
+      queryClient.invalidateQueries({ queryKey: ['adopted-controls', workspaceId] })
+    },
+  })
+}
+
 // ── Control CRUD ────────────────────────────────────────────────────────────
 
 export function useCreateControl(workspaceId: string | undefined) {

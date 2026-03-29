@@ -313,4 +313,109 @@ seedRoutes.post('/crosswalks', async (c) => {
   })
 })
 
+/**
+ * POST /api/seed/baselines
+ * Seed default baselines for a workspace.
+ * Body: { workspaceId: string }
+ */
+seedRoutes.post('/baselines', async (c) => {
+  const body = await c.req.json<{ workspaceId: string }>()
+  const workspaceId = body.workspaceId
+
+  if (!workspaceId) {
+    return c.json({ error: 'workspaceId is required' }, 400)
+  }
+
+  const now = new Date().toISOString()
+
+  const defaults = [
+    {
+      name: 'MFA Required for Critical Systems',
+      description: 'All critical-classified systems must have MFA enabled.',
+      category: 'access',
+      ruleType: 'boolean',
+      ruleConfig: { field: 'mfa_required', expected: true, scope: 'critical_systems' },
+      severity: 'high',
+    },
+    {
+      name: 'Access Review Cadence',
+      description: 'All access records must be reviewed within 90 days.',
+      category: 'access',
+      ruleType: 'threshold',
+      ruleConfig: { field: 'reviewed_at', maxAgeDays: 90 },
+      severity: 'medium',
+    },
+    {
+      name: 'Evidence Freshness',
+      description: 'Evidence items must not be older than 365 days.',
+      category: 'evidence',
+      ruleType: 'threshold',
+      ruleConfig: { field: 'captured_at', maxAgeDays: 365 },
+      severity: 'medium',
+    },
+    {
+      name: 'Terminated User Access',
+      description: 'Terminated users must not have active access records.',
+      category: 'access',
+      ruleType: 'boolean',
+      ruleConfig: { field: 'employment_status', disallowed: 'terminated', scope: 'active_access' },
+      severity: 'critical',
+    },
+    {
+      name: 'System Owner Assigned',
+      description: 'All systems must have an owner_email assigned.',
+      category: 'governance',
+      ruleType: 'boolean',
+      ruleConfig: { field: 'owner_email', expected: 'not_null' },
+      severity: 'low',
+    },
+    {
+      name: 'Admin Access Justification',
+      description: 'All admin-level access must have an approved_by and ticket_ref.',
+      category: 'access',
+      ruleType: 'boolean',
+      ruleConfig: { field: 'approved_by', expected: 'not_null', scope: 'admin_access' },
+      severity: 'high',
+    },
+    {
+      name: 'Policy Review Cadence',
+      description: 'All policies must be reviewed and updated at least annually.',
+      category: 'governance',
+      ruleType: 'threshold',
+      ruleConfig: { field: 'updated_at', maxAgeDays: 365 },
+      severity: 'medium',
+    },
+    {
+      name: 'No Shared Accounts',
+      description: 'Each access record must map to a unique individual user.',
+      category: 'access',
+      ruleType: 'boolean',
+      ruleConfig: { field: 'access_type', disallowed: 'shared' },
+      severity: 'high',
+    },
+  ]
+
+  let inserted = 0
+  for (const def of defaults) {
+    const existing = await c.env.DB.prepare(
+      'SELECT id FROM baselines WHERE workspace_id = ? AND name = ?'
+    ).bind(workspaceId, def.name).first()
+
+    if (existing) continue
+
+    const id = generateId()
+    await c.env.DB.prepare(
+      `INSERT INTO baselines (id, workspace_id, name, description, category, rule_type, rule_config, severity, enabled, created_by, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, 'seed', ?, ?)`
+    ).bind(
+      id, workspaceId, def.name, def.description, def.category,
+      def.ruleType, JSON.stringify(def.ruleConfig), def.severity,
+      now, now
+    ).run()
+    inserted++
+  }
+
+  return c.json({ seeded: { total: defaults.length, inserted } })
+})
+
 export { seedRoutes }

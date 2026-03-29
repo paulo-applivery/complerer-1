@@ -33,50 +33,55 @@ function computeGrade(score: number): string {
   return 'D'
 }
 
+async function safeQuery<T>(db: D1Database, sql: string, ...binds: any[]): Promise<T | null> {
+  try {
+    return await db.prepare(sql).bind(...binds).first<T>()
+  } catch {
+    return null
+  }
+}
+
 async function computeTrustScore(db: D1Database, workspaceId: string) {
   // Framework coverage: % of adopted controls that are satisfied
-  const adoptionStats = await db
-    .prepare(
-      `SELECT
-        COUNT(DISTINCT wc.control_id) as total_controls,
-        COUNT(DISTINCT CASE WHEN wc.status = 'met' THEN wc.control_id END) as met_controls
-       FROM workspace_controls wc
-       WHERE wc.workspace_id = ?`
-    )
-    .bind(workspaceId)
-    .first<{ total_controls: number; met_controls: number }>()
+  const adoptionStats = await safeQuery<{ total_controls: number; met_controls: number }>(
+    db,
+    `SELECT
+      COUNT(DISTINCT wc.control_id) as total_controls,
+      COUNT(DISTINCT CASE WHEN wc.status = 'met' THEN wc.control_id END) as met_controls
+     FROM mv_control_status wc
+     WHERE wc.workspace_id = ?`,
+    workspaceId
+  )
 
   const totalControls = adoptionStats?.total_controls ?? 0
   const metControls = adoptionStats?.met_controls ?? 0
   const frameworkCoverage = totalControls > 0 ? (metControls / totalControls) * 100 : 0
 
   // Evidence freshness: % of evidence items updated in the last 90 days
-  const evidenceStats = await db
-    .prepare(
-      `SELECT
-        COUNT(*) as total,
-        COUNT(CASE WHEN updated_at >= datetime('now', '-90 days') THEN 1 END) as fresh
-       FROM evidence
-       WHERE workspace_id = ?`
-    )
-    .bind(workspaceId)
-    .first<{ total: number; fresh: number }>()
+  const evidenceStats = await safeQuery<{ total: number; fresh: number }>(
+    db,
+    `SELECT
+      COUNT(*) as total,
+      COUNT(CASE WHEN updated_at >= datetime('now', '-90 days') THEN 1 END) as fresh
+     FROM evidence
+     WHERE workspace_id = ?`,
+    workspaceId
+  )
 
   const totalEvidence = evidenceStats?.total ?? 0
   const freshEvidence = evidenceStats?.fresh ?? 0
   const evidenceFreshness = totalEvidence > 0 ? (freshEvidence / totalEvidence) * 100 : 0
 
   // Violation ratio: inverted — fewer open violations = higher score
-  const violationStats = await db
-    .prepare(
-      `SELECT
-        COUNT(*) as total,
-        COUNT(CASE WHEN status = 'open' THEN 1 END) as open_count
-       FROM baseline_violations
-       WHERE workspace_id = ?`
-    )
-    .bind(workspaceId)
-    .first<{ total: number; open_count: number }>()
+  const violationStats = await safeQuery<{ total: number; open_count: number }>(
+    db,
+    `SELECT
+      COUNT(*) as total,
+      COUNT(CASE WHEN status = 'open' THEN 1 END) as open_count
+     FROM baseline_violations
+     WHERE workspace_id = ?`,
+    workspaceId
+  )
 
   const totalViolations = violationStats?.total ?? 0
   const openViolations = violationStats?.open_count ?? 0
@@ -84,30 +89,28 @@ async function computeTrustScore(db: D1Database, workspaceId: string) {
     totalViolations > 0 ? ((totalViolations - openViolations) / totalViolations) * 100 : 100
 
   // Review completeness: % of policies that have been reviewed (status = 'active')
-  const policyStats = await db
-    .prepare(
-      `SELECT
-        COUNT(*) as total,
-        COUNT(CASE WHEN status = 'active' THEN 1 END) as reviewed
-       FROM policies
-       WHERE workspace_id = ?`
-    )
-    .bind(workspaceId)
-    .first<{ total: number; reviewed: number }>()
+  const policyStats = await safeQuery<{ total: number; reviewed: number }>(
+    db,
+    `SELECT
+      COUNT(*) as total,
+      COUNT(CASE WHEN status = 'active' THEN 1 END) as reviewed
+     FROM policies
+     WHERE workspace_id = ?`,
+    workspaceId
+  )
 
   const totalPolicies = policyStats?.total ?? 0
   const reviewedPolicies = policyStats?.reviewed ?? 0
   const reviewCompleteness = totalPolicies > 0 ? (reviewedPolicies / totalPolicies) * 100 : 0
 
   // Snapshot recency: 100 if a snapshot was taken in last 30 days, decays from there
-  const latestSnapshot = await db
-    .prepare(
-      `SELECT captured_at FROM compliance_snapshots
-       WHERE workspace_id = ?
-       ORDER BY captured_at DESC LIMIT 1`
-    )
-    .bind(workspaceId)
-    .first<{ captured_at: string }>()
+  const latestSnapshot = await safeQuery<{ captured_at: string }>(
+    db,
+    `SELECT captured_at FROM compliance_snapshots
+     WHERE workspace_id = ?
+     ORDER BY captured_at DESC LIMIT 1`,
+    workspaceId
+  )
 
   let snapshotRecency = 0
   if (latestSnapshot) {
@@ -129,14 +132,13 @@ async function computeTrustScore(db: D1Database, workspaceId: string) {
   const grade = computeGrade(roundedScore)
 
   // Count active frameworks
-  const frameworkCount = await db
-    .prepare(
-      `SELECT COUNT(DISTINCT wa.framework_version_id) as count
-       FROM workspace_adoptions wa
-       WHERE wa.workspace_id = ?`
-    )
-    .bind(workspaceId)
-    .first<{ count: number }>()
+  const frameworkCount = await safeQuery<{ count: number }>(
+    db,
+    `SELECT COUNT(DISTINCT wa.framework_version_id) as count
+     FROM workspace_adoptions wa
+     WHERE wa.workspace_id = ?`,
+    workspaceId
+  )
 
   return {
     score: roundedScore,

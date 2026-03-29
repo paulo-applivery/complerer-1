@@ -1,12 +1,13 @@
 name = "complerer-api"
 main = "src/index.ts"
 compatibility_date = "2024-12-01"
+account_id = "acb45952a3c9db5da9ae06958be1a736"
 
 [dev]
 port = 8787
 
 [vars]
-ENVIRONMENT = "development"
+ENVIRONMENT = "production"
 # Secrets (set via `wrangler secret put` or .dev.vars):
 # ANTHROPIC_API_KEY
 # GEMINI_API_KEY
@@ -14,7 +15,7 @@ ENVIRONMENT = "development"
 [[d1_databases]]
 binding = "DB"
 database_name = "complerer-db"
-database_id = "local"
+database_id = "946f1f5e-421e-4dab-a685-d47884c220c4"
 
 [[r2_buckets]]
 binding = "EVIDENCE_BUCKET"
