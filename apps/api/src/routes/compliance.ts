@@ -43,16 +43,24 @@ complianceRoutes.get('/systems', async (c) => {
   const workspaceId = c.get('workspaceId')
 
   const { results } = await c.env.DB.prepare(
-    `SELECT id, workspace_id, name, description, classification, data_sensitivity,
-            owner_email, mfa_required, environment, integration_ref, created_at, updated_at
-     FROM systems
-     WHERE workspace_id = ?
-     ORDER BY name ASC`
+    `SELECT s.id, s.workspace_id, s.template_id,
+            COALESCE(s.name, sl.name) AS name,
+            COALESCE(s.description, sl.description) AS description,
+            COALESCE(s.classification, sl.default_classification) AS classification,
+            COALESCE(s.data_sensitivity, sl.default_sensitivity) AS data_sensitivity,
+            s.owner_email, s.mfa_required, s.environment, s.integration_ref,
+            s.created_at, s.updated_at,
+            sl.name AS template_name
+     FROM systems s
+     LEFT JOIN system_library sl ON s.template_id = sl.id
+     WHERE s.workspace_id = ?
+     ORDER BY COALESCE(s.name, sl.name) ASC`
   )
     .bind(workspaceId)
     .all<{
       id: string
       workspace_id: string
+      template_id: string | null
       name: string
       description: string | null
       classification: string
@@ -63,12 +71,14 @@ complianceRoutes.get('/systems', async (c) => {
       integration_ref: string | null
       created_at: string
       updated_at: string
+      template_name: string | null
     }>()
 
   return c.json({
     systems: results.map((s) => ({
       id: s.id,
       workspaceId: s.workspace_id,
+      templateId: s.template_id,
       name: s.name,
       description: s.description,
       classification: s.classification,
@@ -77,6 +87,7 @@ complianceRoutes.get('/systems', async (c) => {
       mfaRequired: Boolean(s.mfa_required),
       environment: s.environment,
       integrationRef: s.integration_ref,
+      templateName: s.template_name,
       createdAt: s.created_at,
       updatedAt: s.updated_at,
     })),
@@ -145,28 +156,30 @@ complianceRoutes.post(
 
     const existingNames = new Set(existing.map((e) => e.name.toLowerCase()))
 
+    // Check which templates are already referenced
+    const { results: existingRefs } = await c.env.DB.prepare(
+      'SELECT template_id FROM systems WHERE workspace_id = ? AND template_id IS NOT NULL'
+    ).bind(workspaceId).all<{ template_id: string }>()
+    const existingTemplates = new Set(existingRefs.map((e) => e.template_id))
+
     let created = 0
     let skipped = 0
 
     for (const item of libItems) {
-      if (existingNames.has(item.name.toLowerCase())) {
+      if (existingTemplates.has(item.id) || existingNames.has(item.name.toLowerCase())) {
         skipped++
         continue
       }
 
       const systemId = generateId()
       await c.env.DB.prepare(
-        `INSERT INTO systems (id, workspace_id, name, description, classification, data_sensitivity,
-                              environment, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        `INSERT INTO systems (id, workspace_id, template_id, environment, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?)`
       )
         .bind(
           systemId,
           workspaceId,
-          item.name,
-          item.description,
-          item.default_classification,
-          item.default_sensitivity,
+          item.id,
           environment ?? 'production',
           now,
           now
@@ -1847,40 +1860,52 @@ complianceRoutes.get('/baselines', async (c) => {
   const workspaceId = c.get('workspaceId')
 
   const { results } = await c.env.DB.prepare(
-    `SELECT id, workspace_id, name, description, category, rule_type, rule_config,
-            severity, enabled, created_by, created_at, updated_at
-     FROM baselines
-     WHERE workspace_id = ?
-     ORDER BY created_at DESC`
+    `SELECT b.id, b.workspace_id, b.template_id,
+            COALESCE(b.name, bl.name) AS name,
+            COALESCE(b.description, bl.description) AS description,
+            COALESCE(b.category, bl.category) AS category,
+            COALESCE(b.rule_type, bl.check_type) AS rule_type,
+            b.rule_config,
+            COALESCE(b.severity, bl.severity) AS severity,
+            b.enabled, b.created_by, b.created_at, b.updated_at,
+            bl.name AS template_name
+     FROM baselines b
+     LEFT JOIN baseline_library bl ON b.template_id = bl.id
+     WHERE b.workspace_id = ?
+     ORDER BY b.created_at DESC`
   )
     .bind(workspaceId)
     .all<{
       id: string
       workspace_id: string
+      template_id: string | null
       name: string
       description: string | null
       category: string
       rule_type: string
-      rule_config: string
+      rule_config: string | null
       severity: string
       enabled: number
       created_by: string
       created_at: string
       updated_at: string
+      template_name: string | null
     }>()
 
   return c.json({
     baselines: results.map((b) => ({
       id: b.id,
       workspaceId: b.workspace_id,
+      templateId: b.template_id,
       name: b.name,
       description: b.description,
       category: b.category,
       ruleType: b.rule_type,
-      ruleConfig: JSON.parse(b.rule_config),
+      ruleConfig: b.rule_config ? JSON.parse(b.rule_config) : null,
       severity: b.severity,
       enabled: Boolean(b.enabled),
       createdBy: b.created_by,
+      templateName: b.template_name,
       createdAt: b.created_at,
       updatedAt: b.updated_at,
     })),
@@ -2262,27 +2287,29 @@ complianceRoutes.post(
     ).bind(workspaceId).all()
     const existingNames = new Set((existing ?? []).map((e: any) => e.name?.toLowerCase()))
 
+    // Check which templates are already referenced
+    const { results: existingRefs } = await c.env.DB.prepare(
+      'SELECT template_id FROM baselines WHERE workspace_id = ? AND template_id IS NOT NULL'
+    ).bind(workspaceId).all<{ template_id: string }>()
+    const existingTemplates = new Set(existingRefs.map((e) => e.template_id))
+
     let created = 0
     let skipped = 0
 
     for (const item of libItems) {
       const lib = item as any
-      if (existingNames.has(lib.name?.toLowerCase())) {
+
+      // Skip if already referenced or name exists
+      if (existingTemplates.has(lib.id) || existingNames.has(lib.name?.toLowerCase())) {
         skipped++
         continue
       }
 
       const id = generateId()
       await c.env.DB.prepare(
-        `INSERT INTO baselines (id, workspace_id, name, description, category, rule_type, rule_config, severity, enabled, created_by, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?)`
-      ).bind(
-        id, workspaceId, lib.name, lib.description,
-        lib.category, lib.check_type,
-        JSON.stringify({ check_type: lib.check_type, expected_value: lib.expected_value, framework_hints: lib.framework_hints }),
-        lib.severity,
-        userId, now, now
-      ).run()
+        `INSERT INTO baselines (id, workspace_id, template_id, enabled, created_by, created_at, updated_at)
+         VALUES (?, ?, ?, 1, ?, ?, ?)`
+      ).bind(id, workspaceId, lib.id, userId, now, now).run()
       created++
     }
 
@@ -2720,34 +2747,44 @@ complianceRoutes.get('/policies', async (c) => {
   const workspaceId = c.get('workspaceId')
 
   const { results } = await c.env.DB.prepare(
-    `SELECT p.id, p.workspace_id, p.title, p.description, p.category, p.version, p.status,
-            p.file_ref, p.file_name, p.content_text, p.owner_email,
-            p.approved_by, p.approved_at, p.review_cycle_days, p.next_review_at,
+    `SELECT p.id, p.workspace_id, p.template_id,
+            COALESCE(p.title, pl.title) AS title,
+            COALESCE(p.description, pl.description) AS description,
+            COALESCE(p.category, pl.category) AS category,
+            COALESCE(p.version, pl.version) AS version,
+            COALESCE(p.content_text, pl.content_text) AS content_text,
+            COALESCE(p.review_cycle_days, pl.review_cycle_days) AS review_cycle_days,
+            p.status, p.file_ref, p.file_name, p.owner_email,
+            p.approved_by, p.approved_at, p.next_review_at,
             p.created_at, p.updated_at,
+            pl.title AS template_title,
             (SELECT COUNT(*) FROM policy_controls pc WHERE pc.policy_id = p.id AND pc.workspace_id = p.workspace_id) as controls_count
      FROM policies p
+     LEFT JOIN policy_library pl ON p.template_id = pl.id
      WHERE p.workspace_id = ?
-     ORDER BY p.title ASC`
+     ORDER BY COALESCE(p.title, pl.title) ASC`
   )
     .bind(workspaceId)
     .all<{
       id: string
       workspace_id: string
+      template_id: string | null
       title: string
       description: string | null
       category: string
       version: string
+      content_text: string | null
+      review_cycle_days: number
       status: string
       file_ref: string | null
       file_name: string | null
-      content_text: string | null
       owner_email: string | null
       approved_by: string | null
       approved_at: string | null
-      review_cycle_days: number
       next_review_at: string | null
       created_at: string
       updated_at: string
+      template_title: string | null
       controls_count: number
     }>()
 
@@ -2755,6 +2792,7 @@ complianceRoutes.get('/policies', async (c) => {
     policies: results.map((p) => ({
       id: p.id,
       workspaceId: p.workspace_id,
+      templateId: p.template_id,
       title: p.title,
       description: p.description,
       category: p.category,
@@ -2769,11 +2807,79 @@ complianceRoutes.get('/policies', async (c) => {
       reviewCycleDays: p.review_cycle_days,
       nextReviewDate: p.next_review_at,
       controlsCount: p.controls_count,
+      templateTitle: p.template_title,
       createdAt: p.created_at,
       updatedAt: p.updated_at,
     })),
   })
 })
+
+/**
+ * GET /policies/library
+ * List policy templates from the library.
+ */
+complianceRoutes.get('/policies/library', async (c) => {
+  const { results } = await c.env.DB.prepare(
+    'SELECT * FROM policy_library ORDER BY category, title'
+  ).all()
+  return c.json({
+    items: (results ?? []).map((r: any) => ({
+      id: r.id,
+      title: r.title,
+      category: r.category,
+      description: r.description,
+      contentText: r.content_text,
+      version: r.version,
+      reviewCycleDays: r.review_cycle_days,
+      createdAt: r.created_at,
+      updatedAt: r.updated_at,
+    })),
+  })
+})
+
+/**
+ * POST /policies/from-library
+ * Add policies from library as references (not copies).
+ */
+const addFromPolicyLibSchema = z.object({
+  templateIds: z.array(z.string()).min(1).max(50),
+})
+
+complianceRoutes.post(
+  '/policies/from-library',
+  requireRole('member'),
+  zValidator('json', addFromPolicyLibSchema),
+  async (c) => {
+    const workspaceId = c.get('workspaceId')
+    const { templateIds } = c.req.valid('json')
+    const now = new Date().toISOString()
+
+    // Check which templates are already referenced in this workspace
+    const { results: existing } = await c.env.DB.prepare(
+      'SELECT template_id FROM policies WHERE workspace_id = ? AND template_id IS NOT NULL'
+    ).bind(workspaceId).all<{ template_id: string }>()
+    const existingTemplates = new Set(existing.map((e) => e.template_id))
+
+    let created = 0
+    let skipped = 0
+
+    for (const templateId of templateIds) {
+      if (existingTemplates.has(templateId)) {
+        skipped++
+        continue
+      }
+
+      const id = generateId()
+      await c.env.DB.prepare(
+        `INSERT INTO policies (id, workspace_id, template_id, status, created_at, updated_at)
+         VALUES (?, ?, ?, 'draft', ?, ?)`
+      ).bind(id, workspaceId, templateId, now, now).run()
+      created++
+    }
+
+    return c.json({ created, skipped, total: templateIds.length })
+  }
+)
 
 const createPolicySchema = z.object({
   title: z.string().min(1).max(300),
@@ -2786,7 +2892,7 @@ const createPolicySchema = z.object({
 
 /**
  * POST /policies
- * Create a policy. Member+.
+ * Create a standalone policy (no template). Member+.
  */
 complianceRoutes.post(
   '/policies',

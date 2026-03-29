@@ -870,33 +870,188 @@ adminRoutes.get('/workspaces/:id/detail', async (c) => {
 })
 
 /**
+ * POST /api/admin/workspaces
+ * Create a workspace.
+ */
+const createWorkspaceSchema = z.object({
+  name: z.string().min(1),
+  slug: z.string().min(1),
+  plan: z.string().optional(),
+})
+
+adminRoutes.post('/workspaces', zValidator('json', createWorkspaceSchema), async (c) => {
+  const data = c.req.valid('json')
+  const id = generateId()
+  const now = new Date().toISOString()
+  await c.env.DB.prepare(
+    'INSERT INTO workspaces (id, name, slug, plan, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)'
+  ).bind(id, data.name, data.slug, data.plan ?? 'free', now, now).run()
+  return c.json({ id })
+})
+
+/**
+ * PUT /api/admin/workspaces/:id
+ * Update a workspace.
+ */
+const updateWorkspaceSchema = z.object({
+  name: z.string().min(1).optional(),
+  slug: z.string().min(1).optional(),
+  plan: z.string().optional(),
+})
+
+adminRoutes.put('/workspaces/:id', zValidator('json', updateWorkspaceSchema), async (c) => {
+  const id = c.req.param('id')
+  const data = c.req.valid('json')
+  const now = new Date().toISOString()
+  const setClauses: string[] = ['updated_at = ?']
+  const values: any[] = [now]
+  for (const [key, val] of Object.entries(data)) {
+    if (val !== undefined) { setClauses.push(`${key} = ?`); values.push(val) }
+  }
+  values.push(id)
+  await c.env.DB.prepare(`UPDATE workspaces SET ${setClauses.join(', ')} WHERE id = ?`).bind(...values).run()
+  return c.json({ ok: true })
+})
+
+/**
+ * DELETE /api/admin/workspaces/:id
+ * Delete a workspace and all associated data.
+ */
+adminRoutes.delete('/workspaces/:id', async (c) => {
+  const id = c.req.param('id')
+  // Cascade delete workspace data
+  const tables = [
+    'workspace_settings', 'workspace_members', 'workspace_adoptions',
+    'systems', 'directory_users', 'access_records', 'evidence',
+    'baselines', 'baseline_violations', 'policies', 'compliance_events',
+    'custom_field_definitions', 'custom_field_values',
+  ]
+  for (const table of tables) {
+    try {
+      await c.env.DB.prepare(`DELETE FROM ${table} WHERE workspace_id = ?`).bind(id).run()
+    } catch (_) { /* table might not exist or no workspace_id column */ }
+  }
+  await c.env.DB.prepare('DELETE FROM workspaces WHERE id = ?').bind(id).run()
+  return c.json({ ok: true })
+})
+
+/**
+ * POST /api/admin/workspaces/:id/members
+ * Add a member to a workspace.
+ */
+const addMemberSchema = z.object({
+  email: z.string().email(),
+  role: z.enum(['owner', 'admin', 'member', 'auditor', 'viewer']),
+})
+
+adminRoutes.post('/workspaces/:id/members', zValidator('json', addMemberSchema), async (c) => {
+  const workspaceId = c.req.param('id')
+  const { email, role } = c.req.valid('json')
+  const now = new Date().toISOString()
+
+  // Find or create user
+  let user = await c.env.DB.prepare('SELECT id FROM auth_users WHERE email = ?').bind(email.toLowerCase()).first<{ id: string }>()
+  if (!user) {
+    const userId = generateId()
+    await c.env.DB.prepare(
+      'INSERT INTO auth_users (id, email, name, created_at, last_login_at) VALUES (?, ?, ?, ?, ?)'
+    ).bind(userId, email.toLowerCase(), email.split('@')[0], now, now).run()
+    user = { id: userId }
+  }
+
+  // Check if already a member
+  const existing = await c.env.DB.prepare(
+    'SELECT id FROM workspace_members WHERE workspace_id = ? AND user_id = ?'
+  ).bind(workspaceId, user.id).first()
+  if (existing) return c.json({ error: 'Already a member' }, 400)
+
+  const memberId = generateId()
+  await c.env.DB.prepare(
+    'INSERT INTO workspace_members (id, workspace_id, user_id, role, invited_by, joined_at) VALUES (?, ?, ?, ?, ?, ?)'
+  ).bind(memberId, workspaceId, user.id, role, 'admin', now).run()
+
+  return c.json({ ok: true })
+})
+
+/**
+ * PUT /api/admin/workspaces/:wsId/members/:userId/role
+ * Change a member's role.
+ */
+adminRoutes.put('/workspaces/:wsId/members/:userId/role', zValidator('json', z.object({ role: z.string() })), async (c) => {
+  const { wsId, userId } = c.req.param() as { wsId: string; userId: string }
+  const { role } = c.req.valid('json')
+  await c.env.DB.prepare(
+    'UPDATE workspace_members SET role = ? WHERE workspace_id = ? AND user_id = ?'
+  ).bind(role, wsId, userId).run()
+  return c.json({ ok: true })
+})
+
+/**
+ * DELETE /api/admin/workspaces/:wsId/members/:userId
+ * Remove a member from a workspace.
+ */
+adminRoutes.delete('/workspaces/:wsId/members/:userId', async (c) => {
+  const { wsId, userId } = c.req.param() as { wsId: string; userId: string }
+  await c.env.DB.prepare(
+    'DELETE FROM workspace_members WHERE workspace_id = ? AND user_id = ?'
+  ).bind(wsId, userId).run()
+  return c.json({ ok: true })
+})
+
+/**
  * GET /api/admin/stats
  * Platform-wide stats
  */
 adminRoutes.get('/stats', async (c) => {
-  const totalWorkspaces = await c.env.DB.prepare(
-    'SELECT COUNT(*) as count FROM workspaces'
-  ).first<{ count: number }>()
+  const q = async (sql: string) => {
+    try {
+      const r = await c.env.DB.prepare(sql).first<{ count: number }>()
+      return r?.count ?? 0
+    } catch { return 0 }
+  }
 
-  const totalUsers = await c.env.DB.prepare(
-    'SELECT COUNT(*) as count FROM auth_users'
-  ).first<{ count: number }>()
+  const [totalWorkspaces, totalUsers, totalEvidence, totalControls, totalSystems, totalBaselines, totalPolicies, totalAccessRecords, totalFrameworks, totalPeople, recentUsersWeek] = await Promise.all([
+    q('SELECT COUNT(*) as count FROM workspaces'),
+    q('SELECT COUNT(*) as count FROM auth_users'),
+    q('SELECT COUNT(*) as count FROM evidence'),
+    q('SELECT COUNT(*) as count FROM versioned_controls'),
+    q('SELECT COUNT(*) as count FROM systems'),
+    q('SELECT COUNT(*) as count FROM baselines'),
+    q('SELECT COUNT(*) as count FROM policies'),
+    q('SELECT COUNT(*) as count FROM access_records'),
+    q('SELECT COUNT(*) as count FROM frameworks'),
+    q('SELECT COUNT(*) as count FROM directory_users'),
+    q("SELECT COUNT(*) as count FROM auth_users WHERE created_at > datetime('now', '-7 days')"),
+  ])
 
-  const totalEvidence = await c.env.DB.prepare(
-    'SELECT COUNT(*) as count FROM evidence'
-  ).first<{ count: number }>()
+  // Recent workspaces
+  const { results: recentWs } = await c.env.DB.prepare(
+    `SELECT w.id, w.name, w.slug, w.plan, w.created_at,
+      (SELECT COUNT(*) FROM workspace_members WHERE workspace_id = w.id) as member_count
+     FROM workspaces w ORDER BY w.created_at DESC LIMIT 5`
+  ).all()
 
-  const totalControls = await c.env.DB.prepare(
-    'SELECT COUNT(*) as count FROM framework_controls'
-  ).first<{ count: number }>()
+  // Plan distribution
+  const { results: planDist } = await c.env.DB.prepare(
+    'SELECT plan, COUNT(*) as count FROM workspaces GROUP BY plan ORDER BY count DESC'
+  ).all()
 
   return c.json({
     stats: {
-      totalWorkspaces: totalWorkspaces?.count ?? 0,
-      totalUsers: totalUsers?.count ?? 0,
-      totalEvidence: totalEvidence?.count ?? 0,
-      totalControls: totalControls?.count ?? 0,
+      totalWorkspaces,
+      totalUsers,
+      totalEvidence,
+      totalControls,
+      totalSystems,
+      totalBaselines,
+      totalPolicies,
+      totalAccessRecords,
+      totalFrameworks,
+      totalPeople,
+      recentUsersWeek,
     },
+    recentWorkspaces: recentWs ?? [],
+    planDistribution: planDist ?? [],
   })
 })
 
@@ -976,6 +1131,397 @@ adminRoutes.post('/members/:userId/demote', async (c) => {
   ).bind(userId).run()
 
   return c.json({ success: true, message: `${user.email} is no longer a super admin` })
+})
+
+// ── Systems Library ─────────────────────────────────────────────────────────
+
+adminRoutes.get('/libraries/systems', async (c) => {
+  const { results } = await c.env.DB.prepare(
+    'SELECT * FROM system_library ORDER BY category, name'
+  ).bind().all()
+  return c.json({ items: results })
+})
+
+const systemLibSchema = z.object({
+  name: z.string().min(1),
+  category: z.string().min(1),
+  description: z.string().optional(),
+  vendor: z.string().optional(),
+  website: z.string().optional(),
+  default_classification: z.string().optional(),
+  default_sensitivity: z.string().optional(),
+  icon_hint: z.string().optional(),
+})
+
+adminRoutes.post('/libraries/systems', zValidator('json', systemLibSchema), async (c) => {
+  const data = c.req.valid('json')
+  const id = 'sl_' + generateId().slice(0, 12)
+  const now = new Date().toISOString()
+  await c.env.DB.prepare(
+    `INSERT INTO system_library (id, name, category, description, vendor, website, default_classification, default_sensitivity, icon_hint, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  ).bind(id, data.name, data.category, data.description ?? null, data.vendor ?? null, data.website ?? null, data.default_classification ?? null, data.default_sensitivity ?? null, data.icon_hint ?? null, now).run()
+  return c.json({ id })
+})
+
+adminRoutes.put('/libraries/systems/:id', zValidator('json', systemLibSchema.partial()), async (c) => {
+  const id = c.req.param('id')
+  const data = c.req.valid('json')
+  const setClauses: string[] = []
+  const values: any[] = []
+  for (const [key, val] of Object.entries(data)) {
+    if (val !== undefined) { setClauses.push(`${key} = ?`); values.push(val) }
+  }
+  if (setClauses.length === 0) return c.json({ ok: true })
+  values.push(id)
+  await c.env.DB.prepare(`UPDATE system_library SET ${setClauses.join(', ')} WHERE id = ?`).bind(...values).run()
+  return c.json({ ok: true })
+})
+
+adminRoutes.delete('/libraries/systems/:id', async (c) => {
+  const id = c.req.param('id')
+  await c.env.DB.prepare('DELETE FROM system_library WHERE id = ?').bind(id).run()
+  return c.json({ ok: true })
+})
+
+// ── Departments & Roles Library ─────────────────────────────────────────────
+
+adminRoutes.get('/libraries/roles', async (c) => {
+  const { results } = await c.env.DB.prepare(
+    'SELECT * FROM employee_directory_library ORDER BY category, department, title'
+  ).bind().all()
+  return c.json({ items: results })
+})
+
+const roleLibSchema = z.object({
+  name: z.string().min(1),
+  department: z.string().min(1),
+  title: z.string().min(1),
+  category: z.string().min(1),
+  description: z.string().optional(),
+})
+
+adminRoutes.post('/libraries/roles', zValidator('json', roleLibSchema), async (c) => {
+  const data = c.req.valid('json')
+  const id = 'el_' + generateId().slice(0, 12)
+  const now = new Date().toISOString()
+  await c.env.DB.prepare(
+    `INSERT INTO employee_directory_library (id, name, department, title, category, description, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`
+  ).bind(id, data.name, data.department, data.title, data.category, data.description ?? null, now).run()
+  return c.json({ id })
+})
+
+adminRoutes.put('/libraries/roles/:id', zValidator('json', roleLibSchema.partial()), async (c) => {
+  const id = c.req.param('id')
+  const data = c.req.valid('json')
+  const setClauses: string[] = []
+  const values: any[] = []
+  for (const [key, val] of Object.entries(data)) {
+    if (val !== undefined) { setClauses.push(`${key} = ?`); values.push(val) }
+  }
+  if (setClauses.length === 0) return c.json({ ok: true })
+  values.push(id)
+  await c.env.DB.prepare(`UPDATE employee_directory_library SET ${setClauses.join(', ')} WHERE id = ?`).bind(...values).run()
+  return c.json({ ok: true })
+})
+
+adminRoutes.delete('/libraries/roles/:id', async (c) => {
+  const id = c.req.param('id')
+  await c.env.DB.prepare('DELETE FROM employee_directory_library WHERE id = ?').bind(id).run()
+  return c.json({ ok: true })
+})
+
+// ── Baseline Library ────────────────────────────────────────────────────────
+
+adminRoutes.get('/libraries/baselines', async (c) => {
+  const { results } = await c.env.DB.prepare(
+    'SELECT * FROM baseline_library ORDER BY category, name'
+  ).bind().all()
+  return c.json({ items: results })
+})
+
+const baselineLibSchema = z.object({
+  name: z.string().min(1),
+  category: z.string().min(1),
+  description: z.string().optional(),
+  check_type: z.enum(['manual', 'automated']).optional(),
+  expected_value: z.string().optional(),
+  severity: z.enum(['critical', 'high', 'medium', 'low']).optional(),
+  framework_hints: z.string().optional(),
+})
+
+adminRoutes.post('/libraries/baselines', zValidator('json', baselineLibSchema), async (c) => {
+  const data = c.req.valid('json')
+  const id = 'bl_' + generateId().slice(0, 12)
+  const now = new Date().toISOString()
+  await c.env.DB.prepare(
+    `INSERT INTO baseline_library (id, name, category, description, check_type, expected_value, severity, framework_hints, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  ).bind(id, data.name, data.category, data.description ?? null, data.check_type ?? 'manual', data.expected_value ?? null, data.severity ?? 'medium', data.framework_hints ?? null, now).run()
+  return c.json({ id })
+})
+
+adminRoutes.put('/libraries/baselines/:id', zValidator('json', baselineLibSchema.partial()), async (c) => {
+  const id = c.req.param('id')
+  const data = c.req.valid('json')
+  const setClauses: string[] = []
+  const values: any[] = []
+  for (const [key, val] of Object.entries(data)) {
+    if (val !== undefined) {
+      const dbKey = key === 'checkType' ? 'check_type' : key === 'expectedValue' ? 'expected_value' : key === 'frameworkHints' ? 'framework_hints' : key
+      setClauses.push(`${dbKey} = ?`)
+      values.push(val)
+    }
+  }
+  if (setClauses.length === 0) return c.json({ ok: true })
+  values.push(id)
+  await c.env.DB.prepare(`UPDATE baseline_library SET ${setClauses.join(', ')} WHERE id = ?`).bind(...values).run()
+  return c.json({ ok: true })
+})
+
+adminRoutes.delete('/libraries/baselines/:id', async (c) => {
+  const id = c.req.param('id')
+  await c.env.DB.prepare('DELETE FROM baseline_library WHERE id = ?').bind(id).run()
+  return c.json({ ok: true })
+})
+
+// ── Policy Library ──────────────────────────────────────────────────────────
+
+adminRoutes.get('/libraries/policies', async (c) => {
+  const { results } = await c.env.DB.prepare(
+    'SELECT * FROM policy_library ORDER BY category, title'
+  ).bind().all()
+  return c.json({ items: results })
+})
+
+const policyLibSchema = z.object({
+  title: z.string().min(1),
+  category: z.enum(['security', 'access', 'privacy', 'hr', 'incident']),
+  description: z.string().optional(),
+  content_text: z.string().optional(),
+  version: z.string().optional(),
+  review_cycle_days: z.number().optional(),
+})
+
+adminRoutes.post('/libraries/policies', zValidator('json', policyLibSchema), async (c) => {
+  const data = c.req.valid('json')
+  const id = 'pl_' + generateId().slice(0, 12)
+  const now = new Date().toISOString()
+  await c.env.DB.prepare(
+    `INSERT INTO policy_library (id, title, category, description, content_text, version, review_cycle_days, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  ).bind(id, data.title, data.category, data.description ?? null, data.content_text ?? null, data.version ?? '1.0', data.review_cycle_days ?? 365, now, now).run()
+  return c.json({ id })
+})
+
+adminRoutes.put('/libraries/policies/:id', zValidator('json', policyLibSchema.partial()), async (c) => {
+  const id = c.req.param('id')
+  const data = c.req.valid('json')
+  const setClauses: string[] = ['updated_at = ?']
+  const values: any[] = [new Date().toISOString()]
+  for (const [key, val] of Object.entries(data)) {
+    if (val !== undefined) {
+      const dbKey = key === 'contentText' ? 'content_text' : key === 'reviewCycleDays' ? 'review_cycle_days' : key
+      setClauses.push(`${dbKey} = ?`)
+      values.push(val)
+    }
+  }
+  values.push(id)
+  await c.env.DB.prepare(`UPDATE policy_library SET ${setClauses.join(', ')} WHERE id = ?`).bind(...values).run()
+  return c.json({ ok: true })
+})
+
+adminRoutes.delete('/libraries/policies/:id', async (c) => {
+  const id = c.req.param('id')
+  await c.env.DB.prepare('DELETE FROM policy_library WHERE id = ?').bind(id).run()
+  return c.json({ ok: true })
+})
+
+// ── Frameworks ──────────────────────────────────────────────────────────────
+
+adminRoutes.get('/libraries/frameworks', async (c) => {
+  const { results } = await c.env.DB.prepare(
+    `SELECT f.*,
+      (SELECT COUNT(*) FROM framework_versions fv WHERE fv.framework_id = f.id) as version_count,
+      (SELECT COUNT(*) FROM versioned_controls c JOIN framework_versions fv2 ON fv2.id = c.framework_version_id WHERE fv2.framework_id = f.id) as control_count
+     FROM frameworks f ORDER BY f.name`
+  ).bind().all()
+  return c.json({ items: results })
+})
+
+adminRoutes.get('/libraries/frameworks/:id', async (c) => {
+  const id = c.req.param('id')
+  const framework = await c.env.DB.prepare('SELECT * FROM frameworks WHERE id = ?').bind(id).first()
+  if (!framework) return c.json({ error: 'Not found' }, 404)
+  const { results: versions } = await c.env.DB.prepare(
+    'SELECT * FROM framework_versions WHERE framework_id = ? ORDER BY created_at DESC'
+  ).bind(id).all()
+  return c.json({ framework, versions })
+})
+
+const frameworkSchema = z.object({
+  name: z.string().min(1),
+  slug: z.string().min(1),
+  description: z.string().optional(),
+  source_org: z.string().optional(),
+  website: z.string().optional(),
+})
+
+adminRoutes.post('/libraries/frameworks', zValidator('json', frameworkSchema), async (c) => {
+  const data = c.req.valid('json')
+  const id = generateId()
+  const now = new Date().toISOString()
+  await c.env.DB.prepare(
+    `INSERT INTO frameworks (id, name, slug, description, source_org, website, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+  ).bind(id, data.name, data.slug, data.description ?? null, data.source_org ?? null, data.website ?? null, now, now).run()
+  return c.json({ id })
+})
+
+adminRoutes.put('/libraries/frameworks/:id', zValidator('json', frameworkSchema.partial()), async (c) => {
+  const id = c.req.param('id')
+  const data = c.req.valid('json')
+  const now = new Date().toISOString()
+  const setClauses: string[] = ['updated_at = ?']
+  const values: any[] = [now]
+  for (const [key, val] of Object.entries(data)) {
+    if (val !== undefined) { setClauses.push(`${key} = ?`); values.push(val) }
+  }
+  values.push(id)
+  await c.env.DB.prepare(`UPDATE frameworks SET ${setClauses.join(', ')} WHERE id = ?`).bind(...values).run()
+  return c.json({ ok: true })
+})
+
+adminRoutes.delete('/libraries/frameworks/:id', async (c) => {
+  const id = c.req.param('id')
+  // Delete controls → versions → framework
+  const { results: versions } = await c.env.DB.prepare('SELECT id FROM framework_versions WHERE framework_id = ?').bind(id).all()
+  for (const v of versions) {
+    await c.env.DB.prepare('DELETE FROM versioned_controls WHERE framework_version_id = ?').bind((v as any).id).run()
+  }
+  await c.env.DB.prepare('DELETE FROM framework_versions WHERE framework_id = ?').bind(id).run()
+  await c.env.DB.prepare('DELETE FROM frameworks WHERE id = ?').bind(id).run()
+  return c.json({ ok: true })
+})
+
+// ── Framework Versions ──────────────────────────────────────────────────────
+
+adminRoutes.get('/libraries/frameworks/:id/versions', async (c) => {
+  const frameworkId = c.req.param('id')
+  const { results } = await c.env.DB.prepare(
+    `SELECT fv.*,
+      (SELECT COUNT(*) FROM versioned_controls vc WHERE vc.framework_version_id = fv.id) as control_count
+     FROM framework_versions fv WHERE fv.framework_id = ? ORDER BY fv.created_at DESC`
+  ).bind(frameworkId).all()
+  return c.json({ items: results })
+})
+
+const versionSchema = z.object({
+  version: z.string().min(1),
+  status: z.string().optional(),
+  changelog: z.string().optional(),
+  source_url: z.string().optional(),
+})
+
+adminRoutes.post('/libraries/frameworks/:id/versions', zValidator('json', versionSchema), async (c) => {
+  const frameworkId = c.req.param('id')
+  const data = c.req.valid('json')
+  const id = generateId()
+  const now = new Date().toISOString()
+  await c.env.DB.prepare(
+    `INSERT INTO framework_versions (id, framework_id, version, status, changelog, source_url, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`
+  ).bind(id, frameworkId, data.version, data.status ?? 'draft', data.changelog ?? null, data.source_url ?? null, now).run()
+  return c.json({ id })
+})
+
+adminRoutes.put('/libraries/frameworks/:fwId/versions/:verId', zValidator('json', versionSchema.partial()), async (c) => {
+  const verId = c.req.param('verId')
+  const data = c.req.valid('json')
+  const setClauses: string[] = []
+  const values: any[] = []
+  for (const [key, val] of Object.entries(data)) {
+    if (val !== undefined) { setClauses.push(`${key} = ?`); values.push(val) }
+  }
+  if (setClauses.length === 0) return c.json({ ok: true })
+  values.push(verId)
+  await c.env.DB.prepare(`UPDATE framework_versions SET ${setClauses.join(', ')} WHERE id = ?`).bind(...values).run()
+  return c.json({ ok: true })
+})
+
+adminRoutes.delete('/libraries/frameworks/:fwId/versions/:verId', async (c) => {
+  const verId = c.req.param('verId')
+  await c.env.DB.prepare('DELETE FROM versioned_controls WHERE framework_version_id = ?').bind(verId).run()
+  await c.env.DB.prepare('DELETE FROM framework_versions WHERE id = ?').bind(verId).run()
+  return c.json({ ok: true })
+})
+
+// ── Framework Controls ──────────────────────────────────────────────────────
+
+adminRoutes.get('/libraries/frameworks/:fwId/versions/:verId/controls', async (c) => {
+  const verId = c.req.param('verId')
+  const { results } = await c.env.DB.prepare(
+    'SELECT * FROM versioned_controls WHERE framework_version_id = ? ORDER BY domain, control_id'
+  ).bind(verId).all()
+  return c.json({ items: results })
+})
+
+const controlSchema = z.object({
+  control_id: z.string().min(1),
+  domain: z.string().optional(),
+  subdomain: z.string().optional(),
+  title: z.string().min(1),
+  requirement_text: z.string().min(1),
+  guidance: z.string().optional(),
+  evidence_requirements: z.string().optional(),
+  risk_weight: z.number().optional(),
+  implementation_group: z.string().optional(),
+})
+
+adminRoutes.post('/libraries/frameworks/:fwId/versions/:verId/controls', zValidator('json', controlSchema), async (c) => {
+  const verId = c.req.param('verId')
+  const data = c.req.valid('json')
+  const id = generateId()
+  const now = new Date().toISOString()
+  await c.env.DB.prepare(
+    `INSERT INTO versioned_controls (id, framework_version_id, control_id, domain, subdomain, title, requirement_text, guidance, evidence_requirements, risk_weight, implementation_group, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  ).bind(id, verId, data.control_id, data.domain ?? null, data.subdomain ?? null, data.title, data.requirement_text, data.guidance ?? null, data.evidence_requirements ?? '[]', data.risk_weight ?? 0.5, data.implementation_group ?? null, now).run()
+
+  // Update total_controls count
+  const { results } = await c.env.DB.prepare('SELECT COUNT(*) as cnt FROM versioned_controls WHERE framework_version_id = ?').bind(verId).all()
+  const cnt = (results[0] as any)?.cnt ?? 0
+  await c.env.DB.prepare('UPDATE framework_versions SET total_controls = ? WHERE id = ?').bind(cnt, verId).run()
+
+  return c.json({ id })
+})
+
+adminRoutes.put('/libraries/frameworks/:fwId/versions/:verId/controls/:ctrlId', zValidator('json', controlSchema.partial()), async (c) => {
+  const ctrlId = c.req.param('ctrlId')
+  const data = c.req.valid('json')
+  const setClauses: string[] = []
+  const values: any[] = []
+  for (const [key, val] of Object.entries(data)) {
+    if (val !== undefined) { setClauses.push(`${key} = ?`); values.push(val) }
+  }
+  if (setClauses.length === 0) return c.json({ ok: true })
+  values.push(ctrlId)
+  await c.env.DB.prepare(`UPDATE versioned_controls SET ${setClauses.join(', ')} WHERE id = ?`).bind(...values).run()
+  return c.json({ ok: true })
+})
+
+adminRoutes.delete('/libraries/frameworks/:fwId/versions/:verId/controls/:ctrlId', async (c) => {
+  const ctrlId = c.req.param('ctrlId')
+  const verId = c.req.param('verId')
+  await c.env.DB.prepare('DELETE FROM versioned_controls WHERE id = ?').bind(ctrlId).run()
+
+  // Update total_controls count
+  const { results } = await c.env.DB.prepare('SELECT COUNT(*) as cnt FROM versioned_controls WHERE framework_version_id = ?').bind(verId).all()
+  const cnt = (results[0] as any)?.cnt ?? 0
+  await c.env.DB.prepare('UPDATE framework_versions SET total_controls = ? WHERE id = ?').bind(cnt, verId).run()
+
+  return c.json({ ok: true })
 })
 
 export { adminRoutes }

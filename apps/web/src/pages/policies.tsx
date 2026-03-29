@@ -1,10 +1,13 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams } from '@tanstack/react-router'
 import {
   usePolicies,
   useCreatePolicy,
   useLinkPolicyControl,
+  useUnlinkPolicyControl,
   usePolicyControls,
+  usePolicyLibrary,
+  useAddFromPolicyLibrary,
 } from '@/hooks/use-settings'
 import { useControls, useAdoptions } from '@/hooks/use-frameworks'
 import { HugeiconsIcon } from '@hugeicons/react'
@@ -25,8 +28,12 @@ export function PoliciesPage() {
 
   const { policies, isLoading } = usePolicies(workspaceId)
   const createMutation = useCreatePolicy(workspaceId)
+  const { library } = usePolicyLibrary(workspaceId)
+  const addFromLibrary = useAddFromPolicyLibrary(workspaceId)
 
   const [showForm, setShowForm] = useState(false)
+  const [showLibrary, setShowLibrary] = useState(false)
+  const [selectedTemplates, setSelectedTemplates] = useState<Set<string>>(new Set())
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [linkingId, setLinkingId] = useState<string | null>(null)
   const [form, setForm] = useState({
@@ -101,14 +108,78 @@ export function PoliciesPage() {
 
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold text-zinc-100">Policy Vault</h2>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-2 rounded-lg bg-primary-400 px-4 py-2 text-sm font-medium text-zinc-950 transition-colors hover:bg-primary-300"
-        >
-          {showForm ? <HugeiconsIcon icon={Cancel01Icon} size={16} /> : <HugeiconsIcon icon={PlusSignIcon} size={16} />}
-          {showForm ? 'Cancel' : 'Add Policy'}
-        </button>
+        <div className="flex items-center gap-2">
+          {library.length > 0 && (
+            <button
+              onClick={() => { setShowLibrary(!showLibrary); setShowForm(false) }}
+              className="flex items-center gap-2 rounded-lg border border-zinc-700 px-4 py-2 text-sm font-medium text-zinc-300 transition-colors hover:border-zinc-600 hover:text-zinc-100"
+            >
+              <HugeiconsIcon icon={Link01Icon} size={16} />
+              {showLibrary ? 'Cancel' : 'Add from Library'}
+            </button>
+          )}
+          <button
+            onClick={() => { setShowForm(!showForm); setShowLibrary(false) }}
+            className="flex items-center gap-2 rounded-lg bg-primary-400 px-4 py-2 text-sm font-medium text-zinc-950 transition-colors hover:bg-primary-300"
+          >
+            {showForm ? <HugeiconsIcon icon={Cancel01Icon} size={16} /> : <HugeiconsIcon icon={PlusSignIcon} size={16} />}
+            {showForm ? 'Cancel' : 'Add Policy'}
+          </button>
+        </div>
       </div>
+
+      {/* Library picker */}
+      {showLibrary && (
+        <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-5">
+          <h3 className="mb-4 text-sm font-semibold text-zinc-100">Add from Policy Library</h3>
+          <div className="space-y-2">
+            {library.map((item: any) => {
+              const alreadyAdded = policies.some((p) => p.templateId === item.id)
+              return (
+                <label
+                  key={item.id}
+                  className={`flex items-center gap-3 rounded-lg border border-zinc-800 p-3 transition-colors ${
+                    alreadyAdded ? 'opacity-50' : 'cursor-pointer hover:border-zinc-700'
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    disabled={alreadyAdded}
+                    checked={alreadyAdded || selectedTemplates.has(item.id)}
+                    onChange={(e) => {
+                      const next = new Set(selectedTemplates)
+                      e.target.checked ? next.add(item.id) : next.delete(item.id)
+                      setSelectedTemplates(next)
+                    }}
+                    className="rounded border-zinc-600"
+                  />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-zinc-200">{item.title}</p>
+                    {item.description && <p className="text-xs text-zinc-500">{item.description}</p>}
+                  </div>
+                  <span className="rounded-full bg-zinc-800 px-2 py-0.5 text-[10px] text-zinc-500">{item.category}</span>
+                  {alreadyAdded && <span className="text-[10px] text-zinc-600">Added</span>}
+                </label>
+              )
+            })}
+          </div>
+          {selectedTemplates.size > 0 && (
+            <div className="mt-4 flex justify-end">
+              <button
+                onClick={() => {
+                  addFromLibrary.mutate({ templateIds: Array.from(selectedTemplates) }, {
+                    onSuccess: () => { setSelectedTemplates(new Set()); setShowLibrary(false) },
+                  })
+                }}
+                disabled={addFromLibrary.isPending}
+                className="rounded-lg bg-primary-400 px-4 py-2 text-sm font-medium text-zinc-950 transition-colors hover:bg-primary-300 disabled:opacity-50"
+              >
+                {addFromLibrary.isPending ? 'Adding...' : `Add ${selectedTemplates.size} policies`}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       {showForm && (
         <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-5">
@@ -257,6 +328,7 @@ function PolicyRow({
 }: {
   policy: {
     id: string
+    templateId: string | null
     title: string
     description: string | null
     category: string
@@ -286,7 +358,12 @@ function PolicyRow({
             )}
           </button>
         </td>
-        <td className="px-5 py-3 font-medium text-zinc-100">{policy.title}</td>
+        <td className="px-5 py-3">
+          <span className="font-medium text-zinc-100">{policy.title}</span>
+          {policy.templateId && (
+            <span className="ml-2 rounded bg-blue-500/10 px-1.5 py-0.5 text-[10px] font-medium text-blue-400">Template</span>
+          )}
+        </td>
         <td className="px-5 py-3">
           <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${categoryBadge(policy.category)}`}>
             {policy.category}
@@ -319,7 +396,7 @@ function PolicyRow({
             }`}
           >
             <HugeiconsIcon icon={Link01Icon} size={14} />
-            Link Control
+            {isLinking ? 'Done' : 'Link / Unlink'}
           </button>
         </td>
       </tr>
@@ -350,12 +427,13 @@ function PolicyExpandedContent({
   isLinking: boolean
 }) {
   const { controls, isLoading: controlsLoading } = usePolicyControls(workspaceId, policyId)
+  const unlinkMutation = useUnlinkPolicyControl(workspaceId)
 
   return (
     <div className="space-y-4">
       <div>
         <h4 className="mb-2 text-xs font-semibold uppercase tracking-wider text-zinc-500">
-          Linked Controls
+          Linked Controls ({controls.length})
         </h4>
         {controlsLoading ? (
           <div className="flex items-center gap-2 py-2">
@@ -363,19 +441,27 @@ function PolicyExpandedContent({
             <span className="text-xs text-zinc-500">Loading controls...</span>
           </div>
         ) : controls.length === 0 ? (
-          <p className="text-xs text-zinc-500">No controls linked yet.</p>
+          <p className="text-xs text-zinc-500">No controls linked yet. Click "Link / Unlink" to connect this policy to controls.</p>
         ) : (
           <div className="flex flex-wrap gap-2">
             {controls.map((link) => (
               <div
                 key={link.id}
-                className="flex items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-800/50 px-3 py-1.5"
+                className="group/ctrl flex items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-800/50 px-3 py-1.5"
               >
                 <span className="font-mono text-xs text-primary-400">{link.controlCode}</span>
                 <span className="text-xs text-zinc-400">{link.controlTitle}</span>
                 <span className="rounded-full bg-zinc-700 px-2 py-0.5 text-[10px] text-zinc-400">
                   {link.frameworkName}
                 </span>
+                <button
+                  onClick={() => unlinkMutation.mutate({ policyId, linkId: link.id })}
+                  disabled={unlinkMutation.isPending}
+                  className="ml-1 rounded p-0.5 text-zinc-600 opacity-0 transition-opacity hover:bg-red-500/10 hover:text-red-400 group-hover/ctrl:opacity-100"
+                  title="Unlink"
+                >
+                  <HugeiconsIcon icon={Cancel01Icon} size={12} />
+                </button>
               </div>
             ))}
           </div>
@@ -399,15 +485,21 @@ function LinkControlDialog({
   policyId: string
 }) {
   const { adoptions } = useAdoptions(workspaceId)
+  const { controls: linkedControls } = usePolicyControls(workspaceId, policyId)
+  const linkedControlIds = new Set(linkedControls.map((l) => l.controlId))
+
   const [selectedAdoption, setSelectedAdoption] = useState<{
     slug: string
     version: string
-  } | null>(
-    adoptions.length > 0
-      ? { slug: adoptions[0].frameworkSlug, version: adoptions[0].frameworkVersion }
-      : null,
-  )
+  } | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
+
+  // Set default adoption when data loads
+  useEffect(() => {
+    if (!selectedAdoption && adoptions.length > 0) {
+      setSelectedAdoption({ slug: adoptions[0].frameworkSlug, version: adoptions[0].frameworkVersion })
+    }
+  }, [adoptions, selectedAdoption])
 
   const { controls, isLoading: controlsLoading } = useControls(
     workspaceId,
@@ -494,6 +586,11 @@ function LinkControlDialog({
                   </td>
                   <td className="px-3 py-2 text-zinc-500">{control.domain ?? '—'}</td>
                   <td className="px-3 py-2 text-right">
+                    {linkedControlIds.has(control.id) ? (
+                      <span className="rounded-md bg-zinc-700 px-2.5 py-1 text-xs text-zinc-400">
+                        Linked
+                      </span>
+                    ) : (
                     <button
                       onClick={() => handleLink(control.id)}
                       disabled={linkMutation.isPending}
@@ -501,6 +598,7 @@ function LinkControlDialog({
                     >
                       Link
                     </button>
+                    )}
                   </td>
                 </tr>
               ))}

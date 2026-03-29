@@ -5,6 +5,8 @@ import { api } from '@/lib/api'
 
 interface Baseline {
   id: string
+  templateId: string | null
+  templateName: string | null
   name: string
   description: string | null
   category: 'access' | 'review' | 'authentication' | 'change_management'
@@ -48,6 +50,8 @@ interface Risk {
 
 interface Policy {
   id: string
+  templateId: string | null
+  templateTitle: string | null
   title: string
   description: string | null
   category: 'access' | 'security' | 'privacy' | 'hr' | 'incident'
@@ -150,6 +154,28 @@ export function useAddFromBaselineLibrary(workspaceId: string | undefined) {
       api.post(`/workspaces/${workspaceId}/baselines/from-library`, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['baselines', workspaceId] })
+    },
+  })
+}
+
+// ── Policy Library ─────────────────────────────────────────────────────────
+
+export function usePolicyLibrary(workspaceId: string | undefined) {
+  const { data, isLoading } = useQuery<{ items: any[] }>({
+    queryKey: ['policy-library', workspaceId],
+    queryFn: () => api.get(`/workspaces/${workspaceId}/policies/library`),
+    enabled: !!workspaceId,
+  })
+  return { library: data?.items ?? [], isLoading }
+}
+
+export function useAddFromPolicyLibrary(workspaceId: string | undefined) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (payload: { templateIds: string[] }) =>
+      api.post(`/workspaces/${workspaceId}/policies/from-library`, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['policies', workspaceId] })
     },
   })
 }
