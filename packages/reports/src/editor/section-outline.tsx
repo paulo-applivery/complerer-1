@@ -70,7 +70,7 @@ export function SectionOutline({ editor }: SectionOutlineProps) {
 
   if (headings.length === 0) {
     return (
-      <div className="w-56 shrink-0">
+      <div>
         <p className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
           Outline
         </p>
@@ -82,7 +82,7 @@ export function SectionOutline({ editor }: SectionOutlineProps) {
   }
 
   return (
-    <div className="w-56 shrink-0">
+    <div>
       <p className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
         Outline
       </p>

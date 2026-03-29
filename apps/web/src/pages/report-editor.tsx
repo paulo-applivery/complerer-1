@@ -49,6 +49,7 @@ export function ReportEditorPage() {
   const [editor, setEditor] = useState<any>(null)
   const [lastSaved, setLastSaved] = useState<string | null>(null)
   const [showFindings, setShowFindings] = useState(false)
+  const [showOutline, setShowOutline] = useState(true)
   const savingRef = useRef(false)
 
   const handleUpdate = useCallback(
@@ -136,11 +137,24 @@ export function ReportEditorPage() {
       </div>
 
       {/* Toolbar */}
-      <EditorToolbar editor={editor} />
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => setShowOutline(!showOutline)}
+          className={`rounded-lg px-2.5 py-1.5 text-[11px] transition-colors ${showOutline ? 'bg-zinc-800 text-zinc-200' : 'text-zinc-500 hover:text-zinc-300'}`}
+          title={showOutline ? 'Hide outline' : 'Show outline'}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="9" y1="9" x2="21" y2="9"/><line x1="9" y1="15" x2="21" y2="15"/></svg>
+        </button>
+        <div className="flex-1"><EditorToolbar editor={editor} /></div>
+      </div>
 
       {/* Editor layout */}
       <div className="flex gap-4">
-        <SectionOutline editor={editor} />
+        {showOutline && (
+          <div className="shrink-0 w-56 border-r border-zinc-800 pr-4 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 260px)' }}>
+            <SectionOutline editor={editor} />
+          </div>
+        )}
 
         <ReportEditor
           content={content}
