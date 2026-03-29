@@ -21,6 +21,7 @@ import {
   CrownIcon,
   Book02Icon,
   Folder01Icon,
+  FileAttachmentIcon,
 } from '@hugeicons/core-free-icons'
 import {
   Sidebar,
@@ -52,6 +53,7 @@ const overviewItems: NavItem[] = [
 
 const complianceItems: NavItem[] = [
   { label: 'Projects', icon: Folder01Icon, path: '/projects' },
+  { label: 'Reports', icon: FileAttachmentIcon, path: '/reports' },
   { label: 'Frameworks', icon: Layers01Icon, path: '/frameworks' },
   { label: 'Policies', icon: File01Icon, path: '/policies' },
   { label: 'Baselines', icon: Shield01Icon, path: '/baselines' },

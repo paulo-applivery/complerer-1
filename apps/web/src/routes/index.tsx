@@ -35,6 +35,8 @@ const PlaybooksPage = lazy(() => import('@/pages/playbooks').then(m => ({ defaul
 const WelcomePage = lazy(() => import('@/pages/welcome').then(m => ({ default: m.WelcomePage })))
 const ProjectsPage = lazy(() => import('@/pages/projects').then(m => ({ default: m.ProjectsPage })))
 const ProjectDetailPage = lazy(() => import('@/pages/project-detail').then(m => ({ default: m.ProjectDetailPage })))
+const ReportsPage = lazy(() => import('@/pages/reports').then(m => ({ default: m.ReportsPage })))
+const ReportEditorPage = lazy(() => import('@/pages/report-editor').then(m => ({ default: m.ReportEditorPage })))
 const AdminLayout = lazy(() => import('@/components/layout/admin-layout').then(m => ({ default: m.AdminLayout })))
 const AdminDashboardPage = lazy(() => import('@/pages/admin/dashboard').then(m => ({ default: m.AdminDashboardPage })))
 const AdminProvidersPage = lazy(() => import('@/pages/admin/providers').then(m => ({ default: m.AdminProvidersPage })))
@@ -297,6 +299,18 @@ const projectDetailRoute = createRoute({
   component: () => <LazyPage><ProjectDetailPage /></LazyPage>,
 })
 
+const reportsRoute = createRoute({
+  getParentRoute: () => workspaceLayoutRoute,
+  path: '/reports',
+  component: () => <LazyPage><ReportsPage /></LazyPage>,
+})
+
+const reportEditorRoute = createRoute({
+  getParentRoute: () => workspaceLayoutRoute,
+  path: '/reports/$reportId/edit',
+  component: () => <LazyPage><ReportEditorPage /></LazyPage>,
+})
+
 // ── Admin layout ───────────────────────────────────────────────────────────
 
 const adminLayoutRoute = createRoute({
@@ -375,7 +389,7 @@ export const routeTree = rootRoute.addChildren([
   pendingRoute,
   workspacesRoute,
   trustCenterRoute,
-  workspaceLayoutRoute.addChildren([dashboardRoute, frameworksRoute, accessRoute, evidenceRoute, baselinesRoute, risksRoute, policiesRoute, chatRoute, settingsRoute, gapAnalysisRoute, eventsRoute, integrationsRoute, trustScoreRoute, playbooksRoute, welcomeRoute, projectsRoute, projectDetailRoute]),
+  workspaceLayoutRoute.addChildren([dashboardRoute, frameworksRoute, accessRoute, evidenceRoute, baselinesRoute, risksRoute, policiesRoute, chatRoute, settingsRoute, gapAnalysisRoute, eventsRoute, integrationsRoute, trustScoreRoute, playbooksRoute, welcomeRoute, projectsRoute, projectDetailRoute, reportsRoute, reportEditorRoute]),
   adminLayoutRoute.addChildren([adminDashboardRoute, adminProvidersRoute, adminEmailTemplatesRoute, adminFeatureFlagsRoute, adminWorkspacesRoute, adminMembersRoute, adminLibrariesRoute]),
 ])
 

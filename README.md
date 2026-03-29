@@ -54,6 +54,8 @@ complerer/
     web/              React SPA on Cloudflare Pages (Vite + TanStack Router)
   packages/
     db/               D1 migrations (49 SQL files)
+    shared/           Shared types, validators, permissions (Zod)
+    reports/          Report generator module (types, validators, API sub-app)
 ```
 
 ### Infrastructure
@@ -246,6 +248,45 @@ Platform-wide management at `/admin`:
 | **Email Templates** | Edit transactional email templates |
 | **Seed** | Bulk seed data |
 
+### 13. Reports (`packages/reports/`)
+
+Certification-grade audit report system. Built as a **Package Library** — all code lives in `packages/reports/`, mounted by the host apps with minimal glue code.
+
+**Architecture**: Self-contained package exporting types, Zod validators, and a Hono sub-app. The API mounts it with one `app.route()` call; the web app lazy-loads the reports page.
+
+```
+packages/reports/src/
+  index.ts              Barrel exports (types, validators, API factory)
+  types/                Report, Template, Finding, Approval, Export types
+  validators/           Zod schemas for all report operations
+  api/                  Hono sub-app factory (createReportsAPI)
+  migrations/           Report-specific D1 migrations
+  templates/            Pre-built report templates (SOC 2, ISO 27001, etc.)
+```
+
+**Mounting**:
+```ts
+// apps/api/src/index.ts — one line
+app.route('/api/workspaces/:workspaceId/reports', createReportsAPI())
+
+// apps/web/src/routes/index.tsx — lazy-loaded route
+const ReportsPage = lazy(() => import('@/pages/reports'))
+```
+
+**Implementation Phases**:
+
+| Phase | Feature | Description |
+|-------|---------|-------------|
+| 1 | Editor Foundation | TipTap rich editor with slash menu and custom blocks |
+| 2 | Template System | Report templates per framework with variables and sections |
+| 3 | Report Generation | Create reports from templates, variable resolution, versioning |
+| 4 | AI Drafting | AI-assisted section drafting, summaries, finding narratives (SSE streaming) |
+| 5 | PDF Export | Cloudflare Browser Rendering (Puppeteer) for audit-ready PDFs |
+| 6 | Findings Management | Structured findings with lifecycle (open -> remediated -> validated) |
+| 7 | Approval Workflow | Multi-role sign-off (draft -> review -> approved -> published) with locking |
+| 8 | Advanced Blocks | Control matrices, risk heatmaps, charts, timelines, evidence galleries |
+| 9 | Cross-Framework | Evidence reuse, report comparison, bulk generation, sharing, retention |
+
 ## Database Schema (Key Tables)
 
 ### Auth & Workspaces
@@ -284,6 +325,14 @@ Platform-wide management at `/admin`:
 - `employee_directory_library` -- Department/role templates
 - `baseline_library` -- Pre-built baselines
 - `policy_library` -- Pre-built policy templates
+
+### Reports (planned -- `packages/reports/src/migrations/`)
+- `report_templates` -- Report templates per framework
+- `reports` -- Generated reports with lifecycle status
+- `report_versions` -- Version history per report
+- `report_findings` -- Structured audit findings
+- `report_approvals` -- Sign-off audit trail
+- `report_exports` -- PDF export records (R2 storage)
 
 ### Custom Fields
 - `custom_field_definitions` -- Field definitions per workspace per entity type

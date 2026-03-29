@@ -11,6 +11,7 @@ import { seedRoutes } from './routes/seed.js'
 import { communityRoutes, publicTrustRoutes, seedPlaybooksRoutes } from './routes/community.js'
 import { adminRoutes } from './routes/admin.js'
 import { projectRoutes } from './routes/projects.js'
+import { createReportsAPI } from '@complerer/reports/api'
 
 const app = new Hono<AppType>()
 
@@ -52,6 +53,7 @@ app.route('/api/trust', publicTrustRoutes)
 app.route('/api/seed', seedRoutes)
 app.route('/api/seed', seedPlaybooksRoutes)
 app.route('/api/admin', adminRoutes)
+app.route('/api/workspaces/:workspaceId/reports', createReportsAPI())
 
 // Accept invitation lives under /api/workspaces but uses a different path pattern
 // It's already handled inside workspaceRoutes as /invitations/:invitationId/accept

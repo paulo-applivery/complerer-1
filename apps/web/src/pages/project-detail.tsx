@@ -14,6 +14,7 @@ import {
   File01Icon,
   Cancel01Icon,
   LoaderPinwheelIcon,
+  FileAttachmentIcon,
 } from '@hugeicons/core-free-icons'
 import {
   useProject,
@@ -149,6 +150,12 @@ export function ProjectDetailPage() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => navigate({ to: `/w/${workspaceId}/reports`, search: { projectId } })}
+              className="flex items-center gap-1.5 rounded-lg bg-primary-400 px-3 py-2 text-xs font-medium text-zinc-950 hover:bg-primary-300"
+            >
+              <HugeiconsIcon icon={FileAttachmentIcon} size={14} /> Generate Report
+            </button>
             <button onClick={startEdit} className="flex items-center gap-1.5 rounded-lg border border-zinc-700 px-3 py-2 text-xs text-zinc-300 hover:border-zinc-600">
               <HugeiconsIcon icon={Edit01Icon} size={14} /> Edit
             </button>
