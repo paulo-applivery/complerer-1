@@ -297,6 +297,43 @@ export function useCreatePolicy(workspaceId: string | undefined) {
   })
 }
 
+export function useUpdatePolicy(workspaceId: string | undefined) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (payload: {
+      policyId: string
+      title?: string
+      description?: string
+      category?: string
+      version?: string
+      status?: string
+      ownerEmail?: string
+      contentText?: string
+      reviewCycleDays?: number
+      approvedBy?: string
+    }) => {
+      const { policyId, ...data } = payload
+      return api.patch(`/workspaces/${workspaceId}/policies/${policyId}`, data)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['policies', workspaceId] })
+    },
+  })
+}
+
+export function useDeletePolicy(workspaceId: string | undefined) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (policyId: string) =>
+      api.delete(`/workspaces/${workspaceId}/policies/${policyId}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['policies', workspaceId] })
+    },
+  })
+}
+
 export function useLinkPolicyControl(workspaceId: string | undefined) {
   const queryClient = useQueryClient()
 

@@ -3,6 +3,8 @@ import { useParams } from '@tanstack/react-router'
 import {
   usePolicies,
   useCreatePolicy,
+  useUpdatePolicy,
+  useDeletePolicy,
   useLinkPolicyControl,
   useUnlinkPolicyControl,
   usePolicyControls,
@@ -20,6 +22,8 @@ import {
   ArrowUp01Icon,
   Link01Icon,
   Search01Icon,
+  Edit01Icon,
+  Delete02Icon,
 } from '@hugeicons/core-free-icons'
 
 export function PoliciesPage() {
@@ -28,6 +32,8 @@ export function PoliciesPage() {
 
   const { policies, isLoading } = usePolicies(workspaceId)
   const createMutation = useCreatePolicy(workspaceId)
+  const updateMutation = useUpdatePolicy(workspaceId)
+  const deleteMutation = useDeletePolicy(workspaceId)
   const { library } = usePolicyLibrary(workspaceId)
   const addFromLibrary = useAddFromPolicyLibrary(workspaceId)
 
@@ -36,6 +42,7 @@ export function PoliciesPage() {
   const [selectedTemplates, setSelectedTemplates] = useState<Set<string>>(new Set())
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [linkingId, setLinkingId] = useState<string | null>(null)
+  const [editingPolicy, setEditingPolicy] = useState<any>(null)
   const [form, setForm] = useState({
     title: '',
     description: '',
@@ -301,6 +308,12 @@ export function PoliciesPage() {
                       setLinkingId(linkingId === policy.id ? null : policy.id)
                       if (linkingId !== policy.id) setExpandedId(policy.id)
                     }}
+                    onEdit={() => setEditingPolicy(policy)}
+                    onDelete={() => {
+                      if (confirm('Delete this policy? This cannot be undone.')) {
+                        deleteMutation.mutate(policy.id)
+                      }
+                    }}
                     categoryBadge={categoryBadge}
                     statusBadge={statusBadge}
                   />
@@ -309,6 +322,104 @@ export function PoliciesPage() {
             </table>
           </div>
         )}
+      </div>
+
+      {/* Edit Policy Modal */}
+      {editingPolicy && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setEditingPolicy(null)}>
+          <div className="w-full max-w-lg rounded-2xl border border-zinc-800 bg-zinc-900 p-6 shadow-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="mb-5 flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-zinc-100">Edit Policy</h3>
+              <button onClick={() => setEditingPolicy(null)} className="text-zinc-500 hover:text-zinc-300"><HugeiconsIcon icon={Cancel01Icon} size={18} /></button>
+            </div>
+            <EditPolicyForm
+              policy={editingPolicy}
+              onSave={(data) => {
+                updateMutation.mutate(
+                  { policyId: editingPolicy.id, ...data },
+                  { onSuccess: () => setEditingPolicy(null) }
+                )
+              }}
+              isPending={updateMutation.isPending}
+              isTemplate={!!editingPolicy.templateId}
+            />
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function EditPolicyForm({ policy, onSave, isPending, isTemplate }: {
+  policy: any
+  onSave: (data: any) => void
+  isPending: boolean
+  isTemplate: boolean
+}) {
+  const [form, setForm] = useState({
+    title: policy.title ?? '',
+    description: policy.description ?? '',
+    category: policy.category ?? 'security',
+    version: policy.version ?? '1.0',
+    status: policy.status ?? 'draft',
+    ownerEmail: policy.owner ?? '',
+    reviewCycleDays: policy.reviewCycleDays?.toString() ?? '365',
+  })
+
+  return (
+    <div className="space-y-4">
+      {isTemplate && (
+        <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 p-3">
+          <p className="text-xs text-blue-400">This policy is linked to a template. You can override fields here — leave empty to use template values.</p>
+        </div>
+      )}
+      <div>
+        <label className="mb-1 block text-xs text-zinc-400">Title</label>
+        <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 focus:border-primary-400 focus:outline-none" />
+      </div>
+      <div>
+        <label className="mb-1 block text-xs text-zinc-400">Description</label>
+        <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 focus:border-primary-400 focus:outline-none" />
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="mb-1 block text-xs text-zinc-400">Category</label>
+          <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 focus:border-primary-400 focus:outline-none">
+            <option value="security">Security</option>
+            <option value="access">Access</option>
+            <option value="privacy">Privacy</option>
+            <option value="hr">HR</option>
+            <option value="incident">Incident</option>
+          </select>
+        </div>
+        <div>
+          <label className="mb-1 block text-xs text-zinc-400">Status</label>
+          <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })} className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 focus:border-primary-400 focus:outline-none">
+            <option value="draft">Draft</option>
+            <option value="active">Active</option>
+            <option value="under_review">Under Review</option>
+            <option value="archived">Archived</option>
+          </select>
+        </div>
+      </div>
+      <div className="grid grid-cols-3 gap-3">
+        <div>
+          <label className="mb-1 block text-xs text-zinc-400">Version</label>
+          <input value={form.version} onChange={(e) => setForm({ ...form, version: e.target.value })} className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 focus:border-primary-400 focus:outline-none" />
+        </div>
+        <div>
+          <label className="mb-1 block text-xs text-zinc-400">Owner Email</label>
+          <input value={form.ownerEmail} onChange={(e) => setForm({ ...form, ownerEmail: e.target.value })} className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus:border-primary-400 focus:outline-none" placeholder="owner@co.com" />
+        </div>
+        <div>
+          <label className="mb-1 block text-xs text-zinc-400">Review Cycle (days)</label>
+          <input type="number" value={form.reviewCycleDays} onChange={(e) => setForm({ ...form, reviewCycleDays: e.target.value })} className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 focus:border-primary-400 focus:outline-none" />
+        </div>
+      </div>
+      <div className="flex justify-end gap-2 pt-2">
+        <button onClick={() => onSave(form)} disabled={isPending} className="rounded-lg bg-primary-400 px-4 py-2 text-sm font-medium text-zinc-950 hover:bg-primary-300 disabled:opacity-50">
+          {isPending ? 'Saving...' : 'Save Changes'}
+        </button>
       </div>
     </div>
   )
@@ -323,6 +434,8 @@ function PolicyRow({
   isLinking,
   onToggleExpand,
   onToggleLink,
+  onEdit,
+  onDelete,
   categoryBadge,
   statusBadge,
 }: {
@@ -343,6 +456,8 @@ function PolicyRow({
   isLinking: boolean
   onToggleExpand: () => void
   onToggleLink: () => void
+  onEdit: () => void
+  onDelete: () => void
   categoryBadge: (c: string) => string
   statusBadge: (s: string) => string
 }) {
@@ -387,17 +502,33 @@ function PolicyRow({
           </span>
         </td>
         <td className="px-5 py-3 text-right">
-          <button
-            onClick={onToggleLink}
-            className={`flex items-center gap-1 rounded-lg border px-2.5 py-1 text-xs transition-colors ml-auto ${
-              isLinking
-                ? 'border-primary-400/50 bg-primary-400/10 text-primary-400'
-                : 'border-zinc-700 text-zinc-400 hover:border-zinc-600 hover:text-zinc-300'
-            }`}
-          >
-            <HugeiconsIcon icon={Link01Icon} size={14} />
-            {isLinking ? 'Done' : 'Link / Unlink'}
-          </button>
+          <div className="flex items-center justify-end gap-1">
+            <button
+              onClick={onEdit}
+              className="rounded p-1.5 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"
+              title="Edit"
+            >
+              <HugeiconsIcon icon={Edit01Icon} size={14} />
+            </button>
+            <button
+              onClick={onDelete}
+              className="rounded p-1.5 text-zinc-500 hover:bg-zinc-800 hover:text-red-400"
+              title="Delete"
+            >
+              <HugeiconsIcon icon={Delete02Icon} size={14} />
+            </button>
+            <button
+              onClick={onToggleLink}
+              className={`flex items-center gap-1 rounded-lg border px-2.5 py-1 text-xs transition-colors ${
+                isLinking
+                  ? 'border-primary-400/50 bg-primary-400/10 text-primary-400'
+                  : 'border-zinc-700 text-zinc-400 hover:border-zinc-600 hover:text-zinc-300'
+              }`}
+            >
+              <HugeiconsIcon icon={Link01Icon} size={14} />
+              {isLinking ? 'Done' : 'Link'}
+            </button>
+          </div>
         </td>
       </tr>
       {isExpanded && (

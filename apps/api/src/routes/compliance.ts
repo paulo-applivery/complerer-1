@@ -3037,6 +3037,38 @@ complianceRoutes.patch(
   }
 )
 
+/**
+ * DELETE /policies/:policyId
+ * Delete a policy and its control links. Admin+.
+ */
+complianceRoutes.delete(
+  '/policies/:policyId',
+  requireRole('admin'),
+  async (c) => {
+    const workspaceId = c.get('workspaceId')
+    const policyId = c.req.param('policyId')
+
+    const existing = await c.env.DB.prepare(
+      'SELECT id FROM policies WHERE id = ? AND workspace_id = ?'
+    ).bind(policyId, workspaceId).first()
+
+    if (!existing) {
+      return c.json({ error: 'Policy not found' }, 404)
+    }
+
+    // Delete control links first
+    await c.env.DB.prepare(
+      'DELETE FROM policy_controls WHERE policy_id = ? AND workspace_id = ?'
+    ).bind(policyId, workspaceId).run()
+
+    await c.env.DB.prepare(
+      'DELETE FROM policies WHERE id = ? AND workspace_id = ?'
+    ).bind(policyId, workspaceId).run()
+
+    return c.json({ success: true })
+  }
+)
+
 const linkPolicyControlSchema = z.object({
   controlId: z.string().min(1),
   coverage: z.string().optional(),
