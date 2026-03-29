@@ -1627,7 +1627,7 @@ function EditAccessModal({ record, users, systems, onClose, onSave, isPending }:
     role: record.role,
     approvedBy: record.approvedBy ?? '',
     ticketRef: record.ticketRef ?? '',
-    status: record.status ?? 'active',
+    status: (record.status ?? 'active') as AccessStatus,
     licenseType: record.licenseType ?? '',
     costPerPeriod: record.costPerPeriod?.toString() ?? '',
     costCurrency: record.costCurrency ?? 'USD',
@@ -1649,19 +1649,37 @@ function EditAccessModal({ record, users, systems, onClose, onSave, isPending }:
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={onClose}>
-      <div className="w-full max-w-lg rounded-2xl border border-zinc-800 bg-zinc-900 p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+      <div className="w-full max-w-xl rounded-2xl border border-zinc-800 bg-zinc-900 p-6 shadow-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         <div className="mb-5 flex items-center justify-between">
           <div>
             <h3 className="text-lg font-semibold text-zinc-100">Edit Access Record</h3>
-            <p className="text-xs text-zinc-500">{record.userName} → {record.systemName}</p>
+            <p className="text-xs text-zinc-500">Granted {new Date(record.grantedAt).toLocaleDateString()}</p>
           </div>
           <button onClick={onClose} className="text-zinc-500 hover:text-zinc-300"><HugeiconsIcon icon={Cancel01Icon} size={18} /></button>
         </div>
 
         <div className="space-y-4">
+          {/* Person & System (read-only context) */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="mb-1 block text-xs text-zinc-400">Role</label>
+              <label className="mb-1 block text-xs text-zinc-400">Person</label>
+              <div className="rounded-lg border border-zinc-800 bg-zinc-800/50 px-3 py-2">
+                <p className="text-sm text-zinc-200">{record.userName}</p>
+                <p className="text-[11px] text-zinc-500">{record.userEmail}</p>
+              </div>
+            </div>
+            <div>
+              <label className="mb-1 block text-xs text-zinc-400">System</label>
+              <div className="rounded-lg border border-zinc-800 bg-zinc-800/50 px-3 py-2">
+                <p className="text-sm text-zinc-200">{record.systemName}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Role & Status */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="mb-1 block text-xs text-zinc-400">Role *</label>
               <select value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 focus:border-primary-400 focus:outline-none">
                 <option value="admin">Admin</option>
                 <option value="write">Write</option>
@@ -1669,13 +1687,14 @@ function EditAccessModal({ record, users, systems, onClose, onSave, isPending }:
               </select>
             </div>
             <div>
-              <label className="mb-1 block text-xs text-zinc-400">Status</label>
+              <label className="mb-1 block text-xs text-zinc-400">Status *</label>
               <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value as AccessStatus })} className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 focus:border-primary-400 focus:outline-none">
                 {Object.entries(STATUS_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
               </select>
             </div>
           </div>
 
+          {/* Approved By & Ticket */}
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="mb-1 block text-xs text-zinc-400">Approved By</label>
@@ -1683,24 +1702,25 @@ function EditAccessModal({ record, users, systems, onClose, onSave, isPending }:
                 value={form.approvedBy}
                 onChange={(v) => setForm({ ...form, approvedBy: v })}
                 options={users.map((u: any) => ({ id: u.name, label: u.name, sublabel: u.title ? `${u.title} · ${u.email}` : u.email }))}
-                placeholder="Approver..."
+                placeholder="Search approver..."
               />
             </div>
             <div>
               <label className="mb-1 block text-xs text-zinc-400">Ticket Reference</label>
-              <input value={form.ticketRef} onChange={(e) => setForm({ ...form, ticketRef: e.target.value })} className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus:border-primary-400 focus:outline-none" placeholder="JIRA-123" />
+              <input value={form.ticketRef} onChange={(e) => setForm({ ...form, ticketRef: e.target.value })} className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus:border-primary-400 focus:outline-none" placeholder="e.g. JIRA-1234" />
             </div>
           </div>
 
+          {/* Cost Details */}
           <div className="border-t border-zinc-800 pt-4">
-            <p className="mb-3 text-xs font-medium text-zinc-500">Cost Details</p>
+            <p className="mb-3 text-xs font-medium text-zinc-500">Cost & License</p>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="mb-1 block text-xs text-zinc-400">License Type</label>
-                <input value={form.licenseType} onChange={(e) => setForm({ ...form, licenseType: e.target.value })} className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus:border-primary-400 focus:outline-none" placeholder="e.g. Enterprise" />
+                <input value={form.licenseType} onChange={(e) => setForm({ ...form, licenseType: e.target.value })} className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus:border-primary-400 focus:outline-none" placeholder="e.g. Enterprise, Pro, Basic" />
               </div>
               <div>
-                <label className="mb-1 block text-xs text-zinc-400">Frequency</label>
+                <label className="mb-1 block text-xs text-zinc-400">Billing Frequency</label>
                 <select value={form.costFrequency} onChange={(e) => setForm({ ...form, costFrequency: e.target.value })} className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 focus:border-primary-400 focus:outline-none">
                   <option value="">None</option>
                   <option value="monthly">Monthly</option>
@@ -1718,6 +1738,7 @@ function EditAccessModal({ record, users, systems, onClose, onSave, isPending }:
                   <option value="USD">USD</option>
                   <option value="EUR">EUR</option>
                   <option value="GBP">GBP</option>
+                  <option value="BRL">BRL</option>
                 </select>
               </div>
             </div>
