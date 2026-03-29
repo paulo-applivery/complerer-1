@@ -14,7 +14,7 @@ import { projectRoutes } from './routes/projects.js'
 
 const app = new Hono<AppType>()
 
-// CORS middleware — allow localhost:5173 in dev
+// CORS middleware — uses ALLOWED_ORIGIN from env vars
 app.use(
   '*',
   cors({
@@ -22,7 +22,8 @@ app.use(
       if (c.env.ENVIRONMENT === 'development') {
         return origin // allow all in dev
       }
-      if (origin?.startsWith('http://localhost:5173')) {
+      const allowed = c.env.ALLOWED_ORIGIN
+      if (allowed && origin === allowed) {
         return origin
       }
       return undefined

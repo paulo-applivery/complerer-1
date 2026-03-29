@@ -1,16 +1,11 @@
 name = "complerer-api"
 main = "src/index.ts"
 compatibility_date = "2024-12-01"
-account_id = "acb45952a3c9db5da9ae06958be1a736"
 
 [dev]
 port = 8787
 
-[vars]
-ENVIRONMENT = "production"
-# Secrets (set via `wrangler secret put` or .dev.vars):
-# ANTHROPIC_API_KEY
-# GEMINI_API_KEY
+# ── Shared bindings (all environments) ──────────────────────────────────────
 
 [[d1_databases]]
 binding = "DB"
@@ -18,5 +13,45 @@ database_name = "complerer-db"
 database_id = "946f1f5e-421e-4dab-a685-d47884c220c4"
 
 [[r2_buckets]]
+binding = "EVIDENCE_BUCKET"
+bucket_name = "complerer-evidence"
+
+# ── Development ─────────────────────────────────────────────────────────────
+# Secrets in dev come from .dev.vars (never committed)
+
+[env.development.vars]
+ENVIRONMENT = "development"
+ALLOWED_ORIGIN = "http://localhost:5173"
+
+# ── Staging ─────────────────────────────────────────────────────────────────
+
+[env.staging.vars]
+ENVIRONMENT = "staging"
+ALLOWED_ORIGIN = "https://staging.complerer.com"
+
+[[env.staging.d1_databases]]
+binding = "DB"
+database_name = "complerer-db-staging"
+database_id = "946f1f5e-421e-4dab-a685-d47884c220c4"
+
+[[env.staging.r2_buckets]]
+binding = "EVIDENCE_BUCKET"
+bucket_name = "complerer-evidence-staging"
+
+# ── Production ──────────────────────────────────────────────────────────────
+# Secrets are set via: wrangler secret put <NAME> --env production
+#   - ANTHROPIC_API_KEY
+#   - GEMINI_API_KEY
+
+[env.production.vars]
+ENVIRONMENT = "production"
+ALLOWED_ORIGIN = "https://app.complerer.com"
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "complerer-db"
+database_id = "946f1f5e-421e-4dab-a685-d47884c220c4"
+
+[[env.production.r2_buckets]]
 binding = "EVIDENCE_BUCKET"
 bucket_name = "complerer-evidence"
