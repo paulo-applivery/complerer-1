@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useNavigate } from '@tanstack/react-router'
 import { api } from '@/lib/api'
 import { HugeiconsIcon } from '@hugeicons/react'
 import {
@@ -442,6 +443,7 @@ function FrameworksTable({ items, onEdit, onDelete }: { items: any[]; onEdit: (i
 const REPORT_CATEGORIES = ['compliance', 'privacy', 'risk']
 
 function ReportTemplatesTable({ items, onEdit, onDelete }: { items: any[]; onEdit: (i: any) => void; onDelete: (id: string) => void }) {
+  const navigate = useNavigate()
   return (
     <table className="w-full text-left text-sm">
       <thead>
@@ -472,7 +474,7 @@ function ReportTemplatesTable({ items, onEdit, onDelete }: { items: any[]; onEdi
               <td className="px-5 py-3 text-zinc-300">{sectionCount}</td>
               <td className="px-3 py-3">
                 <div className="flex items-center gap-1">
-                  <button onClick={() => onEdit(item)} className="rounded p-1.5 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"><HugeiconsIcon icon={Edit01Icon} size={14} /></button>
+                  <button onClick={() => navigate({ to: `/admin/report-templates/${item.id}` })} className="rounded p-1.5 text-zinc-500 hover:bg-zinc-800 hover:text-primary-400" title="Edit template content"><HugeiconsIcon icon={Edit01Icon} size={14} /></button>
                   <button onClick={() => onDelete(item.id)} className="rounded p-1.5 text-zinc-500 hover:bg-zinc-800 hover:text-red-400"><HugeiconsIcon icon={Delete02Icon} size={14} /></button>
                 </div>
               </td>

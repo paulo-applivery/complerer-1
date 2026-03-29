@@ -108,11 +108,14 @@ export function ReportEditor({
   if (!editor) return null
 
   return (
-    <div className="report-editor flex-1 min-w-0">
-      <EditorContent
-        editor={editor}
-        className="prose prose-invert prose-sm max-w-none rounded-lg border border-zinc-700 bg-zinc-800/50 px-6 py-4 min-h-[500px] focus-within:border-zinc-600 transition-colors [&_.ProseMirror]:outline-none [&_.ProseMirror]:min-h-[480px] [&_.ProseMirror_p.is-editor-empty:first-child::before]:text-zinc-600 [&_.ProseMirror_p.is-editor-empty:first-child::before]:content-[attr(data-placeholder)] [&_.ProseMirror_p.is-editor-empty:first-child::before]:float-left [&_.ProseMirror_p.is-editor-empty:first-child::before]:h-0 [&_.ProseMirror_p.is-editor-empty:first-child::before]:pointer-events-none"
-      />
+    <div className="report-editor flex-1 min-w-0 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 200px)' }}>
+      {/* A4 page simulation */}
+      <div className="mx-auto" style={{ width: '210mm', minHeight: '297mm' }}>
+        <EditorContent
+          editor={editor}
+          className="prose prose-sm max-w-none bg-white text-zinc-900 shadow-2xl shadow-black/20 rounded-sm px-[25mm] py-[20mm] min-h-[297mm] focus-within:shadow-black/30 transition-shadow [&_.ProseMirror]:outline-none [&_.ProseMirror]:min-h-[257mm] [&_.ProseMirror_p.is-editor-empty:first-child::before]:text-zinc-400 [&_.ProseMirror_p.is-editor-empty:first-child::before]:content-[attr(data-placeholder)] [&_.ProseMirror_p.is-editor-empty:first-child::before]:float-left [&_.ProseMirror_p.is-editor-empty:first-child::before]:h-0 [&_.ProseMirror_p.is-editor-empty:first-child::before]:pointer-events-none [&_.ProseMirror_h1]:text-zinc-900 [&_.ProseMirror_h2]:text-zinc-800 [&_.ProseMirror_h3]:text-zinc-700 [&_.ProseMirror_table]:border-collapse [&_.ProseMirror_th]:bg-zinc-100 [&_.ProseMirror_th]:border [&_.ProseMirror_th]:border-zinc-300 [&_.ProseMirror_th]:px-3 [&_.ProseMirror_th]:py-1.5 [&_.ProseMirror_td]:border [&_.ProseMirror_td]:border-zinc-300 [&_.ProseMirror_td]:px-3 [&_.ProseMirror_td]:py-1.5 [&_.ProseMirror_hr]:border-zinc-300 [&_.ProseMirror_blockquote]:border-l-zinc-300 [&_.ProseMirror_code]:bg-zinc-100 [&_.ProseMirror_a]:text-blue-600"
+        />
+      </div>
     </div>
   )
 }

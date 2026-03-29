@@ -45,6 +45,7 @@ const AdminFeatureFlagsPage = lazy(() => import('@/pages/admin/feature-flags').t
 const AdminWorkspacesPage = lazy(() => import('@/pages/admin/workspaces').then(m => ({ default: m.AdminWorkspacesPage })))
 const AdminMembersPage = lazy(() => import('@/pages/admin/members').then(m => ({ default: m.AdminMembersPage })))
 const AdminLibrariesPage = lazy(() => import('@/pages/admin/libraries').then(m => ({ default: m.AdminLibrariesPage })))
+const AdminReportTemplateEditorPage = lazy(() => import('@/pages/admin/report-template-editor').then(m => ({ default: m.AdminReportTemplateEditorPage })))
 
 // ── Loading fallback ────────────────────────────────────────────────────────
 
@@ -371,6 +372,12 @@ const adminLibrariesRoute = createRoute({
   component: () => <LazyPage><AdminLibrariesPage /></LazyPage>,
 })
 
+const adminReportTemplateEditorRoute = createRoute({
+  getParentRoute: () => adminLayoutRoute,
+  path: '/report-templates/$templateId',
+  component: () => <LazyPage><AdminReportTemplateEditorPage /></LazyPage>,
+})
+
 // ── Public Trust Center ─────────────────────────────────────────────────────
 
 const trustCenterRoute = createRoute({
@@ -390,7 +397,7 @@ export const routeTree = rootRoute.addChildren([
   workspacesRoute,
   trustCenterRoute,
   workspaceLayoutRoute.addChildren([dashboardRoute, frameworksRoute, accessRoute, evidenceRoute, baselinesRoute, risksRoute, policiesRoute, chatRoute, settingsRoute, gapAnalysisRoute, eventsRoute, integrationsRoute, trustScoreRoute, playbooksRoute, welcomeRoute, projectsRoute, projectDetailRoute, reportsRoute, reportEditorRoute]),
-  adminLayoutRoute.addChildren([adminDashboardRoute, adminProvidersRoute, adminEmailTemplatesRoute, adminFeatureFlagsRoute, adminWorkspacesRoute, adminMembersRoute, adminLibrariesRoute]),
+  adminLayoutRoute.addChildren([adminDashboardRoute, adminProvidersRoute, adminEmailTemplatesRoute, adminFeatureFlagsRoute, adminWorkspacesRoute, adminMembersRoute, adminLibrariesRoute, adminReportTemplateEditorRoute]),
 ])
 
 export const router = createRouter({

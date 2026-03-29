@@ -219,15 +219,39 @@ export function createReportsAPI() {
 
     if (!body.templateId || !body.name) return c.json({ error: 'templateId and name are required' }, 400)
 
-    // Fetch template content
+    // Fetch template content + sections
     const template = await c.env.DB.prepare(`
       SELECT COALESCE(rt.content, rtl.content) AS content,
-             COALESCE(rt.variables, rtl.variables) AS variables
+             COALESCE(rt.variables, rtl.variables) AS variables,
+             COALESCE(rt.sections, rtl.sections) AS sections
       FROM report_templates rt
       LEFT JOIN report_template_library rtl ON rt.template_library_id = rtl.id
       WHERE rt.id = ? AND rt.workspace_id = ?
     `).bind(body.templateId, workspaceId).first<any>()
     if (!template) return c.json({ error: 'Template not found' }, 404)
+
+    // If content is minimal but sections exist, auto-generate content from sections
+    let reportContent = template.content
+    try {
+      const contentDoc = JSON.parse(template.content)
+      const sections = JSON.parse(template.sections || '[]')
+      if (contentDoc.content?.length <= 2 && sections.length > 0) {
+        // Content is just a heading + paragraph — expand sections into full content
+        const nodes: any[] = [
+          { type: 'heading', attrs: { level: 1 }, content: [{ type: 'text', text: body.name }] },
+          { type: 'horizontalRule' },
+        ]
+        for (const section of sections) {
+          nodes.push({ type: 'heading', attrs: { level: 2 }, content: [{ type: 'text', text: section.title }] })
+          if (section.aiPrompt) {
+            nodes.push({ type: 'paragraph', content: [{ type: 'text', text: section.aiPrompt }] })
+          } else {
+            nodes.push({ type: 'paragraph', content: [{ type: 'text', text: `[${section.title} content goes here]` }] })
+          }
+        }
+        reportContent = JSON.stringify({ type: 'doc', content: nodes })
+      }
+    } catch { /* use template content as-is */ }
 
     const id = generateId()
     const ts = now()
@@ -237,7 +261,7 @@ export function createReportsAPI() {
       `INSERT INTO reports (id, workspace_id, template_id, project_id, name, status, content, resolved_variables, audit_period_start, audit_period_end, created_by, created_at, updated_at)
        VALUES (?, ?, ?, ?, ?, 'draft', ?, ?, ?, ?, ?, ?, ?)`
     ).bind(id, workspaceId, body.templateId, body.projectId || null, body.name,
-      template.content, resolvedVars, body.auditPeriodStart || null, body.auditPeriodEnd || null,
+      reportContent, resolvedVars, body.auditPeriodStart || null, body.auditPeriodEnd || null,
       userId, ts, ts).run()
 
     // Create initial version
@@ -245,7 +269,7 @@ export function createReportsAPI() {
     await c.env.DB.prepare(
       `INSERT INTO report_versions (id, report_id, version, content, changed_by, changed_at, change_type, change_description)
        VALUES (?, ?, 1, ?, ?, ?, 'created', 'Initial report created from template')`
-    ).bind(versionId, id, template.content, userId, ts).run()
+    ).bind(versionId, id, reportContent, userId, ts).run()
 
     return c.json({ id }, 201)
   })
