@@ -13,6 +13,13 @@ export interface Project {
   status: string
   auditorName: string | null
   auditorFirm: string | null
+  auditorEmail: string | null
+  auditorPhone: string | null
+  auditorQualifications: string | null
+  firmAddress: string | null
+  firmEmail: string | null
+  firmPhone: string | null
+  firmWebsite: string | null
   auditPeriodStart: string | null
   auditPeriodEnd: string | null
   targetCompletionDate: string | null

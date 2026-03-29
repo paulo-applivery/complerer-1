@@ -624,6 +624,9 @@ function GeneralSettingsTab({ workspaceId, workspace }: { workspaceId: string | 
         )}
       </div>
 
+      {/* Organization Details */}
+      <OrganizationSection workspaceId={workspaceId} workspace={workspace} />
+
       {/* Danger Zone */}
       <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-6">
         <h2 className="text-sm font-semibold text-red-400">Danger Zone</h2>
@@ -643,6 +646,173 @@ function GeneralSettingsTab({ workspaceId, workspace }: { workspaceId: string | 
 }
 
 const ASSIGNABLE_ROLES = ['admin', 'auditor', 'member', 'viewer']
+
+// ── Organization Section ───────────────────────────────────────────────────
+
+function OrganizationSection({ workspaceId, workspace }: { workspaceId: string | undefined; workspace: any }) {
+  const queryClient = useQueryClient()
+  const [editing, setEditing] = useState(false)
+  const [saved, setSaved] = useState(false)
+  const [form, setForm] = useState({
+    orgAddress: '', orgIndustry: '', orgSize: '', orgWebsite: '', orgRegistrationId: '',
+    securityOfficerName: '', securityOfficerEmail: '', securityOfficerPhone: '',
+    dpoName: '', dpoEmail: '', dpoPhone: '',
+    legalRepName: '', legalRepEmail: '',
+  })
+
+  const updateMut = useMutation({
+    mutationFn: (payload: Record<string, string>) =>
+      api.patch(`/workspaces/${workspaceId}`, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['workspace', workspaceId] })
+      setEditing(false)
+      setSaved(true)
+      setTimeout(() => setSaved(false), 2000)
+    },
+  })
+
+  const startEdit = () => {
+    setForm({
+      orgAddress: workspace?.orgAddress ?? '',
+      orgIndustry: workspace?.orgIndustry ?? '',
+      orgSize: workspace?.orgSize ?? '',
+      orgWebsite: workspace?.orgWebsite ?? '',
+      orgRegistrationId: workspace?.orgRegistrationId ?? '',
+      securityOfficerName: workspace?.securityOfficerName ?? '',
+      securityOfficerEmail: workspace?.securityOfficerEmail ?? '',
+      securityOfficerPhone: workspace?.securityOfficerPhone ?? '',
+      dpoName: workspace?.dpoName ?? '',
+      dpoEmail: workspace?.dpoEmail ?? '',
+      dpoPhone: workspace?.dpoPhone ?? '',
+      legalRepName: workspace?.legalRepName ?? '',
+      legalRepEmail: workspace?.legalRepEmail ?? '',
+    })
+    setEditing(true)
+  }
+
+  const handleSave = () => {
+    const payload: Record<string, string> = {}
+    for (const [key, val] of Object.entries(form)) {
+      if (val) payload[key] = val
+    }
+    updateMut.mutate(payload)
+  }
+
+  const inputClass = 'w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 focus:border-primary-400 focus:outline-none'
+
+  const InfoRow = ({ label, value }: { label: string; value: string | undefined }) => (
+    <div className="flex items-center justify-between rounded-lg bg-zinc-800/50 px-4 py-2.5">
+      <span className="text-sm text-zinc-400">{label}</span>
+      <span className="text-sm text-zinc-100">{value || '—'}</span>
+    </div>
+  )
+
+  return (
+    <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-6">
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h2 className="text-lg font-semibold text-zinc-100">Organization Details</h2>
+          <p className="mt-0.5 text-xs text-zinc-500">Company information used in audit reports and compliance documentation</p>
+        </div>
+        {!editing && (
+          <button onClick={startEdit} className="flex items-center gap-2 rounded-lg border border-zinc-700 px-3 py-1.5 text-xs font-medium text-zinc-300 hover:border-zinc-600 hover:text-zinc-100">
+            <HugeiconsIcon icon={Settings01Icon} size={14} /> Edit
+          </button>
+        )}
+      </div>
+
+      {saved && (
+        <div className="mb-4 rounded-lg border border-primary-400/20 bg-primary-400/5 p-2.5">
+          <p className="text-xs text-primary-400 flex items-center gap-1">
+            <HugeiconsIcon icon={CheckmarkCircle01Icon} size={14} /> Organization details updated
+          </p>
+        </div>
+      )}
+
+      {editing ? (
+        <div className="space-y-5">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-3">Company Information</p>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="col-span-2"><label className="mb-1 block text-xs text-zinc-400">Address</label><input value={form.orgAddress} onChange={e => setForm({ ...form, orgAddress: e.target.value })} placeholder="Street, City, State, Postal Code, Country" className={inputClass} /></div>
+              <div><label className="mb-1 block text-xs text-zinc-400">Industry</label><input value={form.orgIndustry} onChange={e => setForm({ ...form, orgIndustry: e.target.value })} placeholder="e.g. Technology, Healthcare, Finance" className={inputClass} /></div>
+              <div><label className="mb-1 block text-xs text-zinc-400">Company Size</label><input value={form.orgSize} onChange={e => setForm({ ...form, orgSize: e.target.value })} placeholder="e.g. 50-200 employees" className={inputClass} /></div>
+              <div><label className="mb-1 block text-xs text-zinc-400">Website</label><input value={form.orgWebsite} onChange={e => setForm({ ...form, orgWebsite: e.target.value })} placeholder="https://example.com" className={inputClass} /></div>
+              <div><label className="mb-1 block text-xs text-zinc-400">Registration / Company ID</label><input value={form.orgRegistrationId} onChange={e => setForm({ ...form, orgRegistrationId: e.target.value })} placeholder="e.g. CIF, EIN, Company Number" className={inputClass} /></div>
+            </div>
+          </div>
+
+          <div className="border-t border-zinc-800 pt-4">
+            <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-3">Security Officer / CISO</p>
+            <div className="grid grid-cols-3 gap-3">
+              <div><label className="mb-1 block text-xs text-zinc-400">Name</label><input value={form.securityOfficerName} onChange={e => setForm({ ...form, securityOfficerName: e.target.value })} className={inputClass} /></div>
+              <div><label className="mb-1 block text-xs text-zinc-400">Email</label><input type="email" value={form.securityOfficerEmail} onChange={e => setForm({ ...form, securityOfficerEmail: e.target.value })} className={inputClass} /></div>
+              <div><label className="mb-1 block text-xs text-zinc-400">Phone</label><input value={form.securityOfficerPhone} onChange={e => setForm({ ...form, securityOfficerPhone: e.target.value })} className={inputClass} /></div>
+            </div>
+          </div>
+
+          <div className="border-t border-zinc-800 pt-4">
+            <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-3">Data Protection Officer (DPO)</p>
+            <div className="grid grid-cols-3 gap-3">
+              <div><label className="mb-1 block text-xs text-zinc-400">Name</label><input value={form.dpoName} onChange={e => setForm({ ...form, dpoName: e.target.value })} className={inputClass} /></div>
+              <div><label className="mb-1 block text-xs text-zinc-400">Email</label><input type="email" value={form.dpoEmail} onChange={e => setForm({ ...form, dpoEmail: e.target.value })} className={inputClass} /></div>
+              <div><label className="mb-1 block text-xs text-zinc-400">Phone</label><input value={form.dpoPhone} onChange={e => setForm({ ...form, dpoPhone: e.target.value })} className={inputClass} /></div>
+            </div>
+          </div>
+
+          <div className="border-t border-zinc-800 pt-4">
+            <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-3">Legal Representative</p>
+            <div className="grid grid-cols-2 gap-3">
+              <div><label className="mb-1 block text-xs text-zinc-400">Name</label><input value={form.legalRepName} onChange={e => setForm({ ...form, legalRepName: e.target.value })} className={inputClass} /></div>
+              <div><label className="mb-1 block text-xs text-zinc-400">Email</label><input type="email" value={form.legalRepEmail} onChange={e => setForm({ ...form, legalRepEmail: e.target.value })} className={inputClass} /></div>
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-2 pt-2">
+            <button onClick={() => setEditing(false)} className="rounded-lg border border-zinc-700 px-4 py-2 text-sm text-zinc-400 hover:border-zinc-600">Cancel</button>
+            <button onClick={handleSave} disabled={updateMut.isPending} className="rounded-lg bg-primary-400 px-4 py-2 text-sm font-medium text-zinc-950 hover:bg-primary-300 disabled:opacity-50">{updateMut.isPending ? 'Saving...' : 'Save'}</button>
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-2">Company</p>
+            <div className="space-y-1">
+              <InfoRow label="Address" value={workspace?.orgAddress} />
+              <InfoRow label="Industry" value={workspace?.orgIndustry} />
+              <InfoRow label="Size" value={workspace?.orgSize} />
+              <InfoRow label="Website" value={workspace?.orgWebsite} />
+              <InfoRow label="Registration ID" value={workspace?.orgRegistrationId} />
+            </div>
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-2">Security Officer</p>
+            <div className="space-y-1">
+              <InfoRow label="Name" value={workspace?.securityOfficerName} />
+              <InfoRow label="Email" value={workspace?.securityOfficerEmail} />
+              <InfoRow label="Phone" value={workspace?.securityOfficerPhone} />
+            </div>
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-2">DPO</p>
+            <div className="space-y-1">
+              <InfoRow label="Name" value={workspace?.dpoName} />
+              <InfoRow label="Email" value={workspace?.dpoEmail} />
+              <InfoRow label="Phone" value={workspace?.dpoPhone} />
+            </div>
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-2">Legal Representative</p>
+            <div className="space-y-1">
+              <InfoRow label="Name" value={workspace?.legalRepName} />
+              <InfoRow label="Email" value={workspace?.legalRepEmail} />
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
 
 function MembersTab({ workspaceId }: { workspaceId: string | undefined }) {
   const { members, role } = useWorkspace(workspaceId)

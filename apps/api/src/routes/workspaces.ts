@@ -129,17 +129,10 @@ workspaceRoutes.get('/:workspaceId', workspaceMiddleware, async (c) => {
   const workspaceId = c.get('workspaceId')
 
   const workspace = await c.env.DB.prepare(
-    'SELECT id, name, slug, plan, created_at, updated_at FROM workspaces WHERE id = ?'
+    'SELECT * FROM workspaces WHERE id = ?'
   )
     .bind(workspaceId)
-    .first<{
-      id: string
-      name: string
-      slug: string
-      plan: string
-      created_at: string
-      updated_at: string
-    }>()
+    .first<any>()
 
   if (!workspace) {
     return c.json({ error: 'Workspace not found' }, 404)
@@ -173,6 +166,19 @@ workspaceRoutes.get('/:workspaceId', workspaceMiddleware, async (c) => {
       plan: workspace.plan,
       createdAt: workspace.created_at,
       updatedAt: workspace.updated_at,
+      orgAddress: workspace.org_address,
+      orgIndustry: workspace.org_industry,
+      orgSize: workspace.org_size,
+      orgWebsite: workspace.org_website,
+      orgRegistrationId: workspace.org_registration_id,
+      securityOfficerName: workspace.security_officer_name,
+      securityOfficerEmail: workspace.security_officer_email,
+      securityOfficerPhone: workspace.security_officer_phone,
+      dpoName: workspace.dpo_name,
+      dpoEmail: workspace.dpo_email,
+      dpoPhone: workspace.dpo_phone,
+      legalRepName: workspace.legal_rep_name,
+      legalRepEmail: workspace.legal_rep_email,
     },
     members: memberRows.map((m) => ({
       id: m.id,
@@ -470,6 +476,19 @@ workspaceRoutes.get(
 const updateWorkspaceSchema = z.object({
   name: z.string().min(1).max(100).optional(),
   slug: z.string().min(1).max(100).optional(),
+  orgAddress: z.string().max(500).optional(),
+  orgIndustry: z.string().max(100).optional(),
+  orgSize: z.string().max(50).optional(),
+  orgWebsite: z.string().max(200).optional(),
+  orgRegistrationId: z.string().max(100).optional(),
+  securityOfficerName: z.string().max(200).optional(),
+  securityOfficerEmail: z.string().max(200).optional(),
+  securityOfficerPhone: z.string().max(50).optional(),
+  dpoName: z.string().max(200).optional(),
+  dpoEmail: z.string().max(200).optional(),
+  dpoPhone: z.string().max(50).optional(),
+  legalRepName: z.string().max(200).optional(),
+  legalRepEmail: z.string().max(200).optional(),
 })
 
 /**
@@ -483,13 +502,25 @@ workspaceRoutes.patch(
   zValidator('json', updateWorkspaceSchema),
   async (c) => {
     const workspaceId = c.get('workspaceId')
-    const { name, slug } = c.req.valid('json')
+    const data = c.req.valid('json')
     const now = new Date().toISOString()
 
     const setClauses: string[] = ['updated_at = ?']
     const values: any[] = [now]
-    if (name) { setClauses.push('name = ?'); values.push(name) }
-    if (slug) { setClauses.push('slug = ?'); values.push(slug.toLowerCase().replace(/[^a-z0-9-]/g, '-')) }
+    if (data.name) { setClauses.push('name = ?'); values.push(data.name) }
+    if (data.slug) { setClauses.push('slug = ?'); values.push(data.slug.toLowerCase().replace(/[^a-z0-9-]/g, '-')) }
+
+    const orgFieldMap: Record<string, string> = {
+      orgAddress: 'org_address', orgIndustry: 'org_industry', orgSize: 'org_size',
+      orgWebsite: 'org_website', orgRegistrationId: 'org_registration_id',
+      securityOfficerName: 'security_officer_name', securityOfficerEmail: 'security_officer_email',
+      securityOfficerPhone: 'security_officer_phone',
+      dpoName: 'dpo_name', dpoEmail: 'dpo_email', dpoPhone: 'dpo_phone',
+      legalRepName: 'legal_rep_name', legalRepEmail: 'legal_rep_email',
+    }
+    for (const [key, col] of Object.entries(orgFieldMap)) {
+      if ((data as any)[key] !== undefined) { setClauses.push(`${col} = ?`); values.push((data as any)[key]) }
+    }
     values.push(workspaceId)
 
     await c.env.DB.prepare(

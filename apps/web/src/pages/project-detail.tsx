@@ -68,6 +68,8 @@ export function ProjectDetailPage() {
   const [editing, setEditing] = useState(false)
   const [editForm, setEditForm] = useState({
     name: '', description: '', auditorName: '', auditorFirm: '',
+    auditorEmail: '', auditorPhone: '', auditorQualifications: '',
+    firmAddress: '', firmEmail: '', firmPhone: '', firmWebsite: '',
     auditPeriodStart: '', auditPeriodEnd: '', targetCompletionDate: '',
   })
 
@@ -78,6 +80,13 @@ export function ProjectDetailPage() {
       description: project.description ?? '',
       auditorName: project.auditorName ?? '',
       auditorFirm: project.auditorFirm ?? '',
+      auditorEmail: project.auditorEmail ?? '',
+      auditorPhone: project.auditorPhone ?? '',
+      auditorQualifications: project.auditorQualifications ?? '',
+      firmAddress: project.firmAddress ?? '',
+      firmEmail: project.firmEmail ?? '',
+      firmPhone: project.firmPhone ?? '',
+      firmWebsite: project.firmWebsite ?? '',
       auditPeriodStart: project.auditPeriodStart ?? '',
       auditPeriodEnd: project.auditPeriodEnd ?? '',
       targetCompletionDate: project.targetCompletionDate ?? '',
@@ -87,10 +96,12 @@ export function ProjectDetailPage() {
 
   const saveEdit = () => {
     if (!projectId) return
-    updateMut.mutate(
-      { projectId, name: editForm.name, description: editForm.description || undefined, auditorName: editForm.auditorName || undefined, auditorFirm: editForm.auditorFirm || undefined, auditPeriodStart: editForm.auditPeriodStart || undefined, auditPeriodEnd: editForm.auditPeriodEnd || undefined, targetCompletionDate: editForm.targetCompletionDate || undefined },
-      { onSuccess: () => setEditing(false) }
-    )
+    const payload: any = { projectId, name: editForm.name }
+    const optionalFields = ['description', 'auditorName', 'auditorFirm', 'auditorEmail', 'auditorPhone', 'auditorQualifications', 'firmAddress', 'firmEmail', 'firmPhone', 'firmWebsite', 'auditPeriodStart', 'auditPeriodEnd', 'targetCompletionDate'] as const
+    for (const key of optionalFields) {
+      if (editForm[key]) payload[key] = editForm[key]
+    }
+    updateMut.mutate(payload, { onSuccess: () => setEditing(false) })
   }
 
   const handleDelete = () => {
@@ -201,19 +212,40 @@ export function ProjectDetailPage() {
       {/* Edit modal */}
       {editing && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setEditing(false)}>
-          <div className="w-full max-w-lg rounded-2xl border border-zinc-800 bg-zinc-900 p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
+          <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-zinc-800 bg-zinc-900 p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
             <h3 className="text-lg font-semibold text-zinc-100 mb-4">Edit Project</h3>
             <div className="space-y-4">
               <div><label className="mb-1 block text-xs text-zinc-400">Name</label><input value={editForm.name} onChange={e => setEditForm({ ...editForm, name: e.target.value })} className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 focus:border-primary-400 focus:outline-none" /></div>
               <div><label className="mb-1 block text-xs text-zinc-400">Description</label><textarea value={editForm.description} onChange={e => setEditForm({ ...editForm, description: e.target.value })} rows={2} className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 focus:border-primary-400 focus:outline-none" /></div>
-              <div className="grid grid-cols-2 gap-3">
-                <div><label className="mb-1 block text-xs text-zinc-400">Auditor</label><input value={editForm.auditorName} onChange={e => setEditForm({ ...editForm, auditorName: e.target.value })} className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 focus:border-primary-400 focus:outline-none" /></div>
-                <div><label className="mb-1 block text-xs text-zinc-400">Firm</label><input value={editForm.auditorFirm} onChange={e => setEditForm({ ...editForm, auditorFirm: e.target.value })} className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 focus:border-primary-400 focus:outline-none" /></div>
+
+              <div className="border-t border-zinc-800 pt-4">
+                <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-3">Lead Auditor</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div><label className="mb-1 block text-xs text-zinc-400">Name</label><input value={editForm.auditorName} onChange={e => setEditForm({ ...editForm, auditorName: e.target.value })} className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 focus:border-primary-400 focus:outline-none" /></div>
+                  <div><label className="mb-1 block text-xs text-zinc-400">Email</label><input type="email" value={editForm.auditorEmail} onChange={e => setEditForm({ ...editForm, auditorEmail: e.target.value })} className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 focus:border-primary-400 focus:outline-none" /></div>
+                  <div><label className="mb-1 block text-xs text-zinc-400">Phone</label><input value={editForm.auditorPhone} onChange={e => setEditForm({ ...editForm, auditorPhone: e.target.value })} className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 focus:border-primary-400 focus:outline-none" /></div>
+                  <div><label className="mb-1 block text-xs text-zinc-400">Qualifications</label><input value={editForm.auditorQualifications} onChange={e => setEditForm({ ...editForm, auditorQualifications: e.target.value })} placeholder="e.g. CISA, ISO 27001 LA" className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 focus:border-primary-400 focus:outline-none" /></div>
+                </div>
               </div>
-              <div className="grid grid-cols-3 gap-3">
-                <div><label className="mb-1 block text-xs text-zinc-400">Period Start</label><input type="date" value={editForm.auditPeriodStart} onChange={e => setEditForm({ ...editForm, auditPeriodStart: e.target.value })} className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 focus:border-primary-400 focus:outline-none" /></div>
-                <div><label className="mb-1 block text-xs text-zinc-400">Period End</label><input type="date" value={editForm.auditPeriodEnd} onChange={e => setEditForm({ ...editForm, auditPeriodEnd: e.target.value })} className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 focus:border-primary-400 focus:outline-none" /></div>
-                <div><label className="mb-1 block text-xs text-zinc-400">Target</label><input type="date" value={editForm.targetCompletionDate} onChange={e => setEditForm({ ...editForm, targetCompletionDate: e.target.value })} className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 focus:border-primary-400 focus:outline-none" /></div>
+
+              <div className="border-t border-zinc-800 pt-4">
+                <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-3">Audit Firm</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div><label className="mb-1 block text-xs text-zinc-400">Firm Name</label><input value={editForm.auditorFirm} onChange={e => setEditForm({ ...editForm, auditorFirm: e.target.value })} className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 focus:border-primary-400 focus:outline-none" /></div>
+                  <div><label className="mb-1 block text-xs text-zinc-400">Contact Email</label><input type="email" value={editForm.firmEmail} onChange={e => setEditForm({ ...editForm, firmEmail: e.target.value })} className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 focus:border-primary-400 focus:outline-none" /></div>
+                  <div><label className="mb-1 block text-xs text-zinc-400">Phone</label><input value={editForm.firmPhone} onChange={e => setEditForm({ ...editForm, firmPhone: e.target.value })} className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 focus:border-primary-400 focus:outline-none" /></div>
+                  <div><label className="mb-1 block text-xs text-zinc-400">Website</label><input value={editForm.firmWebsite} onChange={e => setEditForm({ ...editForm, firmWebsite: e.target.value })} className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 focus:border-primary-400 focus:outline-none" /></div>
+                  <div className="col-span-2"><label className="mb-1 block text-xs text-zinc-400">Address</label><input value={editForm.firmAddress} onChange={e => setEditForm({ ...editForm, firmAddress: e.target.value })} className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 focus:border-primary-400 focus:outline-none" /></div>
+                </div>
+              </div>
+
+              <div className="border-t border-zinc-800 pt-4">
+                <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-3">Audit Period</p>
+                <div className="grid grid-cols-3 gap-3">
+                  <div><label className="mb-1 block text-xs text-zinc-400">Start</label><input type="date" value={editForm.auditPeriodStart} onChange={e => setEditForm({ ...editForm, auditPeriodStart: e.target.value })} className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 focus:border-primary-400 focus:outline-none" /></div>
+                  <div><label className="mb-1 block text-xs text-zinc-400">End</label><input type="date" value={editForm.auditPeriodEnd} onChange={e => setEditForm({ ...editForm, auditPeriodEnd: e.target.value })} className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 focus:border-primary-400 focus:outline-none" /></div>
+                  <div><label className="mb-1 block text-xs text-zinc-400">Target Completion</label><input type="date" value={editForm.targetCompletionDate} onChange={e => setEditForm({ ...editForm, targetCompletionDate: e.target.value })} className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 focus:border-primary-400 focus:outline-none" /></div>
+                </div>
               </div>
             </div>
             <div className="mt-6 flex justify-end gap-2">

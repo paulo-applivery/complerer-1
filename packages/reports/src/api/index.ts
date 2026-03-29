@@ -253,9 +253,53 @@ export function createReportsAPI() {
       }
     } catch { /* use template content as-is */ }
 
+    // Auto-resolve variables from workspace org data and project auditor data
+    const autoVars: Record<string, string> = { ...(body.variables || {}) }
+
+    // Fetch workspace org fields
+    const ws = await c.env.DB.prepare(
+      'SELECT name, org_address, org_industry, org_size, org_website, org_registration_id, security_officer_name, security_officer_email, dpo_name, dpo_email, legal_rep_name FROM workspaces WHERE id = ?'
+    ).bind(workspaceId).first() as any
+    if (ws) {
+      if (ws.name) autoVars['org.name'] = ws.name
+      if (ws.org_address) autoVars['org.address'] = ws.org_address
+      if (ws.org_industry) autoVars['org.industry'] = ws.org_industry
+      if (ws.org_size) autoVars['org.size'] = ws.org_size
+      if (ws.org_website) autoVars['org.website'] = ws.org_website
+      if (ws.org_registration_id) autoVars['org.registration_id'] = ws.org_registration_id
+      if (ws.security_officer_name) autoVars['org.security_officer'] = ws.security_officer_name
+      if (ws.security_officer_email) autoVars['org.security_officer_email'] = ws.security_officer_email
+      if (ws.dpo_name) autoVars['dpo.name'] = ws.dpo_name
+      if (ws.dpo_email) autoVars['dpo.email'] = ws.dpo_email
+      if (ws.legal_rep_name) autoVars['org.legal_rep'] = ws.legal_rep_name
+    }
+
+    // Fetch project auditor fields if project is linked
+    if (body.projectId) {
+      const proj = await c.env.DB.prepare(
+        'SELECT auditor_name, auditor_firm, auditor_email, auditor_qualifications, firm_address, firm_email, firm_website, audit_period_start, audit_period_end FROM compliance_projects WHERE id = ? AND workspace_id = ?'
+      ).bind(body.projectId, workspaceId).first() as any
+      if (proj) {
+        if (proj.auditor_name) autoVars['audit.auditor'] = proj.auditor_name
+        if (proj.auditor_firm) autoVars['audit.auditor_firm'] = proj.auditor_firm
+        if (proj.auditor_email) autoVars['audit.auditor_email'] = proj.auditor_email
+        if (proj.auditor_qualifications) autoVars['audit.auditor_qualifications'] = proj.auditor_qualifications
+        if (proj.firm_address) autoVars['audit.firm_address'] = proj.firm_address
+        if (proj.firm_email) autoVars['audit.firm_email'] = proj.firm_email
+        if (proj.firm_website) autoVars['audit.firm_website'] = proj.firm_website
+        if (proj.audit_period_start) autoVars['audit.period_start'] = proj.audit_period_start
+        if (proj.audit_period_end) autoVars['audit.period_end'] = proj.audit_period_end
+      }
+    }
+
+    // Manual overrides from request body
+    if (body.auditPeriodStart) autoVars['audit.period_start'] = body.auditPeriodStart
+    if (body.auditPeriodEnd) autoVars['audit.period_end'] = body.auditPeriodEnd
+    autoVars['audit.date'] = now().split('T')[0]
+
     const id = generateId()
     const ts = now()
-    const resolvedVars = JSON.stringify(body.variables || {})
+    const resolvedVars = JSON.stringify(autoVars)
 
     await c.env.DB.prepare(
       `INSERT INTO reports (id, workspace_id, template_id, project_id, name, status, content, resolved_variables, audit_period_start, audit_period_end, created_by, created_at, updated_at)
