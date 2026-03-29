@@ -325,7 +325,7 @@ export function SidebarMenuButton({
         'hover:bg-zinc-800 hover:text-zinc-100',
         'data-[active=true]:bg-primary-400/10 data-[active=true]:text-primary-400 data-[active=true]:font-medium',
         !isActive && 'text-zinc-400',
-        state === 'collapsed' && 'md:justify-center md:px-0',
+        state === 'collapsed' && 'md:justify-center md:px-0 md:[&>span]:hidden',
         className
       )}
       {...props}
