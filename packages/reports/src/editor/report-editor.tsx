@@ -108,13 +108,122 @@ export function ReportEditor({
   if (!editor) return null
 
   return (
-    <div className="report-editor flex-1 min-w-0 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 200px)' }}>
-      {/* A4 page simulation */}
-      <div className="mx-auto" style={{ width: '210mm', minHeight: '297mm' }}>
+    <div className="report-editor flex-1 min-w-0 overflow-y-auto bg-zinc-800/50 rounded-lg p-8" style={{ maxHeight: 'calc(100vh - 200px)' }}>
+      {/* A4 page */}
+      <div
+        className="mx-auto rounded-sm shadow-2xl shadow-black/30"
+        style={{
+          width: '210mm',
+          minHeight: '297mm',
+          backgroundColor: '#ffffff',
+          color: '#111111',
+          padding: '20mm 25mm',
+        }}
+      >
         <EditorContent
           editor={editor}
-          className="prose prose-sm max-w-none bg-white text-zinc-900 shadow-2xl shadow-black/20 rounded-sm px-[25mm] py-[20mm] min-h-[297mm] focus-within:shadow-black/30 transition-shadow [&_.ProseMirror]:outline-none [&_.ProseMirror]:min-h-[257mm] [&_.ProseMirror_p.is-editor-empty:first-child::before]:text-zinc-400 [&_.ProseMirror_p.is-editor-empty:first-child::before]:content-[attr(data-placeholder)] [&_.ProseMirror_p.is-editor-empty:first-child::before]:float-left [&_.ProseMirror_p.is-editor-empty:first-child::before]:h-0 [&_.ProseMirror_p.is-editor-empty:first-child::before]:pointer-events-none [&_.ProseMirror_h1]:text-zinc-900 [&_.ProseMirror_h2]:text-zinc-800 [&_.ProseMirror_h3]:text-zinc-700 [&_.ProseMirror_table]:border-collapse [&_.ProseMirror_th]:bg-zinc-100 [&_.ProseMirror_th]:border [&_.ProseMirror_th]:border-zinc-300 [&_.ProseMirror_th]:px-3 [&_.ProseMirror_th]:py-1.5 [&_.ProseMirror_td]:border [&_.ProseMirror_td]:border-zinc-300 [&_.ProseMirror_td]:px-3 [&_.ProseMirror_td]:py-1.5 [&_.ProseMirror_hr]:border-zinc-300 [&_.ProseMirror_blockquote]:border-l-zinc-300 [&_.ProseMirror_code]:bg-zinc-100 [&_.ProseMirror_a]:text-blue-600"
+          style={{ color: '#111111' }}
+          className="report-a4-content"
         />
+        <style>{`
+          .report-a4-content .ProseMirror {
+            outline: none;
+            min-height: 257mm;
+            font-family: 'Georgia', 'Times New Roman', serif;
+            font-size: 11pt;
+            line-height: 1.7;
+            color: #111111;
+          }
+          .report-a4-content .ProseMirror h1 {
+            font-size: 22pt;
+            font-weight: 700;
+            color: #111111;
+            margin-top: 0;
+            margin-bottom: 0.5em;
+            border-bottom: 2px solid #333;
+            padding-bottom: 0.3em;
+          }
+          .report-a4-content .ProseMirror h2 {
+            font-size: 15pt;
+            font-weight: 600;
+            color: #222222;
+            margin-top: 1.5em;
+            margin-bottom: 0.4em;
+          }
+          .report-a4-content .ProseMirror h3 {
+            font-size: 12pt;
+            font-weight: 600;
+            color: #333333;
+            margin-top: 1.2em;
+            margin-bottom: 0.3em;
+          }
+          .report-a4-content .ProseMirror p {
+            margin: 0.4em 0;
+            text-align: justify;
+            color: #111111;
+          }
+          .report-a4-content .ProseMirror table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1em 0;
+            font-size: 10pt;
+          }
+          .report-a4-content .ProseMirror th {
+            background-color: #f3f4f6;
+            border: 1px solid #d1d5db;
+            padding: 6px 10px;
+            text-align: left;
+            font-weight: 600;
+            color: #111111;
+          }
+          .report-a4-content .ProseMirror td {
+            border: 1px solid #d1d5db;
+            padding: 6px 10px;
+            color: #111111;
+          }
+          .report-a4-content .ProseMirror hr {
+            border: none;
+            border-top: 1px solid #d1d5db;
+            margin: 1.5em 0;
+          }
+          .report-a4-content .ProseMirror blockquote {
+            border-left: 3px solid #d1d5db;
+            padding-left: 1em;
+            margin-left: 0;
+            color: #444444;
+            font-style: italic;
+          }
+          .report-a4-content .ProseMirror code {
+            background: #f3f4f6;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-size: 10pt;
+            color: #111111;
+          }
+          .report-a4-content .ProseMirror pre {
+            background: #f3f4f6;
+            padding: 1em;
+            border-radius: 4px;
+            overflow-x: auto;
+            color: #111111;
+          }
+          .report-a4-content .ProseMirror ul,
+          .report-a4-content .ProseMirror ol {
+            padding-left: 1.5em;
+            color: #111111;
+          }
+          .report-a4-content .ProseMirror a {
+            color: #1d4ed8;
+            text-decoration: underline;
+          }
+          .report-a4-content .ProseMirror p.is-editor-empty:first-child::before {
+            content: attr(data-placeholder);
+            float: left;
+            height: 0;
+            pointer-events: none;
+            color: #9ca3af;
+          }
+        `}</style>
       </div>
     </div>
   )
