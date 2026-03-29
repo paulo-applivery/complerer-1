@@ -1,0 +1,158 @@
+import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
+import { useState, useEffect } from 'react';
+import { useParams } from '@tanstack/react-router';
+import { usePolicies, useCreatePolicy, useUpdatePolicy, useDeletePolicy, useLinkPolicyControl, useUnlinkPolicyControl, usePolicyControls, usePolicyLibrary, useAddFromPolicyLibrary, } from '@/hooks/use-settings';
+import { useControls, useAdoptions } from '@/hooks/use-frameworks';
+import { HugeiconsIcon } from '@hugeicons/react';
+import { File01Icon, PlusSignIcon, Cancel01Icon, LoaderPinwheelIcon, ArrowDown01Icon, ArrowUp01Icon, Link01Icon, Search01Icon, Edit01Icon, Delete02Icon, } from '@hugeicons/core-free-icons';
+export function PoliciesPage() {
+    const params = useParams({ strict: false });
+    const workspaceId = params.workspaceId;
+    const { policies, isLoading } = usePolicies(workspaceId);
+    const createMutation = useCreatePolicy(workspaceId);
+    const updateMutation = useUpdatePolicy(workspaceId);
+    const deleteMutation = useDeletePolicy(workspaceId);
+    const { library } = usePolicyLibrary(workspaceId);
+    const addFromLibrary = useAddFromPolicyLibrary(workspaceId);
+    const [showForm, setShowForm] = useState(false);
+    const [showLibrary, setShowLibrary] = useState(false);
+    const [selectedTemplates, setSelectedTemplates] = useState(new Set());
+    const [expandedId, setExpandedId] = useState(null);
+    const [linkingId, setLinkingId] = useState(null);
+    const [editingPolicy, setEditingPolicy] = useState(null);
+    const [form, setForm] = useState({
+        title: '',
+        description: '',
+        category: 'security',
+        version: '1.0',
+        owner: '',
+        reviewCycleDays: '',
+    });
+    const handleSubmit = () => {
+        if (!form.title.trim())
+            return;
+        createMutation.mutate({
+            title: form.title,
+            description: form.description || undefined,
+            category: form.category,
+            version: form.version || undefined,
+            owner: form.owner || undefined,
+            reviewCycleDays: form.reviewCycleDays ? Number(form.reviewCycleDays) : undefined,
+        }, {
+            onSuccess: () => {
+                setForm({ title: '', description: '', category: 'security', version: '1.0', owner: '', reviewCycleDays: '' });
+                setShowForm(false);
+            },
+        });
+    };
+    const categoryBadge = (category) => {
+        switch (category) {
+            case 'access':
+                return 'bg-blue-500/10 text-blue-400';
+            case 'security':
+                return 'bg-purple-500/10 text-purple-400';
+            case 'privacy':
+                return 'bg-cyan-500/10 text-cyan-400';
+            case 'hr':
+                return 'bg-orange-500/10 text-orange-400';
+            case 'incident':
+                return 'bg-red-500/10 text-red-400';
+            default:
+                return 'bg-zinc-500/10 text-zinc-400';
+        }
+    };
+    const statusBadge = (status) => {
+        switch (status) {
+            case 'draft':
+                return 'bg-zinc-500/10 text-zinc-400';
+            case 'active':
+                return 'bg-primary-400/10 text-primary-400';
+            case 'under_review':
+                return 'bg-amber-500/10 text-amber-400';
+            case 'archived':
+                return 'bg-red-500/10 text-red-400';
+            default:
+                return 'bg-zinc-500/10 text-zinc-400';
+        }
+    };
+    return (_jsxs("div", { className: "space-y-6", children: [_jsxs("div", { children: [_jsx("h1", { className: "text-2xl font-bold text-zinc-100", children: "Policies" }), _jsx("p", { className: "mt-1 text-sm text-zinc-400", children: "Manage your organization's compliance policies and link them to controls." })] }), _jsxs("div", { className: "flex items-center justify-between", children: [_jsx("h2", { className: "text-lg font-semibold text-zinc-100", children: "Policy Vault" }), _jsxs("div", { className: "flex items-center gap-2", children: [library.length > 0 && (_jsxs("button", { onClick: () => { setShowLibrary(!showLibrary); setShowForm(false); }, className: "flex items-center gap-2 rounded-lg border border-zinc-700 px-4 py-2 text-sm font-medium text-zinc-300 transition-colors hover:border-zinc-600 hover:text-zinc-100", children: [_jsx(HugeiconsIcon, { icon: Link01Icon, size: 16 }), showLibrary ? 'Cancel' : 'Add from Library'] })), _jsxs("button", { onClick: () => { setShowForm(!showForm); setShowLibrary(false); }, className: "flex items-center gap-2 rounded-lg bg-primary-400 px-4 py-2 text-sm font-medium text-zinc-950 transition-colors hover:bg-primary-300", children: [showForm ? _jsx(HugeiconsIcon, { icon: Cancel01Icon, size: 16 }) : _jsx(HugeiconsIcon, { icon: PlusSignIcon, size: 16 }), showForm ? 'Cancel' : 'Add Policy'] })] })] }), showLibrary && (_jsxs("div", { className: "rounded-xl border border-zinc-800 bg-zinc-900 p-5", children: [_jsx("h3", { className: "mb-4 text-sm font-semibold text-zinc-100", children: "Add from Policy Library" }), _jsx("div", { className: "space-y-2", children: library.map((item) => {
+                            const alreadyAdded = policies.some((p) => p.templateId === item.id);
+                            return (_jsxs("label", { className: `flex items-center gap-3 rounded-lg border border-zinc-800 p-3 transition-colors ${alreadyAdded ? 'opacity-50' : 'cursor-pointer hover:border-zinc-700'}`, children: [_jsx("input", { type: "checkbox", disabled: alreadyAdded, checked: alreadyAdded || selectedTemplates.has(item.id), onChange: (e) => {
+                                            const next = new Set(selectedTemplates);
+                                            e.target.checked ? next.add(item.id) : next.delete(item.id);
+                                            setSelectedTemplates(next);
+                                        }, className: "rounded border-zinc-600" }), _jsxs("div", { className: "flex-1", children: [_jsx("p", { className: "text-sm font-medium text-zinc-200", children: item.title }), item.description && _jsx("p", { className: "text-xs text-zinc-500", children: item.description })] }), _jsx("span", { className: "rounded-full bg-zinc-800 px-2 py-0.5 text-[10px] text-zinc-500", children: item.category }), alreadyAdded && _jsx("span", { className: "text-[10px] text-zinc-600", children: "Added" })] }, item.id));
+                        }) }), selectedTemplates.size > 0 && (_jsx("div", { className: "mt-4 flex justify-end", children: _jsx("button", { onClick: () => {
+                                addFromLibrary.mutate({ templateIds: Array.from(selectedTemplates) }, {
+                                    onSuccess: () => { setSelectedTemplates(new Set()); setShowLibrary(false); },
+                                });
+                            }, disabled: addFromLibrary.isPending, className: "rounded-lg bg-primary-400 px-4 py-2 text-sm font-medium text-zinc-950 transition-colors hover:bg-primary-300 disabled:opacity-50", children: addFromLibrary.isPending ? 'Adding...' : `Add ${selectedTemplates.size} policies` }) }))] })), showForm && (_jsxs("div", { className: "rounded-xl border border-zinc-800 bg-zinc-900 p-5", children: [_jsx("h3", { className: "mb-4 text-sm font-semibold text-zinc-100", children: "New Policy" }), _jsxs("div", { className: "grid gap-4 sm:grid-cols-2 lg:grid-cols-3", children: [_jsxs("div", { children: [_jsx("label", { className: "mb-1 block text-xs text-zinc-400", children: "Title *" }), _jsx("input", { value: form.title, onChange: (e) => setForm({ ...form, title: e.target.value }), className: "w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus:border-primary-400 focus:outline-none", placeholder: "e.g. Information Security Policy" })] }), _jsxs("div", { children: [_jsx("label", { className: "mb-1 block text-xs text-zinc-400", children: "Category" }), _jsxs("select", { value: form.category, onChange: (e) => setForm({ ...form, category: e.target.value }), className: "w-full appearance-none rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 focus:border-primary-400 focus:outline-none", children: [_jsx("option", { value: "access", children: "Access" }), _jsx("option", { value: "security", children: "Security" }), _jsx("option", { value: "privacy", children: "Privacy" }), _jsx("option", { value: "hr", children: "HR" }), _jsx("option", { value: "incident", children: "Incident" })] })] }), _jsxs("div", { children: [_jsx("label", { className: "mb-1 block text-xs text-zinc-400", children: "Version" }), _jsx("input", { value: form.version, onChange: (e) => setForm({ ...form, version: e.target.value }), className: "w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus:border-primary-400 focus:outline-none", placeholder: "e.g. 1.0" })] }), _jsxs("div", { children: [_jsx("label", { className: "mb-1 block text-xs text-zinc-400", children: "Owner Email" }), _jsx("input", { value: form.owner, onChange: (e) => setForm({ ...form, owner: e.target.value }), className: "w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus:border-primary-400 focus:outline-none", placeholder: "e.g. ciso@company.com" })] }), _jsxs("div", { children: [_jsx("label", { className: "mb-1 block text-xs text-zinc-400", children: "Review Cycle (days)" }), _jsx("input", { type: "number", value: form.reviewCycleDays, onChange: (e) => setForm({ ...form, reviewCycleDays: e.target.value }), className: "w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus:border-primary-400 focus:outline-none", placeholder: "e.g. 365" })] }), _jsxs("div", { className: "sm:col-span-2 lg:col-span-3", children: [_jsx("label", { className: "mb-1 block text-xs text-zinc-400", children: "Description" }), _jsx("textarea", { value: form.description, onChange: (e) => setForm({ ...form, description: e.target.value }), rows: 2, className: "w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus:border-primary-400 focus:outline-none", placeholder: "Describe this policy..." })] })] }), _jsx("div", { className: "mt-4 flex justify-end", children: _jsx("button", { onClick: handleSubmit, disabled: !form.title.trim() || createMutation.isPending, className: "rounded-lg bg-primary-400 px-4 py-2 text-sm font-medium text-zinc-950 transition-colors hover:bg-primary-300 disabled:opacity-50", children: createMutation.isPending ? 'Creating...' : 'Create Policy' }) })] })), _jsx("div", { className: "rounded-xl border border-zinc-800 bg-zinc-900", children: isLoading ? (_jsx("div", { className: "flex items-center justify-center py-12", children: _jsx(HugeiconsIcon, { icon: LoaderPinwheelIcon, size: 20, className: "animate-spin text-zinc-500" }) })) : policies.length === 0 ? (_jsxs("div", { className: "py-12 text-center", children: [_jsx(HugeiconsIcon, { icon: File01Icon, size: 32, className: "mx-auto text-zinc-600" }), _jsx("p", { className: "mt-3 text-sm text-zinc-400", children: "No policies created yet." })] })) : (_jsx("div", { className: "overflow-x-auto", children: _jsxs("table", { className: "w-full text-left text-sm", children: [_jsx("thead", { children: _jsxs("tr", { className: "border-b border-zinc-800 text-xs text-zinc-500", children: [_jsx("th", { className: "w-8 px-3 py-3" }), _jsx("th", { className: "px-5 py-3 font-medium", children: "Title" }), _jsx("th", { className: "px-5 py-3 font-medium", children: "Category" }), _jsx("th", { className: "px-5 py-3 font-medium", children: "Version" }), _jsx("th", { className: "px-5 py-3 font-medium", children: "Status" }), _jsx("th", { className: "px-5 py-3 font-medium", children: "Owner" }), _jsx("th", { className: "px-5 py-3 font-medium", children: "Next Review" }), _jsx("th", { className: "px-5 py-3 font-medium", children: "Controls" }), _jsx("th", { className: "px-5 py-3 font-medium text-right", children: "Actions" })] }) }), _jsx("tbody", { className: "divide-y divide-zinc-800/50", children: policies.map((policy) => (_jsx(PolicyRow, { policy: policy, workspaceId: workspaceId, isExpanded: expandedId === policy.id, isLinking: linkingId === policy.id, onToggleExpand: () => setExpandedId(expandedId === policy.id ? null : policy.id), onToggleLink: () => {
+                                        setLinkingId(linkingId === policy.id ? null : policy.id);
+                                        if (linkingId !== policy.id)
+                                            setExpandedId(policy.id);
+                                    }, onEdit: () => setEditingPolicy(policy), onDelete: () => {
+                                        if (confirm('Delete this policy? This cannot be undone.')) {
+                                            deleteMutation.mutate(policy.id);
+                                        }
+                                    }, categoryBadge: categoryBadge, statusBadge: statusBadge }, policy.id))) })] }) })) }), editingPolicy && (_jsx("div", { className: "fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm", onClick: () => setEditingPolicy(null), children: _jsxs("div", { className: "w-full max-w-lg rounded-2xl border border-zinc-800 bg-zinc-900 p-6 shadow-2xl max-h-[90vh] overflow-y-auto", onClick: (e) => e.stopPropagation(), children: [_jsxs("div", { className: "mb-5 flex items-center justify-between", children: [_jsx("h3", { className: "text-lg font-semibold text-zinc-100", children: "Edit Policy" }), _jsx("button", { onClick: () => setEditingPolicy(null), className: "text-zinc-500 hover:text-zinc-300", children: _jsx(HugeiconsIcon, { icon: Cancel01Icon, size: 18 }) })] }), _jsx(EditPolicyForm, { policy: editingPolicy, onSave: (data) => {
+                                updateMutation.mutate({ policyId: editingPolicy.id, ...data }, { onSuccess: () => setEditingPolicy(null) });
+                            }, isPending: updateMutation.isPending, isTemplate: !!editingPolicy.templateId })] }) }))] }));
+}
+function EditPolicyForm({ policy, onSave, isPending, isTemplate }) {
+    const [form, setForm] = useState({
+        title: policy.title ?? '',
+        description: policy.description ?? '',
+        category: policy.category ?? 'security',
+        version: policy.version ?? '1.0',
+        status: policy.status ?? 'draft',
+        ownerEmail: policy.owner ?? '',
+        reviewCycleDays: policy.reviewCycleDays?.toString() ?? '365',
+    });
+    return (_jsxs("div", { className: "space-y-4", children: [isTemplate && (_jsx("div", { className: "rounded-lg border border-blue-500/20 bg-blue-500/5 p-3", children: _jsx("p", { className: "text-xs text-blue-400", children: "This policy is linked to a template. You can override fields here \u2014 leave empty to use template values." }) })), _jsxs("div", { children: [_jsx("label", { className: "mb-1 block text-xs text-zinc-400", children: "Title" }), _jsx("input", { value: form.title, onChange: (e) => setForm({ ...form, title: e.target.value }), className: "w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 focus:border-primary-400 focus:outline-none" })] }), _jsxs("div", { children: [_jsx("label", { className: "mb-1 block text-xs text-zinc-400", children: "Description" }), _jsx("textarea", { value: form.description, onChange: (e) => setForm({ ...form, description: e.target.value }), rows: 3, className: "w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 focus:border-primary-400 focus:outline-none" })] }), _jsxs("div", { className: "grid grid-cols-2 gap-3", children: [_jsxs("div", { children: [_jsx("label", { className: "mb-1 block text-xs text-zinc-400", children: "Category" }), _jsxs("select", { value: form.category, onChange: (e) => setForm({ ...form, category: e.target.value }), className: "w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 focus:border-primary-400 focus:outline-none", children: [_jsx("option", { value: "security", children: "Security" }), _jsx("option", { value: "access", children: "Access" }), _jsx("option", { value: "privacy", children: "Privacy" }), _jsx("option", { value: "hr", children: "HR" }), _jsx("option", { value: "incident", children: "Incident" })] })] }), _jsxs("div", { children: [_jsx("label", { className: "mb-1 block text-xs text-zinc-400", children: "Status" }), _jsxs("select", { value: form.status, onChange: (e) => setForm({ ...form, status: e.target.value }), className: "w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 focus:border-primary-400 focus:outline-none", children: [_jsx("option", { value: "draft", children: "Draft" }), _jsx("option", { value: "active", children: "Active" }), _jsx("option", { value: "under_review", children: "Under Review" }), _jsx("option", { value: "archived", children: "Archived" })] })] })] }), _jsxs("div", { className: "grid grid-cols-3 gap-3", children: [_jsxs("div", { children: [_jsx("label", { className: "mb-1 block text-xs text-zinc-400", children: "Version" }), _jsx("input", { value: form.version, onChange: (e) => setForm({ ...form, version: e.target.value }), className: "w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 focus:border-primary-400 focus:outline-none" })] }), _jsxs("div", { children: [_jsx("label", { className: "mb-1 block text-xs text-zinc-400", children: "Owner Email" }), _jsx("input", { value: form.ownerEmail, onChange: (e) => setForm({ ...form, ownerEmail: e.target.value }), className: "w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus:border-primary-400 focus:outline-none", placeholder: "owner@co.com" })] }), _jsxs("div", { children: [_jsx("label", { className: "mb-1 block text-xs text-zinc-400", children: "Review Cycle (days)" }), _jsx("input", { type: "number", value: form.reviewCycleDays, onChange: (e) => setForm({ ...form, reviewCycleDays: e.target.value }), className: "w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 focus:border-primary-400 focus:outline-none" })] })] }), _jsx("div", { className: "flex justify-end gap-2 pt-2", children: _jsx("button", { onClick: () => onSave(form), disabled: isPending, className: "rounded-lg bg-primary-400 px-4 py-2 text-sm font-medium text-zinc-950 hover:bg-primary-300 disabled:opacity-50", children: isPending ? 'Saving...' : 'Save Changes' }) })] }));
+}
+// ── Policy Row ──────────────────────────────────────────────────────────────
+function PolicyRow({ policy, workspaceId, isExpanded, isLinking, onToggleExpand, onToggleLink, onEdit, onDelete, categoryBadge, statusBadge, }) {
+    return (_jsxs(_Fragment, { children: [_jsxs("tr", { className: "transition-colors hover:bg-zinc-800/30", children: [_jsx("td", { className: "px-3 py-3", children: _jsx("button", { onClick: onToggleExpand, className: "text-zinc-500 hover:text-zinc-300", children: isExpanded ? (_jsx(HugeiconsIcon, { icon: ArrowUp01Icon, size: 16 })) : (_jsx(HugeiconsIcon, { icon: ArrowDown01Icon, size: 16 })) }) }), _jsxs("td", { className: "px-5 py-3", children: [_jsx("span", { className: "font-medium text-zinc-100", children: policy.title }), policy.templateId && (_jsx("span", { className: "ml-2 rounded bg-blue-500/10 px-1.5 py-0.5 text-[10px] font-medium text-blue-400", children: "Template" }))] }), _jsx("td", { className: "px-5 py-3", children: _jsx("span", { className: `rounded-full px-2.5 py-0.5 text-xs font-medium ${categoryBadge(policy.category)}`, children: policy.category }) }), _jsxs("td", { className: "px-5 py-3 text-zinc-300", children: ["v", policy.version] }), _jsx("td", { className: "px-5 py-3", children: _jsx("span", { className: `rounded-full px-2.5 py-0.5 text-xs font-medium ${statusBadge(policy.status)}`, children: policy.status.replace('_', ' ') }) }), _jsx("td", { className: "px-5 py-3 text-zinc-400", children: policy.owner ?? '—' }), _jsx("td", { className: "px-5 py-3 text-zinc-400", children: policy.nextReviewDate
+                            ? new Date(policy.nextReviewDate).toLocaleDateString()
+                            : '—' }), _jsx("td", { className: "px-5 py-3", children: _jsx("span", { className: "rounded-full bg-zinc-800 px-2.5 py-0.5 text-xs font-medium text-zinc-300", children: policy.controlsCount }) }), _jsx("td", { className: "px-5 py-3 text-right", children: _jsxs("div", { className: "flex items-center justify-end gap-1", children: [_jsx("button", { onClick: onEdit, className: "rounded p-1.5 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300", title: "Edit", children: _jsx(HugeiconsIcon, { icon: Edit01Icon, size: 14 }) }), _jsx("button", { onClick: onDelete, className: "rounded p-1.5 text-zinc-500 hover:bg-zinc-800 hover:text-red-400", title: "Delete", children: _jsx(HugeiconsIcon, { icon: Delete02Icon, size: 14 }) }), _jsxs("button", { onClick: onToggleLink, className: `flex items-center gap-1 rounded-lg border px-2.5 py-1 text-xs transition-colors ${isLinking
+                                        ? 'border-primary-400/50 bg-primary-400/10 text-primary-400'
+                                        : 'border-zinc-700 text-zinc-400 hover:border-zinc-600 hover:text-zinc-300'}`, children: [_jsx(HugeiconsIcon, { icon: Link01Icon, size: 14 }), isLinking ? 'Done' : 'Link'] })] }) })] }), isExpanded && (_jsx("tr", { children: _jsx("td", { colSpan: 9, className: "border-b border-zinc-800 bg-zinc-900/50 px-5 py-4", children: _jsx(PolicyExpandedContent, { workspaceId: workspaceId, policyId: policy.id, isLinking: isLinking }) }) }))] }));
+}
+// ── Expanded Content ────────────────────────────────────────────────────────
+function PolicyExpandedContent({ workspaceId, policyId, isLinking, }) {
+    const { controls, isLoading: controlsLoading } = usePolicyControls(workspaceId, policyId);
+    const unlinkMutation = useUnlinkPolicyControl(workspaceId);
+    return (_jsxs("div", { className: "space-y-4", children: [_jsxs("div", { children: [_jsxs("h4", { className: "mb-2 text-xs font-semibold uppercase tracking-wider text-zinc-500", children: ["Linked Controls (", controls.length, ")"] }), controlsLoading ? (_jsxs("div", { className: "flex items-center gap-2 py-2", children: [_jsx(HugeiconsIcon, { icon: LoaderPinwheelIcon, size: 14, className: "animate-spin text-zinc-500" }), _jsx("span", { className: "text-xs text-zinc-500", children: "Loading controls..." })] })) : controls.length === 0 ? (_jsx("p", { className: "text-xs text-zinc-500", children: "No controls linked yet. Click \"Link / Unlink\" to connect this policy to controls." })) : (_jsx("div", { className: "flex flex-wrap gap-2", children: controls.map((link) => (_jsxs("div", { className: "group/ctrl flex items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-800/50 px-3 py-1.5", children: [_jsx("span", { className: "font-mono text-xs text-primary-400", children: link.controlCode }), _jsx("span", { className: "text-xs text-zinc-400", children: link.controlTitle }), _jsx("span", { className: "rounded-full bg-zinc-700 px-2 py-0.5 text-[10px] text-zinc-400", children: link.frameworkName }), _jsx("button", { onClick: () => unlinkMutation.mutate({ policyId, linkId: link.id }), disabled: unlinkMutation.isPending, className: "ml-1 rounded p-0.5 text-zinc-600 opacity-0 transition-opacity hover:bg-red-500/10 hover:text-red-400 group-hover/ctrl:opacity-100", title: "Unlink", children: _jsx(HugeiconsIcon, { icon: Cancel01Icon, size: 12 }) })] }, link.id))) }))] }), isLinking && (_jsx(LinkControlDialog, { workspaceId: workspaceId, policyId: policyId }))] }));
+}
+// ── Link Control Dialog ─────────────────────────────────────────────────────
+function LinkControlDialog({ workspaceId, policyId, }) {
+    const { adoptions } = useAdoptions(workspaceId);
+    const { controls: linkedControls } = usePolicyControls(workspaceId, policyId);
+    const linkedControlIds = new Set(linkedControls.map((l) => l.controlId));
+    const [selectedAdoption, setSelectedAdoption] = useState(null);
+    const [searchQuery, setSearchQuery] = useState('');
+    // Set default adoption when data loads
+    useEffect(() => {
+        if (!selectedAdoption && adoptions.length > 0) {
+            setSelectedAdoption({ slug: adoptions[0].frameworkSlug, version: adoptions[0].frameworkVersion });
+        }
+    }, [adoptions, selectedAdoption]);
+    const { controls, isLoading: controlsLoading } = useControls(workspaceId, selectedAdoption?.slug ?? '', selectedAdoption?.version ?? '', { page: 1, limit: 50 });
+    const linkMutation = useLinkPolicyControl(workspaceId);
+    const filteredControls = controls.filter((c) => {
+        if (!searchQuery)
+            return true;
+        const q = searchQuery.toLowerCase();
+        return (c.controlId.toLowerCase().includes(q) ||
+            c.title.toLowerCase().includes(q) ||
+            (c.domain ?? '').toLowerCase().includes(q));
+    });
+    const handleLink = (controlId) => {
+        linkMutation.mutate({ policyId, controlId });
+    };
+    return (_jsxs("div", { className: "rounded-lg border border-zinc-700 bg-zinc-800 p-4", children: [_jsx("h4", { className: "mb-3 text-sm font-semibold text-zinc-100", children: "Link to Control" }), _jsxs("div", { className: "mb-3 flex items-center gap-3", children: [adoptions.length > 0 && (_jsx("select", { value: selectedAdoption ? `${selectedAdoption.slug}|${selectedAdoption.version}` : '', onChange: (e) => {
+                            const [slug, version] = e.target.value.split('|');
+                            setSelectedAdoption({ slug, version });
+                        }, className: "appearance-none rounded-lg border border-zinc-600 bg-zinc-700 px-3 py-1.5 text-xs text-zinc-300 focus:border-primary-400 focus:outline-none", children: adoptions.map((a) => (_jsxs("option", { value: `${a.frameworkSlug}|${a.frameworkVersion}`, children: [a.frameworkName, " v", a.frameworkVersion] }, a.id))) })), _jsxs("div", { className: "relative flex-1", children: [_jsx(HugeiconsIcon, { icon: Search01Icon, size: 14, className: "absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-500" }), _jsx("input", { value: searchQuery, onChange: (e) => setSearchQuery(e.target.value), className: "w-full rounded-lg border border-zinc-600 bg-zinc-700 py-1.5 pl-8 pr-3 text-xs text-zinc-300 placeholder-zinc-500 focus:border-primary-400 focus:outline-none", placeholder: "Search controls..." })] })] }), adoptions.length === 0 ? (_jsx("p", { className: "text-xs text-zinc-500", children: "Adopt a framework first to link controls." })) : controlsLoading ? (_jsx("div", { className: "flex items-center justify-center py-4", children: _jsx(HugeiconsIcon, { icon: LoaderPinwheelIcon, size: 16, className: "animate-spin text-zinc-500" }) })) : filteredControls.length === 0 ? (_jsx("p", { className: "py-4 text-center text-xs text-zinc-500", children: "No controls found." })) : (_jsx("div", { className: "max-h-60 overflow-y-auto", children: _jsxs("table", { className: "w-full text-left text-xs", children: [_jsx("thead", { children: _jsxs("tr", { className: "border-b border-zinc-700 text-zinc-500", children: [_jsx("th", { className: "px-3 py-2 font-medium", children: "Control ID" }), _jsx("th", { className: "px-3 py-2 font-medium", children: "Title" }), _jsx("th", { className: "px-3 py-2 font-medium", children: "Domain" }), _jsx("th", { className: "px-3 py-2 font-medium text-right" })] }) }), _jsx("tbody", { className: "divide-y divide-zinc-700/50", children: filteredControls.map((control) => (_jsxs("tr", { className: "transition-colors hover:bg-zinc-700/30", children: [_jsx("td", { className: "px-3 py-2 font-mono text-primary-400", children: control.controlId }), _jsx("td", { className: "max-w-[200px] truncate px-3 py-2 text-zinc-300", children: control.title }), _jsx("td", { className: "px-3 py-2 text-zinc-500", children: control.domain ?? '—' }), _jsx("td", { className: "px-3 py-2 text-right", children: linkedControlIds.has(control.id) ? (_jsx("span", { className: "rounded-md bg-zinc-700 px-2.5 py-1 text-xs text-zinc-400", children: "Linked" })) : (_jsx("button", { onClick: () => handleLink(control.id), disabled: linkMutation.isPending, className: "rounded-md bg-primary-400 px-2.5 py-1 text-xs font-medium text-zinc-950 transition-colors hover:bg-primary-300 disabled:opacity-50", children: "Link" })) })] }, control.id))) })] }) }))] }));
+}
+//# sourceMappingURL=policies.js.map
