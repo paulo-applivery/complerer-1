@@ -4509,109 +4509,115 @@ complianceRoutes.put(
     const body = c.req.valid('json')
     const now = new Date().toISOString()
 
-    const existing = await c.env.DB.prepare(
-      'SELECT id, system_id, role FROM access_records WHERE id = ? AND workspace_id = ?'
-    )
-      .bind(recordId, workspaceId)
-      .first<{ id: string; system_id: string; role: string }>()
-
-    if (!existing) {
-      return c.json({ error: 'Access record not found' }, 404)
-    }
-
-    const sets: string[] = ['updated_at = ?', 'updated_by = ?']
-    const bindings: unknown[] = [now, userId]
-
-    if (body.role !== undefined) {
-      sets.push('role = ?')
-      bindings.push(body.role)
-    }
-    if (body.accessType !== undefined) {
-      sets.push('access_type = ?')
-      bindings.push(body.accessType)
-    }
-    if (body.approvedBy !== undefined) {
-      sets.push('approved_by = ?')
-      bindings.push(body.approvedBy)
-    }
-    if (body.approvalMethod !== undefined) {
-      sets.push('approval_method = ?')
-      bindings.push(body.approvalMethod)
-    }
-    if (body.ticketRef !== undefined) {
-      sets.push('ticket_ref = ?')
-      bindings.push(body.ticketRef)
-    }
-    if (body.licenseType !== undefined) {
-      sets.push('license_type = ?')
-      bindings.push(body.licenseType)
-    }
-    if (body.costPerPeriod !== undefined) {
-      sets.push('cost_per_period = ?')
-      bindings.push(body.costPerPeriod)
-    }
-    if (body.costCurrency !== undefined) {
-      sets.push('cost_currency = ?')
-      bindings.push(body.costCurrency)
-    }
-    if (body.costFrequency !== undefined) {
-      sets.push('cost_frequency = ?')
-      bindings.push(body.costFrequency)
-    }
-    if (body.status !== undefined) {
-      sets.push('status = ?')
-      bindings.push(body.status)
-    }
-
-    // Recompute risk score if role changed
-    if (body.role && body.role !== existing.role) {
-      const system = await c.env.DB.prepare(
-        'SELECT classification, data_sensitivity, mfa_required FROM systems WHERE id = ?'
+    try {
+      const existing = await c.env.DB.prepare(
+        'SELECT id, system_id, role FROM access_records WHERE id = ? AND workspace_id = ?'
       )
-        .bind(existing.system_id)
-        .first<{ classification: string; data_sensitivity: string; mfa_required: number }>()
+        .bind(recordId, workspaceId)
+        .first<{ id: string; system_id: string; role: string }>()
 
-      if (system) {
-        const riskScore = computeRiskScore(system, body.role, body.approvedBy ?? null)
-        sets.push('risk_score = ?')
-        bindings.push(riskScore)
+      if (!existing) {
+        return c.json({ error: 'Access record not found' }, 404)
       }
-    }
 
-    bindings.push(recordId, workspaceId)
+      const sets: string[] = ['updated_at = ?', 'updated_by = ?']
+      const bindings: unknown[] = [now, userId]
 
-    await c.env.DB.prepare(
-      `UPDATE access_records SET ${sets.join(', ')} WHERE id = ? AND workspace_id = ?`
-    )
-      .bind(...bindings)
-      .run()
+      if (body.role !== undefined) {
+        sets.push('role = ?')
+        bindings.push(body.role)
+      }
+      if (body.accessType !== undefined) {
+        sets.push('access_type = ?')
+        bindings.push(body.accessType)
+      }
+      if (body.approvedBy !== undefined) {
+        sets.push('approved_by = ?')
+        bindings.push(body.approvedBy)
+      }
+      if (body.approvalMethod !== undefined) {
+        sets.push('approval_method = ?')
+        bindings.push(body.approvalMethod)
+      }
+      if (body.ticketRef !== undefined) {
+        sets.push('ticket_ref = ?')
+        bindings.push(body.ticketRef)
+      }
+      if (body.licenseType !== undefined) {
+        sets.push('license_type = ?')
+        bindings.push(body.licenseType)
+      }
+      if (body.costPerPeriod !== undefined) {
+        sets.push('cost_per_period = ?')
+        bindings.push(body.costPerPeriod)
+      }
+      if (body.costCurrency !== undefined) {
+        sets.push('cost_currency = ?')
+        bindings.push(body.costCurrency)
+      }
+      if (body.costFrequency !== undefined) {
+        sets.push('cost_frequency = ?')
+        bindings.push(body.costFrequency)
+      }
+      if (body.status !== undefined) {
+        sets.push('status = ?')
+        bindings.push(body.status)
+      }
 
-    // Save custom field values if provided
-    if (body.customFields && Object.keys(body.customFields).length > 0) {
-      const cfEntries = Object.entries(body.customFields)
-      const cfStmts = cfEntries.map(([fieldId, value]) =>
-        c.env.DB.prepare(
-          `INSERT INTO custom_field_values (id, workspace_id, entity_type, entity_id, field_id, value, created_at, updated_at)
-           VALUES (?, ?, 'access_record', ?, ?, ?, ?, ?)
-           ON CONFLICT(workspace_id, entity_id, field_id)
-           DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`
-        ).bind(generateId(), workspaceId, recordId, fieldId, value, now, now)
+      // Recompute risk score if role changed
+      if (body.role && body.role !== existing.role) {
+        const system = await c.env.DB.prepare(
+          'SELECT classification, data_sensitivity, mfa_required FROM systems WHERE id = ?'
+        )
+          .bind(existing.system_id)
+          .first<{ classification: string; data_sensitivity: string; mfa_required: number }>()
+
+        if (system) {
+          const riskScore = computeRiskScore(system, body.role, body.approvedBy ?? null)
+          sets.push('risk_score = ?')
+          bindings.push(riskScore)
+        }
+      }
+
+      bindings.push(recordId, workspaceId)
+
+      await c.env.DB.prepare(
+        `UPDATE access_records SET ${sets.join(', ')} WHERE id = ? AND workspace_id = ?`
       )
-      if (cfStmts.length > 0) {
-        await c.env.DB.batch(cfStmts)
+        .bind(...bindings)
+        .run()
+
+      // Save custom field values if provided
+      if (body.customFields && Object.keys(body.customFields).length > 0) {
+        const cfEntries = Object.entries(body.customFields)
+        const cfStmts = cfEntries.map(([fieldId, value]) =>
+          c.env.DB.prepare(
+            `INSERT INTO custom_field_values (id, workspace_id, entity_type, entity_id, field_id, value, created_at, updated_at)
+             VALUES (?, ?, 'access_record', ?, ?, ?, ?, ?)
+             ON CONFLICT(workspace_id, entity_id, field_id)
+             DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`
+          ).bind(generateId(), workspaceId, recordId, fieldId, value, now, now)
+        )
+        if (cfStmts.length > 0) {
+          await c.env.DB.batch(cfStmts)
+        }
       }
+
+      await emitEvent(c.env.DB, {
+        workspaceId,
+        eventType: 'access.updated',
+        entityType: 'access_record',
+        entityId: recordId,
+        data: body,
+        actorId: userId,
+      })
+
+      return c.json({ success: true })
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err)
+      console.error('[PUT /access/:recordId]', message, err)
+      return c.json({ error: 'Failed to update access record', message }, 500)
     }
-
-    await emitEvent(c.env.DB, {
-      workspaceId,
-      eventType: 'access.updated',
-      entityType: 'access_record',
-      entityId: recordId,
-      data: body,
-      actorId: userId,
-    })
-
-    return c.json({ success: true })
   }
 )
 

@@ -19,6 +19,7 @@ import {
   useUpdateAccessRecord,
   useTransitionAccess,
   useCustomFieldDefinitions,
+  useCustomFieldValues,
   useSaveCustomFieldValues,
   useWorkspaceSetting,
   type AccessStatus,
@@ -1763,10 +1764,24 @@ function DepartmentAccessView({ records, users, formatCost }: { records: AccessR
   )
 }
 
-function EditAccessModal({ record, users, systems, onClose, onSave, isPending }: {
+function CustomFieldsSection({ workspaceId, values, onChange }: { workspaceId: string | undefined; values: Record<string, string>; onChange: (v: Record<string, string>) => void }) {
+  const { fields } = useCustomFieldDefinitions(workspaceId, 'access_record')
+  if (fields.length === 0) return null
+  return (
+    <div className="border-t border-zinc-800 pt-4">
+      <p className="mb-3 text-xs font-medium text-zinc-500">Custom Fields</p>
+      <div className="grid grid-cols-2 gap-3">
+        <CustomFieldsForm workspaceId={workspaceId} entityType="access_record" values={values} onChange={onChange} />
+      </div>
+    </div>
+  )
+}
+
+function EditAccessModal({ record, users, systems, workspaceId, onClose, onSave, isPending }: {
   record: AccessRecord
   users: any[]
   systems: any[]
+  workspaceId: string | undefined
   onClose: () => void
   onSave: (data: any) => void
   isPending: boolean
@@ -1782,6 +1797,17 @@ function EditAccessModal({ record, users, systems, onClose, onSave, isPending }:
     costFrequency: record.costFrequency ?? '',
   })
 
+  const { values: existingCfValues } = useCustomFieldValues(workspaceId, 'access_record', record.id)
+
+  // User edits layered on top of the loaded DB values — no useEffect needed.
+  // cfValues is recomputed every render so it always reflects the latest DB
+  // state merged with whatever the user has typed.
+  const [cfOverrides, setCfOverrides] = useState<Record<string, string>>({})
+  const cfValues: Record<string, string> = {
+    ...Object.fromEntries(existingCfValues.map((v: any) => [v.fieldId, v.value ?? ''])),
+    ...cfOverrides,
+  }
+
   const handleSubmit = () => {
     onSave({
       role: form.role || undefined,
@@ -1792,6 +1818,8 @@ function EditAccessModal({ record, users, systems, onClose, onSave, isPending }:
       costPerPeriod: form.costPerPeriod ? parseFloat(form.costPerPeriod) : null,
       costCurrency: form.costCurrency || undefined,
       costFrequency: form.costFrequency || null,
+      // Embed CF values in the same request — no separate mutation, no race condition
+      customFields: Object.keys(cfValues).length > 0 ? cfValues : undefined,
     })
   }
 
@@ -1829,6 +1857,7 @@ function EditAccessModal({ record, users, systems, onClose, onSave, isPending }:
             <div>
               <label className="mb-1 block text-xs text-zinc-400">Role *</label>
               <select value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 focus:border-primary-400 focus:outline-none">
+                <option value="owner">Owner</option>
                 <option value="admin">Admin</option>
                 <option value="write">Write</option>
                 <option value="read">Read</option>
@@ -1891,6 +1920,9 @@ function EditAccessModal({ record, users, systems, onClose, onSave, isPending }:
               </div>
             </div>
           </div>
+
+          {/* Custom fields */}
+          <CustomFieldsSection workspaceId={workspaceId} values={cfValues} onChange={setCfOverrides} />
         </div>
 
         <div className="mt-6 flex justify-end gap-2">
@@ -2088,6 +2120,7 @@ function AccessSection({ workspaceId }: { workspaceId: string | undefined }) {
                 onChange={(e) => setForm({ ...form, role: e.target.value })}
                 className="w-full appearance-none rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 focus:border-primary-400 focus:outline-none"
               >
+                <option value="owner">Owner</option>
                 <option value="admin">Admin</option>
                 <option value="write">Write</option>
                 <option value="read">Read</option>
@@ -2423,6 +2456,7 @@ function AccessSection({ workspaceId }: { workspaceId: string | undefined }) {
           record={editingRecord}
           users={users}
           systems={systems}
+          workspaceId={workspaceId}
           onClose={() => setEditingRecord(null)}
           onSave={(data) => {
             updateMutation.mutate(

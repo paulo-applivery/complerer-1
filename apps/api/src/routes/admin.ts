@@ -1145,12 +1145,12 @@ adminRoutes.get('/libraries/systems', async (c) => {
 const systemLibSchema = z.object({
   name: z.string().min(1),
   category: z.string().min(1),
-  description: z.string().optional(),
-  vendor: z.string().optional(),
-  website: z.string().optional(),
-  default_classification: z.string().optional(),
-  default_sensitivity: z.string().optional(),
-  icon_hint: z.string().optional(),
+  description: z.string().nullish(),
+  vendor: z.string().nullish(),
+  website: z.string().nullish(),
+  default_classification: z.string().nullish(),
+  default_sensitivity: z.string().nullish(),
+  icon_hint: z.string().nullish(),
 })
 
 adminRoutes.post('/libraries/systems', zValidator('json', systemLibSchema), async (c) => {
@@ -1198,7 +1198,7 @@ const roleLibSchema = z.object({
   department: z.string().min(1),
   title: z.string().min(1),
   category: z.string().min(1),
-  description: z.string().optional(),
+  description: z.string().nullish(),
 })
 
 adminRoutes.post('/libraries/roles', zValidator('json', roleLibSchema), async (c) => {
@@ -1244,11 +1244,11 @@ adminRoutes.get('/libraries/baselines', async (c) => {
 const baselineLibSchema = z.object({
   name: z.string().min(1),
   category: z.string().min(1),
-  description: z.string().optional(),
-  check_type: z.enum(['manual', 'automated']).optional(),
-  expected_value: z.string().optional(),
-  severity: z.enum(['critical', 'high', 'medium', 'low']).optional(),
-  framework_hints: z.string().optional(),
+  description: z.string().nullish(),
+  check_type: z.enum(['manual', 'automated']).nullish(),
+  expected_value: z.string().nullish(),
+  severity: z.enum(['critical', 'high', 'medium', 'low']).nullish(),
+  framework_hints: z.string().nullish(),
 })
 
 adminRoutes.post('/libraries/baselines', zValidator('json', baselineLibSchema), async (c) => {
@@ -1298,10 +1298,10 @@ adminRoutes.get('/libraries/policies', async (c) => {
 const policyLibSchema = z.object({
   title: z.string().min(1),
   category: z.enum(['security', 'access', 'privacy', 'hr', 'incident']),
-  description: z.string().optional(),
-  content_text: z.string().optional(),
-  version: z.string().optional(),
-  review_cycle_days: z.number().optional(),
+  description: z.string().nullish(),
+  content_text: z.string().nullish(),
+  version: z.string().nullish(),
+  review_cycle_days: z.number().nullish(),
 })
 
 adminRoutes.post('/libraries/policies', zValidator('json', policyLibSchema), async (c) => {

@@ -397,6 +397,7 @@ export function useUpdateAccessRecord(workspaceId: string | undefined) {
     }) => api.put(`/workspaces/${workspaceId}/access/${payload.recordId}`, payload.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['access-records', workspaceId] })
+      queryClient.invalidateQueries({ queryKey: ['custom-field-values', workspaceId] })
     },
   })
 }

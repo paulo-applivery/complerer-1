@@ -55,7 +55,12 @@ function useDeleteLibraryItem(tab: LibraryTab) {
 
 // ── Category configs ──────────────────────────────────────────────────
 
-const SYSTEM_CATEGORIES = ['identity', 'cloud', 'devops', 'communication', 'project', 'security', 'data', 'crm', 'hr']
+const SYSTEM_CATEGORIES = [
+  'identity', 'cloud', 'devops', 'communication', 'project',
+  'security', 'data', 'crm', 'hr',
+  'finance', 'marketing', 'design', 'productivity', 'business',
+  'monitoring', 'support',
+]
 const ROLE_CATEGORIES = ['executive', 'engineering', 'security', 'it_ops', 'product', 'sales_marketing', 'hr_people', 'finance_legal']
 const BASELINE_CATEGORIES = ['identity', 'data_protection', 'network', 'endpoint', 'logging', 'application', 'continuity', 'governance']
 const POLICY_CATEGORIES = ['security', 'access', 'privacy', 'hr', 'incident']
@@ -70,6 +75,26 @@ const SEVERITY_COLORS: Record<string, string> = {
   high: 'bg-orange-500/10 text-orange-400',
   medium: 'bg-amber-500/10 text-amber-400',
   low: 'bg-zinc-500/10 text-zinc-400',
+}
+
+// ── Skeleton helpers ──────────────────────────────────────────────────
+
+const SK_WIDTHS = ['w-1/2', 'w-2/3', 'w-3/4', 'w-1/3', 'w-4/5', 'w-2/5', 'w-3/5', 'w-5/6']
+
+function SkCell({ i, offset = 0, badge = false, code = false }: { i: number; offset?: number; badge?: boolean; code?: boolean }) {
+  if (badge) return <div className="h-5 w-16 animate-pulse rounded-full bg-zinc-800" />
+  if (code) return <div className="h-5 w-20 animate-pulse rounded bg-zinc-800" />
+  return <div className={`h-3.5 animate-pulse rounded bg-zinc-800 ${SK_WIDTHS[(i + offset) % SK_WIDTHS.length]}`} />
+}
+
+function SkActions({ n = 2 }: { n?: number }) {
+  return (
+    <div className="flex items-center gap-1">
+      {Array.from({ length: n }).map((_, k) => (
+        <div key={k} className="h-6 w-6 animate-pulse rounded bg-zinc-800" />
+      ))}
+    </div>
+  )
 }
 
 // ── Main page ─────────────────────────────────────────────────────────
@@ -195,22 +220,18 @@ export function AdminLibrariesPage() {
 
       {/* Table */}
       <div className="rounded-xl border border-zinc-800 bg-zinc-900">
-        {isLoading ? (
-          <div className="flex items-center justify-center py-20">
-            <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-700 border-t-primary-400" />
-          </div>
-        ) : filtered.length === 0 ? (
+        {!isLoading && filtered.length === 0 ? (
           <div className="py-16 text-center">
             <p className="text-sm text-zinc-500">No items found</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
-            {tab === 'systems' && <SystemsTable items={filtered} onEdit={openEdit} onDelete={handleDelete} />}
-            {tab === 'roles' && <RolesTable items={filtered} onEdit={openEdit} onDelete={handleDelete} />}
-            {tab === 'baselines' && <BaselinesTable items={filtered} onEdit={openEdit} onDelete={handleDelete} />}
-            {tab === 'policies' && <PoliciesTable items={filtered} onEdit={openEdit} onDelete={handleDelete} />}
-            {tab === 'frameworks' && <FrameworksTable items={filtered} onEdit={openEdit} onDelete={handleDelete} />}
-            {tab === 'reports' && <ReportTemplatesTable items={filtered} onEdit={openEdit} onDelete={handleDelete} />}
+            {tab === 'systems' && <SystemsTable items={filtered} onEdit={openEdit} onDelete={handleDelete} isLoading={isLoading} />}
+            {tab === 'roles' && <RolesTable items={filtered} onEdit={openEdit} onDelete={handleDelete} isLoading={isLoading} />}
+            {tab === 'baselines' && <BaselinesTable items={filtered} onEdit={openEdit} onDelete={handleDelete} isLoading={isLoading} />}
+            {tab === 'policies' && <PoliciesTable items={filtered} onEdit={openEdit} onDelete={handleDelete} isLoading={isLoading} />}
+            {tab === 'frameworks' && <FrameworksTable items={filtered} onEdit={openEdit} onDelete={handleDelete} isLoading={isLoading} />}
+            {tab === 'reports' && <ReportTemplatesTable items={filtered} onEdit={openEdit} onDelete={handleDelete} isLoading={isLoading} />}
           </div>
         )}
       </div>
@@ -232,7 +253,7 @@ export function AdminLibrariesPage() {
 
 // ── Tables ────────────────────────────────────────────────────────────
 
-function SystemsTable({ items, onEdit, onDelete }: { items: any[]; onEdit: (i: any) => void; onDelete: (id: string) => void }) {
+function SystemsTable({ items, onEdit, onDelete, isLoading }: { items: any[]; onEdit: (i: any) => void; onDelete: (id: string) => void; isLoading?: boolean }) {
   return (
     <table className="w-full text-left text-sm">
       <thead>
@@ -245,29 +266,42 @@ function SystemsTable({ items, onEdit, onDelete }: { items: any[]; onEdit: (i: a
         </tr>
       </thead>
       <tbody className="divide-y divide-zinc-800/50">
-        {items.map((item) => (
-          <tr key={item.id} className="transition-colors hover:bg-zinc-800/30">
-            <td className="px-5 py-3">
-              <p className="font-medium text-zinc-100">{item.name}</p>
-              {item.description && <p className="mt-0.5 text-xs text-zinc-500 line-clamp-1">{item.description}</p>}
-            </td>
-            <td className="px-5 py-3"><span className="rounded-full bg-zinc-800 px-2.5 py-0.5 text-xs text-zinc-400">{catLabel(item.category)}</span></td>
-            <td className="px-5 py-3 text-zinc-400">{item.vendor ?? '—'}</td>
-            <td className="px-5 py-3 text-zinc-400">{item.default_classification ?? '—'}</td>
-            <td className="px-3 py-3">
-              <div className="flex items-center gap-1">
-                <button onClick={() => onEdit(item)} className="rounded p-1.5 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"><HugeiconsIcon icon={Edit01Icon} size={14} /></button>
-                <button onClick={() => onDelete(item.id)} className="rounded p-1.5 text-zinc-500 hover:bg-zinc-800 hover:text-red-400"><HugeiconsIcon icon={Delete02Icon} size={14} /></button>
-              </div>
-            </td>
-          </tr>
-        ))}
+        {isLoading
+          ? Array.from({ length: 8 }).map((_, i) => (
+              <tr key={i} className="border-b border-zinc-800/50">
+                <td className="px-5 py-3.5">
+                  <SkCell i={i} offset={0} />
+                  {i % 3 !== 0 && <div className="mt-1.5 h-3 w-2/5 animate-pulse rounded bg-zinc-800/50" />}
+                </td>
+                <td className="px-5 py-3.5"><SkCell i={i} offset={1} badge /></td>
+                <td className="px-5 py-3.5"><SkCell i={i} offset={2} /></td>
+                <td className="px-5 py-3.5"><SkCell i={i} offset={3} /></td>
+                <td className="px-3 py-3.5"><SkActions /></td>
+              </tr>
+            ))
+          : items.map((item) => (
+              <tr key={item.id} className="transition-colors hover:bg-zinc-800/30">
+                <td className="px-5 py-3">
+                  <p className="font-medium text-zinc-100">{item.name}</p>
+                  {item.description && <p className="mt-0.5 text-xs text-zinc-500 line-clamp-1">{item.description}</p>}
+                </td>
+                <td className="px-5 py-3"><span className="rounded-full bg-zinc-800 px-2.5 py-0.5 text-xs text-zinc-400">{catLabel(item.category)}</span></td>
+                <td className="px-5 py-3 text-zinc-400">{item.vendor ?? '—'}</td>
+                <td className="px-5 py-3 text-zinc-400">{item.default_classification ?? '—'}</td>
+                <td className="px-3 py-3">
+                  <div className="flex items-center gap-1">
+                    <button onClick={() => onEdit(item)} className="rounded p-1.5 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"><HugeiconsIcon icon={Edit01Icon} size={14} /></button>
+                    <button onClick={() => onDelete(item.id)} className="rounded p-1.5 text-zinc-500 hover:bg-zinc-800 hover:text-red-400"><HugeiconsIcon icon={Delete02Icon} size={14} /></button>
+                  </div>
+                </td>
+              </tr>
+            ))}
       </tbody>
     </table>
   )
 }
 
-function RolesTable({ items, onEdit, onDelete }: { items: any[]; onEdit: (i: any) => void; onDelete: (id: string) => void }) {
+function RolesTable({ items, onEdit, onDelete, isLoading }: { items: any[]; onEdit: (i: any) => void; onDelete: (id: string) => void; isLoading?: boolean }) {
   return (
     <table className="w-full text-left text-sm">
       <thead>
@@ -280,26 +314,36 @@ function RolesTable({ items, onEdit, onDelete }: { items: any[]; onEdit: (i: any
         </tr>
       </thead>
       <tbody className="divide-y divide-zinc-800/50">
-        {items.map((item) => (
-          <tr key={item.id} className="transition-colors hover:bg-zinc-800/30">
-            <td className="px-5 py-3 font-medium text-zinc-100">{item.department}</td>
-            <td className="px-5 py-3 text-zinc-300">{item.title}</td>
-            <td className="px-5 py-3"><span className="rounded-full bg-zinc-800 px-2.5 py-0.5 text-xs text-zinc-400">{catLabel(item.category)}</span></td>
-            <td className="px-5 py-3 text-xs text-zinc-500 max-w-xs truncate">{item.description ?? '—'}</td>
-            <td className="px-3 py-3">
-              <div className="flex items-center gap-1">
-                <button onClick={() => onEdit(item)} className="rounded p-1.5 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"><HugeiconsIcon icon={Edit01Icon} size={14} /></button>
-                <button onClick={() => onDelete(item.id)} className="rounded p-1.5 text-zinc-500 hover:bg-zinc-800 hover:text-red-400"><HugeiconsIcon icon={Delete02Icon} size={14} /></button>
-              </div>
-            </td>
-          </tr>
-        ))}
+        {isLoading
+          ? Array.from({ length: 8 }).map((_, i) => (
+              <tr key={i} className="border-b border-zinc-800/50">
+                <td className="px-5 py-3.5"><SkCell i={i} offset={0} /></td>
+                <td className="px-5 py-3.5"><SkCell i={i} offset={1} /></td>
+                <td className="px-5 py-3.5"><SkCell i={i} offset={2} badge /></td>
+                <td className="px-5 py-3.5"><SkCell i={i} offset={3} /></td>
+                <td className="px-3 py-3.5"><SkActions /></td>
+              </tr>
+            ))
+          : items.map((item) => (
+              <tr key={item.id} className="transition-colors hover:bg-zinc-800/30">
+                <td className="px-5 py-3 font-medium text-zinc-100">{item.department}</td>
+                <td className="px-5 py-3 text-zinc-300">{item.title}</td>
+                <td className="px-5 py-3"><span className="rounded-full bg-zinc-800 px-2.5 py-0.5 text-xs text-zinc-400">{catLabel(item.category)}</span></td>
+                <td className="px-5 py-3 text-xs text-zinc-500 max-w-xs truncate">{item.description ?? '—'}</td>
+                <td className="px-3 py-3">
+                  <div className="flex items-center gap-1">
+                    <button onClick={() => onEdit(item)} className="rounded p-1.5 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"><HugeiconsIcon icon={Edit01Icon} size={14} /></button>
+                    <button onClick={() => onDelete(item.id)} className="rounded p-1.5 text-zinc-500 hover:bg-zinc-800 hover:text-red-400"><HugeiconsIcon icon={Delete02Icon} size={14} /></button>
+                  </div>
+                </td>
+              </tr>
+            ))}
       </tbody>
     </table>
   )
 }
 
-function BaselinesTable({ items, onEdit, onDelete }: { items: any[]; onEdit: (i: any) => void; onDelete: (id: string) => void }) {
+function BaselinesTable({ items, onEdit, onDelete, isLoading }: { items: any[]; onEdit: (i: any) => void; onDelete: (id: string) => void; isLoading?: boolean }) {
   return (
     <table className="w-full text-left text-sm">
       <thead>
@@ -313,38 +357,52 @@ function BaselinesTable({ items, onEdit, onDelete }: { items: any[]; onEdit: (i:
         </tr>
       </thead>
       <tbody className="divide-y divide-zinc-800/50">
-        {items.map((item) => (
-          <tr key={item.id} className="transition-colors hover:bg-zinc-800/30">
-            <td className="px-5 py-3">
-              <p className="font-medium text-zinc-100">{item.name}</p>
-              {item.description && <p className="mt-0.5 text-xs text-zinc-500 line-clamp-1">{item.description}</p>}
-            </td>
-            <td className="px-5 py-3"><span className="rounded-full bg-zinc-800 px-2.5 py-0.5 text-xs text-zinc-400">{catLabel(item.category)}</span></td>
-            <td className="px-5 py-3">
-              <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${item.check_type === 'automated' ? 'bg-blue-500/10 text-blue-400' : 'bg-zinc-500/10 text-zinc-400'}`}>
-                {item.check_type}
-              </span>
-            </td>
-            <td className="px-5 py-3">
-              <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${SEVERITY_COLORS[item.severity] ?? SEVERITY_COLORS.medium}`}>
-                {item.severity}
-              </span>
-            </td>
-            <td className="px-5 py-3 text-xs text-zinc-500 max-w-[200px] truncate">{item.framework_hints ?? '—'}</td>
-            <td className="px-3 py-3">
-              <div className="flex items-center gap-1">
-                <button onClick={() => onEdit(item)} className="rounded p-1.5 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"><HugeiconsIcon icon={Edit01Icon} size={14} /></button>
-                <button onClick={() => onDelete(item.id)} className="rounded p-1.5 text-zinc-500 hover:bg-zinc-800 hover:text-red-400"><HugeiconsIcon icon={Delete02Icon} size={14} /></button>
-              </div>
-            </td>
-          </tr>
-        ))}
+        {isLoading
+          ? Array.from({ length: 8 }).map((_, i) => (
+              <tr key={i} className="border-b border-zinc-800/50">
+                <td className="px-5 py-3.5">
+                  <SkCell i={i} offset={0} />
+                  {i % 3 !== 0 && <div className="mt-1.5 h-3 w-2/5 animate-pulse rounded bg-zinc-800/50" />}
+                </td>
+                <td className="px-5 py-3.5"><SkCell i={i} offset={1} badge /></td>
+                <td className="px-5 py-3.5"><SkCell i={i} offset={2} badge /></td>
+                <td className="px-5 py-3.5"><SkCell i={i} offset={3} badge /></td>
+                <td className="px-5 py-3.5"><SkCell i={i} offset={4} /></td>
+                <td className="px-3 py-3.5"><SkActions /></td>
+              </tr>
+            ))
+          : items.map((item) => (
+              <tr key={item.id} className="transition-colors hover:bg-zinc-800/30">
+                <td className="px-5 py-3">
+                  <p className="font-medium text-zinc-100">{item.name}</p>
+                  {item.description && <p className="mt-0.5 text-xs text-zinc-500 line-clamp-1">{item.description}</p>}
+                </td>
+                <td className="px-5 py-3"><span className="rounded-full bg-zinc-800 px-2.5 py-0.5 text-xs text-zinc-400">{catLabel(item.category)}</span></td>
+                <td className="px-5 py-3">
+                  <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${item.check_type === 'automated' ? 'bg-blue-500/10 text-blue-400' : 'bg-zinc-500/10 text-zinc-400'}`}>
+                    {item.check_type}
+                  </span>
+                </td>
+                <td className="px-5 py-3">
+                  <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${SEVERITY_COLORS[item.severity] ?? SEVERITY_COLORS.medium}`}>
+                    {item.severity}
+                  </span>
+                </td>
+                <td className="px-5 py-3 text-xs text-zinc-500 max-w-[200px] truncate">{item.framework_hints ?? '—'}</td>
+                <td className="px-3 py-3">
+                  <div className="flex items-center gap-1">
+                    <button onClick={() => onEdit(item)} className="rounded p-1.5 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"><HugeiconsIcon icon={Edit01Icon} size={14} /></button>
+                    <button onClick={() => onDelete(item.id)} className="rounded p-1.5 text-zinc-500 hover:bg-zinc-800 hover:text-red-400"><HugeiconsIcon icon={Delete02Icon} size={14} /></button>
+                  </div>
+                </td>
+              </tr>
+            ))}
       </tbody>
     </table>
   )
 }
 
-function PoliciesTable({ items, onEdit, onDelete }: { items: any[]; onEdit: (i: any) => void; onDelete: (id: string) => void }) {
+function PoliciesTable({ items, onEdit, onDelete, isLoading }: { items: any[]; onEdit: (i: any) => void; onDelete: (id: string) => void; isLoading?: boolean }) {
   return (
     <table className="w-full text-left text-sm">
       <thead>
@@ -357,29 +415,42 @@ function PoliciesTable({ items, onEdit, onDelete }: { items: any[]; onEdit: (i: 
         </tr>
       </thead>
       <tbody className="divide-y divide-zinc-800/50">
-        {items.map((item) => (
-          <tr key={item.id} className="transition-colors hover:bg-zinc-800/30">
-            <td className="px-5 py-3">
-              <p className="font-medium text-zinc-100">{item.title}</p>
-              {item.description && <p className="mt-0.5 text-xs text-zinc-500 line-clamp-1">{item.description}</p>}
-            </td>
-            <td className="px-5 py-3"><span className="rounded-full bg-zinc-800 px-2.5 py-0.5 text-xs text-zinc-400">{catLabel(item.category)}</span></td>
-            <td className="px-5 py-3 text-xs text-zinc-400">{item.version}</td>
-            <td className="px-5 py-3 text-xs text-zinc-400">{item.review_cycle_days}d</td>
-            <td className="px-3 py-3">
-              <div className="flex items-center gap-1">
-                <button onClick={() => onEdit(item)} className="rounded p-1.5 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"><HugeiconsIcon icon={Edit01Icon} size={14} /></button>
-                <button onClick={() => onDelete(item.id)} className="rounded p-1.5 text-zinc-500 hover:bg-zinc-800 hover:text-red-400"><HugeiconsIcon icon={Delete02Icon} size={14} /></button>
-              </div>
-            </td>
-          </tr>
-        ))}
+        {isLoading
+          ? Array.from({ length: 8 }).map((_, i) => (
+              <tr key={i} className="border-b border-zinc-800/50">
+                <td className="px-5 py-3.5">
+                  <SkCell i={i} offset={0} />
+                  {i % 2 !== 0 && <div className="mt-1.5 h-3 w-1/2 animate-pulse rounded bg-zinc-800/50" />}
+                </td>
+                <td className="px-5 py-3.5"><SkCell i={i} offset={1} badge /></td>
+                <td className="px-5 py-3.5"><div className="h-3.5 w-8 animate-pulse rounded bg-zinc-800" /></td>
+                <td className="px-5 py-3.5"><div className="h-3.5 w-12 animate-pulse rounded bg-zinc-800" /></td>
+                <td className="px-3 py-3.5"><SkActions /></td>
+              </tr>
+            ))
+          : items.map((item) => (
+              <tr key={item.id} className="transition-colors hover:bg-zinc-800/30">
+                <td className="px-5 py-3">
+                  <p className="font-medium text-zinc-100">{item.title}</p>
+                  {item.description && <p className="mt-0.5 text-xs text-zinc-500 line-clamp-1">{item.description}</p>}
+                </td>
+                <td className="px-5 py-3"><span className="rounded-full bg-zinc-800 px-2.5 py-0.5 text-xs text-zinc-400">{catLabel(item.category)}</span></td>
+                <td className="px-5 py-3 text-xs text-zinc-400">{item.version}</td>
+                <td className="px-5 py-3 text-xs text-zinc-400">{item.review_cycle_days}d</td>
+                <td className="px-3 py-3">
+                  <div className="flex items-center gap-1">
+                    <button onClick={() => onEdit(item)} className="rounded p-1.5 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"><HugeiconsIcon icon={Edit01Icon} size={14} /></button>
+                    <button onClick={() => onDelete(item.id)} className="rounded p-1.5 text-zinc-500 hover:bg-zinc-800 hover:text-red-400"><HugeiconsIcon icon={Delete02Icon} size={14} /></button>
+                  </div>
+                </td>
+              </tr>
+            ))}
       </tbody>
     </table>
   )
 }
 
-function FrameworksTable({ items, onEdit, onDelete }: { items: any[]; onEdit: (i: any) => void; onDelete: (id: string) => void }) {
+function FrameworksTable({ items, onEdit, onDelete, isLoading }: { items: any[]; onEdit: (i: any) => void; onDelete: (id: string) => void; isLoading?: boolean }) {
   const [expandedFw, setExpandedFw] = useState<string | null>(null)
   const [expandedVer, setExpandedVer] = useState<string | null>(null)
 
@@ -397,43 +468,57 @@ function FrameworksTable({ items, onEdit, onDelete }: { items: any[]; onEdit: (i
           </tr>
         </thead>
         <tbody className="divide-y divide-zinc-800/50">
-          {items.map((item) => (
-            <>
-              <tr key={item.id} className="transition-colors hover:bg-zinc-800/30">
-                <td className="px-5 py-3">
-                  <button onClick={() => setExpandedFw(expandedFw === item.id ? null : item.id)} className="text-left">
-                    <p className="font-medium text-zinc-100 hover:text-primary-400 transition-colors">{item.name}</p>
-                    {item.description && <p className="mt-0.5 text-xs text-zinc-500 line-clamp-1">{item.description}</p>}
-                  </button>
-                </td>
-                <td className="px-5 py-3"><code className="rounded bg-zinc-800 px-2 py-0.5 text-xs text-zinc-400">{item.slug}</code></td>
-                <td className="px-5 py-3 text-zinc-400">{item.source_org ?? '—'}</td>
-                <td className="px-5 py-3 text-zinc-300">{item.version_count ?? 0}</td>
-                <td className="px-5 py-3 text-zinc-300">{item.control_count ?? 0}</td>
-                <td className="px-3 py-3">
-                  <div className="flex items-center gap-1">
-                    <button onClick={() => setExpandedFw(expandedFw === item.id ? null : item.id)} className="rounded p-1.5 text-zinc-500 hover:bg-zinc-800 hover:text-primary-400" title="Manage versions & controls">
-                      <HugeiconsIcon icon={Settings01Icon} size={14} />
-                    </button>
-                    <button onClick={() => onEdit(item)} className="rounded p-1.5 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"><HugeiconsIcon icon={Edit01Icon} size={14} /></button>
-                    <button onClick={() => onDelete(item.id)} className="rounded p-1.5 text-zinc-500 hover:bg-zinc-800 hover:text-red-400"><HugeiconsIcon icon={Delete02Icon} size={14} /></button>
-                  </div>
-                </td>
-              </tr>
-              {expandedFw === item.id && (
-                <tr key={`${item.id}-expanded`}>
-                  <td colSpan={6} className="px-5 py-4 bg-zinc-800/20">
-                    <FrameworkVersionsPanel
-                      frameworkId={item.id}
-                      frameworkName={item.name}
-                      expandedVer={expandedVer}
-                      setExpandedVer={setExpandedVer}
-                    />
+          {isLoading
+            ? Array.from({ length: 6 }).map((_, i) => (
+                <tr key={i} className="border-b border-zinc-800/50">
+                  <td className="px-5 py-3.5">
+                    <SkCell i={i} offset={0} />
+                    {i % 3 !== 0 && <div className="mt-1.5 h-3 w-2/5 animate-pulse rounded bg-zinc-800/50" />}
                   </td>
+                  <td className="px-5 py-3.5"><SkCell i={i} offset={1} code /></td>
+                  <td className="px-5 py-3.5"><SkCell i={i} offset={2} /></td>
+                  <td className="px-5 py-3.5"><div className="h-3.5 w-6 animate-pulse rounded bg-zinc-800" /></td>
+                  <td className="px-5 py-3.5"><div className="h-3.5 w-10 animate-pulse rounded bg-zinc-800" /></td>
+                  <td className="px-3 py-3.5"><SkActions n={3} /></td>
                 </tr>
-              )}
-            </>
-          ))}
+              ))
+            : items.map((item) => (
+                <>
+                  <tr key={item.id} className="transition-colors hover:bg-zinc-800/30">
+                    <td className="px-5 py-3">
+                      <button onClick={() => setExpandedFw(expandedFw === item.id ? null : item.id)} className="text-left">
+                        <p className="font-medium text-zinc-100 hover:text-primary-400 transition-colors">{item.name}</p>
+                        {item.description && <p className="mt-0.5 text-xs text-zinc-500 line-clamp-1">{item.description}</p>}
+                      </button>
+                    </td>
+                    <td className="px-5 py-3"><code className="rounded bg-zinc-800 px-2 py-0.5 text-xs text-zinc-400">{item.slug}</code></td>
+                    <td className="px-5 py-3 text-zinc-400">{item.source_org ?? '—'}</td>
+                    <td className="px-5 py-3 text-zinc-300">{item.version_count ?? 0}</td>
+                    <td className="px-5 py-3 text-zinc-300">{item.control_count ?? 0}</td>
+                    <td className="px-3 py-3">
+                      <div className="flex items-center gap-1">
+                        <button onClick={() => setExpandedFw(expandedFw === item.id ? null : item.id)} className="rounded p-1.5 text-zinc-500 hover:bg-zinc-800 hover:text-primary-400" title="Manage versions & controls">
+                          <HugeiconsIcon icon={Settings01Icon} size={14} />
+                        </button>
+                        <button onClick={() => onEdit(item)} className="rounded p-1.5 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"><HugeiconsIcon icon={Edit01Icon} size={14} /></button>
+                        <button onClick={() => onDelete(item.id)} className="rounded p-1.5 text-zinc-500 hover:bg-zinc-800 hover:text-red-400"><HugeiconsIcon icon={Delete02Icon} size={14} /></button>
+                      </div>
+                    </td>
+                  </tr>
+                  {expandedFw === item.id && (
+                    <tr key={`${item.id}-expanded`}>
+                      <td colSpan={6} className="px-5 py-4 bg-zinc-800/20">
+                        <FrameworkVersionsPanel
+                          frameworkId={item.id}
+                          frameworkName={item.name}
+                          expandedVer={expandedVer}
+                          setExpandedVer={setExpandedVer}
+                        />
+                      </td>
+                    </tr>
+                  )}
+                </>
+              ))}
         </tbody>
       </table>
     </div>
@@ -442,7 +527,7 @@ function FrameworksTable({ items, onEdit, onDelete }: { items: any[]; onEdit: (i
 
 const REPORT_CATEGORIES = ['compliance', 'privacy', 'risk']
 
-function ReportTemplatesTable({ items, onEdit, onDelete }: { items: any[]; onEdit: (i: any) => void; onDelete: (id: string) => void }) {
+function ReportTemplatesTable({ items, onEdit, onDelete, isLoading }: { items: any[]; onEdit: (i: any) => void; onDelete: (id: string) => void; isLoading?: boolean }) {
   const navigate = useNavigate()
   return (
     <table className="w-full text-left text-sm">
@@ -457,30 +542,44 @@ function ReportTemplatesTable({ items, onEdit, onDelete }: { items: any[]; onEdi
         </tr>
       </thead>
       <tbody className="divide-y divide-zinc-800/50">
-        {items.map((item) => {
-          let sectionCount = 0
-          try { sectionCount = JSON.parse(item.sections || '[]').length } catch {}
-          return (
-            <tr key={item.id} className="transition-colors hover:bg-zinc-800/30">
-              <td className="px-5 py-3">
-                <p className="font-medium text-zinc-100">{item.name}</p>
-                {item.description && <p className="mt-0.5 text-xs text-zinc-500 line-clamp-1">{item.description}</p>}
-              </td>
-              <td className="px-5 py-3">
-                {item.framework_slug ? <code className="rounded bg-zinc-800 px-2 py-0.5 text-xs text-zinc-400">{item.framework_slug}</code> : <span className="text-zinc-600">—</span>}
-              </td>
-              <td className="px-5 py-3"><span className="rounded-full bg-zinc-800 px-2 py-0.5 text-xs text-zinc-400">{item.category}</span></td>
-              <td className="px-5 py-3 text-zinc-400">{item.version}</td>
-              <td className="px-5 py-3 text-zinc-300">{sectionCount}</td>
-              <td className="px-3 py-3">
-                <div className="flex items-center gap-1">
-                  <button onClick={() => navigate({ to: `/admin/report-templates/${item.id}` })} className="rounded p-1.5 text-zinc-500 hover:bg-zinc-800 hover:text-primary-400" title="Edit template content"><HugeiconsIcon icon={Edit01Icon} size={14} /></button>
-                  <button onClick={() => onDelete(item.id)} className="rounded p-1.5 text-zinc-500 hover:bg-zinc-800 hover:text-red-400"><HugeiconsIcon icon={Delete02Icon} size={14} /></button>
-                </div>
-              </td>
-            </tr>
-          )
-        })}
+        {isLoading
+          ? Array.from({ length: 6 }).map((_, i) => (
+              <tr key={i} className="border-b border-zinc-800/50">
+                <td className="px-5 py-3.5">
+                  <SkCell i={i} offset={0} />
+                  {i % 2 !== 0 && <div className="mt-1.5 h-3 w-2/5 animate-pulse rounded bg-zinc-800/50" />}
+                </td>
+                <td className="px-5 py-3.5"><SkCell i={i} offset={1} code /></td>
+                <td className="px-5 py-3.5"><SkCell i={i} offset={2} badge /></td>
+                <td className="px-5 py-3.5"><div className="h-3.5 w-8 animate-pulse rounded bg-zinc-800" /></td>
+                <td className="px-5 py-3.5"><div className="h-3.5 w-6 animate-pulse rounded bg-zinc-800" /></td>
+                <td className="px-3 py-3.5"><SkActions /></td>
+              </tr>
+            ))
+          : items.map((item) => {
+              let sectionCount = 0
+              try { sectionCount = JSON.parse(item.sections || '[]').length } catch {}
+              return (
+                <tr key={item.id} className="transition-colors hover:bg-zinc-800/30">
+                  <td className="px-5 py-3">
+                    <p className="font-medium text-zinc-100">{item.name}</p>
+                    {item.description && <p className="mt-0.5 text-xs text-zinc-500 line-clamp-1">{item.description}</p>}
+                  </td>
+                  <td className="px-5 py-3">
+                    {item.framework_slug ? <code className="rounded bg-zinc-800 px-2 py-0.5 text-xs text-zinc-400">{item.framework_slug}</code> : <span className="text-zinc-600">—</span>}
+                  </td>
+                  <td className="px-5 py-3"><span className="rounded-full bg-zinc-800 px-2 py-0.5 text-xs text-zinc-400">{item.category}</span></td>
+                  <td className="px-5 py-3 text-zinc-400">{item.version}</td>
+                  <td className="px-5 py-3 text-zinc-300">{sectionCount}</td>
+                  <td className="px-3 py-3">
+                    <div className="flex items-center gap-1">
+                      <button onClick={() => navigate({ to: `/admin/report-templates/${item.id}` })} className="rounded p-1.5 text-zinc-500 hover:bg-zinc-800 hover:text-primary-400" title="Edit template content"><HugeiconsIcon icon={Edit01Icon} size={14} /></button>
+                      <button onClick={() => onDelete(item.id)} className="rounded p-1.5 text-zinc-500 hover:bg-zinc-800 hover:text-red-400"><HugeiconsIcon icon={Delete02Icon} size={14} /></button>
+                    </div>
+                  </td>
+                </tr>
+              )
+            })}
       </tbody>
     </table>
   )

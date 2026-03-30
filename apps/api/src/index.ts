@@ -36,6 +36,12 @@ app.use(
   })
 )
 
+// Global error handler — surfaces the actual error message instead of a blank 500
+app.onError((err, c) => {
+  console.error('[API Error]', err)
+  return c.json({ error: 'Internal server error', message: err.message }, 500)
+})
+
 // Health check
 app.get('/api/health', (c) => {
   return c.json({ status: 'ok', timestamp: new Date().toISOString() })
