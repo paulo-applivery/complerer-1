@@ -109,11 +109,6 @@ authRoutes.post('/verify-otp', zValidator('json', verifyOtpSchema), async (c) =>
     return c.json({ error: 'Code has expired. Please request a new one.' }, 400)
   }
 
-  // Mark OTP as used
-  await c.env.DB.prepare('UPDATE otp_codes SET used = 1 WHERE id = ?')
-    .bind(otp.id)
-    .run()
-
   // Check if user exists
   const existingUser = await c.env.DB.prepare(
     'SELECT id, email, name, avatar_url, last_login_at, created_at FROM auth_users WHERE email = ?'
@@ -129,6 +124,11 @@ authRoutes.post('/verify-otp', zValidator('json', verifyOtpSchema), async (c) =>
     }>()
 
   if (existingUser) {
+    // Mark OTP as used
+    await c.env.DB.prepare('UPDATE otp_codes SET used = 1 WHERE id = ?')
+      .bind(otp.id)
+      .run()
+
     // Update last login
     await c.env.DB.prepare(
       'UPDATE auth_users SET last_login_at = ? WHERE id = ?'
@@ -149,10 +149,16 @@ authRoutes.post('/verify-otp', zValidator('json', verifyOtpSchema), async (c) =>
     })
   }
 
-  // New user — need a name
+  // New user — need a name. Don't mark OTP as used yet so it can be
+  // re-verified with the name in a follow-up call (no second OTP needed)
   if (!name) {
     return c.json({ status: 'needs_name' })
   }
+
+  // Mark OTP as used now that we have everything needed to create the user
+  await c.env.DB.prepare('UPDATE otp_codes SET used = 1 WHERE id = ?')
+    .bind(otp.id)
+    .run()
 
   // Create user
   const userId = generateId()

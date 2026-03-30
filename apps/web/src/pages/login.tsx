@@ -115,21 +115,13 @@ export function LoginPage() {
 
   const handleNameSubmit = async () => {
     if (!name.trim()) return
-    // Re-send OTP and verify with name
+    // Re-verify the same OTP with the name — no second OTP needed
     setError('')
     setLoading(true)
     try {
-      const result = await sendOtp(email)
-      setDevCode(result.devCode ?? null)
-      // We need to verify again with the name
-      // But OTP was already used... We need a fresh one
-      setStep('otp')
-      setResendCountdown(60)
-      setOtpDigits(['', '', '', '', '', ''])
-      setTimeout(() => otpRefs.current[0]?.focus(), 100)
+      await submitOtp(otpDigits, name.trim())
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed')
-    } finally {
+      setError(err instanceof Error ? err.message : 'Failed to create account')
       setLoading(false)
     }
   }
