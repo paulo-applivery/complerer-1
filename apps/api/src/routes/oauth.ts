@@ -14,6 +14,7 @@ import {
   exchangeLinear,
   getProvider,
 } from '../lib/oauth-providers.js'
+import { getProviderConfigs } from '../lib/provider-config.js'
 
 const oauthRoutes = new Hono<AppType>()
 
@@ -131,42 +132,31 @@ oauthRoutes.get('/callback', async (c) => {
   const redirectUri = `${apiBase}/api/oauth/callback`
   const encKey = c.env.ENCRYPTION_KEY ?? 'dev-encryption-key-change-me-32chars'
 
+  // Read credentials from admin-managed provider config (DB)
+  const cfg = await getProviderConfigs(c.env.DB, provider)
+  const clientId = cfg['client_id'] ?? ''
+  const clientSecret = cfg['client_secret'] ?? ''
+
+  if (!clientId || !clientSecret) {
+    return c.html(errorPage(`${providerDef.name} credentials not configured. Add client_id and client_secret in Admin → Providers → Integration.`))
+  }
+
   try {
     // Exchange code for tokens
     let tokenRes: { access_token: string; refresh_token?: string; expires_in?: number; scope?: string }
 
     switch (provider) {
       case 'github':
-        tokenRes = await exchangeGitHub(
-          code,
-          c.env.GITHUB_CLIENT_ID ?? '',
-          c.env.GITHUB_CLIENT_SECRET ?? '',
-          redirectUri
-        )
+        tokenRes = await exchangeGitHub(code, clientId, clientSecret, redirectUri)
         break
       case 'google_ws':
-        tokenRes = await exchangeGoogle(
-          code,
-          c.env.GOOGLE_CLIENT_ID ?? '',
-          c.env.GOOGLE_CLIENT_SECRET ?? '',
-          redirectUri
-        )
+        tokenRes = await exchangeGoogle(code, clientId, clientSecret, redirectUri)
         break
       case 'jira':
-        tokenRes = await exchangeJira(
-          code,
-          c.env.JIRA_CLIENT_ID ?? '',
-          c.env.JIRA_CLIENT_SECRET ?? '',
-          redirectUri
-        )
+        tokenRes = await exchangeJira(code, clientId, clientSecret, redirectUri)
         break
       case 'linear':
-        tokenRes = await exchangeLinear(
-          code,
-          c.env.LINEAR_CLIENT_ID ?? '',
-          c.env.LINEAR_CLIENT_SECRET ?? '',
-          redirectUri
-        )
+        tokenRes = await exchangeLinear(code, clientId, clientSecret, redirectUri)
         break
       default:
         return c.html(errorPage(`OAuth not supported for provider: ${provider}`))

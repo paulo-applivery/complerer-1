@@ -6,7 +6,18 @@ import {
   Cancel01Icon,
   Add01Icon,
   Delete01Icon,
+  Copy01Icon,
+  InformationCircleIcon,
 } from '@hugeicons/core-free-icons'
+
+const OAUTH_CALLBACK_URL = 'https://complerer-api-production.paulo-acb.workers.dev/api/oauth/callback'
+
+const INTEGRATION_HINTS: Record<string, string> = {
+  github: 'Create at github.com/settings/applications/new',
+  'google-workspace': 'Create at console.cloud.google.com → APIs & Services → Credentials',
+  jira: 'Create at developer.atlassian.com → OAuth 2.0 apps',
+  linear: 'Create at linear.app/settings/api → OAuth applications',
+}
 import {
   useAdminProviders,
   useAdminProvider,
@@ -156,7 +167,34 @@ function ProviderCard({ provider }: { provider: { id: string; name: string; desc
         {expanded ? 'Hide config' : 'Show config'}
       </button>
 
-      {expanded && <ConfigEditor providerId={provider.id} />}
+      {expanded && (
+        <>
+          {/* Callback URL hint for integration providers */}
+          {INTEGRATION_HINTS[provider.slug] && (
+            <div className="mt-4 rounded-lg border border-primary-400/20 bg-primary-400/5 p-3 space-y-2">
+              <div className="flex items-center gap-1.5 text-xs font-medium text-primary-400">
+                <HugeiconsIcon icon={InformationCircleIcon} size={13} />
+                Setup guide
+              </div>
+              <p className="text-xs text-zinc-400">{INTEGRATION_HINTS[provider.slug]}</p>
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] text-zinc-500">Callback URL:</span>
+                <code className="flex-1 rounded bg-zinc-900 px-2 py-1 text-[11px] text-zinc-300 font-mono break-all">
+                  {OAUTH_CALLBACK_URL}
+                </code>
+                <button
+                  onClick={() => navigator.clipboard.writeText(OAUTH_CALLBACK_URL)}
+                  className="shrink-0 rounded p-1 text-zinc-500 hover:text-primary-400 transition"
+                  title="Copy callback URL"
+                >
+                  <HugeiconsIcon icon={Copy01Icon} size={13} />
+                </button>
+              </div>
+            </div>
+          )}
+          <ConfigEditor providerId={provider.id} />
+        </>
+      )}
     </div>
   )
 }

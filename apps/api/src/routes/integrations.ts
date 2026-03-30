@@ -8,6 +8,7 @@ import { workspaceMiddleware, requireRole } from '../middleware/workspace.js'
 import { authMiddleware } from '../middleware/auth.js'
 import { encrypt } from '../lib/encrypt.js'
 import { PROVIDERS, getProvider, buildGitHubURL, buildGoogleURL, buildJiraURL, buildLinearURL } from '../lib/oauth-providers.js'
+import { getProviderConfigs } from '../lib/provider-config.js'
 
 /**
  * Integration routes — mounted at /api/workspaces/:workspaceId/integrations
@@ -62,6 +63,16 @@ integrationRoutes.get(
       .bind(state, workspaceId, provider, userId, now.toISOString(), expiresAt)
       .run()
 
+    // Read client_id from admin-managed provider config (DB)
+    const cfg = await getProviderConfigs(c.env.DB, provider)
+    const clientId = cfg['client_id'] ?? ''
+
+    if (!clientId) {
+      return c.json({
+        error: `${providerDef.name} is not configured yet. Go to Admin → Providers → Integration and add the client_id and client_secret.`,
+      }, 400)
+    }
+
     // Build authorization URL
     const apiBase = new URL(c.req.url).origin
     const redirectUri = `${apiBase}/api/oauth/callback`
@@ -70,36 +81,16 @@ integrationRoutes.get(
     let authUrl: string
     switch (provider) {
       case 'github':
-        authUrl = buildGitHubURL({
-          clientId: c.env.GITHUB_CLIENT_ID ?? '',
-          redirectUri,
-          state,
-          scopes,
-        })
+        authUrl = buildGitHubURL({ clientId, redirectUri, state, scopes })
         break
       case 'google_ws':
-        authUrl = buildGoogleURL({
-          clientId: c.env.GOOGLE_CLIENT_ID ?? '',
-          redirectUri,
-          state,
-          scopes,
-        })
+        authUrl = buildGoogleURL({ clientId, redirectUri, state, scopes })
         break
       case 'jira':
-        authUrl = buildJiraURL({
-          clientId: c.env.JIRA_CLIENT_ID ?? '',
-          redirectUri,
-          state,
-          scopes,
-        })
+        authUrl = buildJiraURL({ clientId, redirectUri, state, scopes })
         break
       case 'linear':
-        authUrl = buildLinearURL({
-          clientId: c.env.LINEAR_CLIENT_ID ?? '',
-          redirectUri,
-          state,
-          scopes,
-        })
+        authUrl = buildLinearURL({ clientId, redirectUri, state, scopes })
         break
       default:
         return c.json({ error: 'Unsupported OAuth provider' }, 400)
