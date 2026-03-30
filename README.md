@@ -465,7 +465,7 @@ node_modules/.bin/wrangler d1 execute complerer-db --remote --env production \
 
 ```bash
 cd apps/api
-node_modules/.bin/wrangler deploy --env production
+pnpm run deploy   # always deploys with --env production
 ```
 
 ### Frontend (Pages + Function)
@@ -484,7 +484,7 @@ pnpm run build && ../api/node_modules/.bin/wrangler pages deploy dist --project-
 ### Deploy Both
 
 ```bash
-cd apps/api && node_modules/.bin/wrangler deploy --env production
+cd apps/api && pnpm run deploy
 cd ../web && pnpm run deploy
 ```
 
@@ -543,7 +543,7 @@ Workspace admins can now click "Connect with OAuth" on the Integrations page.
 5. Seed data via admin panel or API
 6. Set all secrets (see Secrets section above)
 7. Update the worker URL in `apps/web/functions/api/[[path]].ts`
-8. Deploy API: `cd apps/api && node_modules/.bin/wrangler deploy --env production`
+8. Deploy API: `cd apps/api && pnpm run deploy`
 9. Deploy web: `cd apps/web && pnpm run deploy`
 10. Configure custom domain DNS
 

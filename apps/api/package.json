@@ -4,9 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "wrangler dev",
-    "build": "wrangler deploy --dry-run",
-    "deploy": "wrangler deploy",
+    "dev": "wrangler dev --env development",
+    "build": "wrangler deploy --dry-run --env production",
+    "deploy": "wrangler deploy --env production",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
