@@ -78,19 +78,6 @@ export const PROVIDERS: ProviderDef[] = [
 
   // ─── Custom OAuth (workspace provides own credentials) ───────────────
   {
-    type: 'okta',
-    name: 'Okta',
-    category: 'identity',
-    description: 'Identity & access management, MFA status',
-    icon: 'okta',
-    authType: 'oauth_custom',
-    fields: [
-      { key: 'domain', label: 'Okta Domain', placeholder: 'yourcompany.okta.com', type: 'url', required: true },
-      { key: 'client_id', label: 'Client ID', placeholder: 'OAuth 2.0 client ID', required: true },
-      { key: 'client_secret', label: 'Client Secret', type: 'password', required: true },
-    ],
-  },
-  {
     type: 'azure_ad',
     name: 'Azure AD / Entra ID',
     category: 'identity',
@@ -106,16 +93,46 @@ export const PROVIDERS: ProviderDef[] = [
 
   // ─── API Key ─────────────────────────────────────────────────────────
   {
+    type: 'cloudflare',
+    name: 'Cloudflare',
+    category: 'cloud',
+    description: 'Cloudflare infrastructure, account members, Workers & audit logs',
+    icon: 'cloudflare',
+    authType: 'api_key',
+    fields: [
+      { key: 'api_token', label: 'API Token', type: 'password', required: true,
+        help: 'Create a token at dash.cloudflare.com/profile/api-tokens with Account Read + Audit Logs Read permissions' },
+      { key: 'account_id', label: 'Account ID', placeholder: 'e.g. a1b2c3d4e5f6…', required: true,
+        help: 'Found in the right sidebar of any zone overview page in your Cloudflare dashboard' },
+    ],
+  },
+  {
+    type: 'okta',
+    name: 'Okta',
+    category: 'identity',
+    description: 'Identity & access management — users, MFA status & audit logs',
+    icon: 'okta',
+    authType: 'api_key',
+    fields: [
+      { key: 'domain', label: 'Okta Domain', placeholder: 'yourcompany.okta.com', type: 'url', required: true,
+        help: 'Your Okta organization URL (without https://)' },
+      { key: 'api_token', label: 'API Token (SSWS)', type: 'password', required: true,
+        help: 'Create at Security → API → Tokens in your Okta Admin Console' },
+    ],
+  },
+  {
     type: 'aws',
     name: 'AWS',
     category: 'cloud',
-    description: 'Amazon Web Services IAM & CloudTrail audit logs',
+    description: 'Amazon Web Services — IAM users, MFA status & CloudTrail audit logs',
     icon: 'aws',
     authType: 'api_key',
     fields: [
-      { key: 'access_key_id', label: 'Access Key ID', placeholder: 'AKIA…', required: true },
+      { key: 'access_key_id', label: 'Access Key ID', placeholder: 'AKIA…', required: true,
+        help: 'Create an IAM user with ReadOnlyAccess + CloudTrail:LookupEvents permissions' },
       { key: 'secret_access_key', label: 'Secret Access Key', type: 'password', required: true },
-      { key: 'region', label: 'Default Region', placeholder: 'us-east-1', required: false },
+      { key: 'region', label: 'Default Region', placeholder: 'us-east-1', required: false,
+        help: 'Primary AWS region for CloudTrail and IAM lookups' },
     ],
   },
   {

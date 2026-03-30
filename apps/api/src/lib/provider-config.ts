@@ -10,8 +10,9 @@ const TYPE_TO_SLUG: Record<string, string> = {
   google_ws: 'google-workspace',
   jira: 'jira',
   linear: 'linear',
-  okta: 'okta',
   azure_ad: 'azure-ad',
+  cloudflare: 'cloudflare',
+  okta: 'okta',
   aws: 'aws',
   applivery: 'applivery',
 }

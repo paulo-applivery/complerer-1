@@ -9,6 +9,7 @@ import { authMiddleware } from '../middleware/auth.js'
 import { encrypt } from '../lib/encrypt.js'
 import { PROVIDERS, getProvider, buildGitHubURL, buildGoogleURL, buildJiraURL, buildLinearURL } from '../lib/oauth-providers.js'
 import { getProviderConfigs } from '../lib/provider-config.js'
+import { runSync } from '../lib/sync-providers.js'
 
 /**
  * Integration routes — mounted at /api/workspaces/:workspaceId/integrations
@@ -150,10 +151,27 @@ integrationRoutes.post(
     const now = new Date().toISOString()
     const name = body.name ?? providerDef.name
 
-    // Encrypt credentials if provided
+    // Separate public config fields (non-secret) from secret credentials
+    // Public fields go into config JSON; secrets are encrypted in access_token_enc
+    const secretFields = (providerDef.fields ?? []).filter((f) => f.type === 'password').map((f) => f.key)
+    const publicFields = (providerDef.fields ?? []).filter((f) => f.type !== 'password').map((f) => f.key)
+
+    const publicConfig: Record<string, string> = {}
+    const secretCreds: Record<string, string> = {}
+
+    for (const [k, v] of Object.entries(body.credentials ?? {})) {
+      if (secretFields.includes(k)) secretCreds[k] = v
+      else if (publicFields.includes(k)) publicConfig[k] = v
+    }
+
+    // Merge public config into the config JSON column
+    const existingConfig = body.config ?? {}
+    const mergedConfig = { ...existingConfig, ...publicConfig }
+
+    // Encrypt secret credentials
     let accessTokenEnc: string | null = null
-    if (body.credentials && Object.keys(body.credentials).length > 0) {
-      accessTokenEnc = await encrypt(JSON.stringify(body.credentials), encKey)
+    if (Object.keys(secretCreds).length > 0) {
+      accessTokenEnc = await encrypt(JSON.stringify(secretCreds), encKey)
     }
 
     // Check for existing connection (upsert)
@@ -172,7 +190,7 @@ integrationRoutes.post(
       )
         .bind(
           name,
-          JSON.stringify(body.config ?? {}),
+          JSON.stringify(mergedConfig),
           providerDef.authType,
           accessTokenEnc,
           now,
@@ -202,7 +220,7 @@ integrationRoutes.post(
         workspaceId,
         body.type,
         name,
-        JSON.stringify(body.config ?? {}),
+        JSON.stringify(mergedConfig),
         providerDef.authType,
         accessTokenEnc,
         userId,
@@ -354,23 +372,60 @@ integrationRoutes.post(
     }
 
     const syncId = generateId()
-    const now = new Date().toISOString()
+    const startedAt = new Date().toISOString()
+    const encKey = c.env.ENCRYPTION_KEY ?? 'dev-encryption-key-change-me-32chars'
+
+    // Load stored credentials (encrypted)
+    const row = await c.env.DB.prepare(
+      'SELECT access_token_enc, config, type FROM integrations WHERE id = ?'
+    )
+      .bind(integrationId)
+      .first<{ access_token_enc: string | null; config: string; type: string }>()
+
+    // Parse credentials: access_token_enc stores JSON-stringified creds for api_key providers
+    let credentials: Record<string, string> = {}
+    if (row?.access_token_enc) {
+      try {
+        const { decrypt } = await import('../lib/encrypt.js')
+        const plain = await decrypt(row.access_token_enc, encKey)
+        credentials = JSON.parse(plain)
+      } catch { /* not json-encoded creds */ }
+    }
+    // Also merge non-sensitive config fields (e.g. account_id, region, domain)
+    try {
+      const cfg = JSON.parse(row?.config ?? '{}')
+      credentials = { ...credentials, ...cfg }
+    } catch { /* ignore */ }
+
+    // Run the real sync
+    const result = await runSync(row?.type ?? '', {
+      db: c.env.DB,
+      workspaceId,
+      integrationId,
+      encryptionKey: encKey,
+      credentials,
+    })
+
+    const completedAt = new Date().toISOString()
+    const syncStatus = result.error ? 'error' : 'success'
 
     await c.env.DB.prepare(
       `INSERT INTO integration_sync_logs
          (id, workspace_id, integration_id, sync_type, status, records_pulled,
-          records_created, records_updated, anomalies_detected, started_at, completed_at)
-       VALUES (?, ?, ?, 'full', 'completed', 0, 0, 0, 0, ?, ?)`
+          records_created, records_updated, anomalies_detected, error_message, started_at, completed_at)
+       VALUES (?, ?, ?, 'full', ?, ?, ?, ?, ?, ?, ?, ?)`
     )
-      .bind(syncId, workspaceId, integrationId, now, now)
+      .bind(syncId, workspaceId, integrationId, syncStatus,
+        result.recordsPulled, result.recordsCreated, result.recordsUpdated,
+        result.anomaliesDetected, result.error ?? null, startedAt, completedAt)
       .run()
 
     await c.env.DB.prepare(
       `UPDATE integrations
-       SET last_sync_at = ?, last_sync_status = 'success', last_sync_error = NULL, updated_at = ?
+       SET last_sync_at = ?, last_sync_status = ?, last_sync_error = ?, updated_at = ?
        WHERE id = ?`
     )
-      .bind(now, now, integrationId)
+      .bind(completedAt, syncStatus, result.error ?? null, completedAt, integrationId)
       .run()
 
     const syncLog = await c.env.DB.prepare(
@@ -379,7 +434,7 @@ integrationRoutes.post(
       .bind(syncId)
       .first()
 
-    return c.json({ syncLog })
+    return c.json({ syncLog, result })
   }
 )
 
