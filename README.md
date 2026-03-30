@@ -53,7 +53,7 @@ complerer/
     api/              Hono API on Cloudflare Workers (D1 + R2)
     web/              React SPA on Cloudflare Pages (Vite + TanStack Router)
   packages/
-    db/               D1 migrations (49 SQL files)
+    db/               D1 migrations (59 SQL files)
     shared/           Shared types, validators, permissions (Zod)
     reports/          Report generator module (types, validators, API sub-app)
 ```
@@ -62,7 +62,7 @@ complerer/
 
 | Resource | Service | Purpose |
 |----------|---------|---------|
-| `complerer-api` | CF Worker | API backend (Hono framework) |
+| `complerer-api-production` | CF Worker | API backend (Hono framework) |
 | `complerer` | CF Pages | Frontend SPA (React + Vite) |
 | `complerer-db` | CF D1 | SQLite database |
 | `complerer-evidence` | CF R2 | Evidence file storage |
@@ -71,13 +71,15 @@ complerer/
 
 ```
 Browser --> dash.complerer.com (CF Pages)
-  |-- Static assets served directly
-  |-- /api/* --> functions/api/[[path]].js (CF Pages Function)
-                  --> proxies to complerer-api.paulo-acb.workers.dev (CF Worker)
+  |-- Static assets served directly from Pages
+  |-- /api/* --> functions/api/[[path]].ts (CF Pages Function)
+                  --> proxies to complerer-api-production.paulo-acb.workers.dev
                        --> D1 (database) + R2 (files)
 ```
 
-The Pages Function proxy (`apps/web/functions/api/[[path]].js`) forwards all API requests to the Worker. This keeps frontend and API on the same domain, avoiding CORS issues.
+The Pages Function proxy (`apps/web/functions/api/[[path]].ts`) forwards all API requests — including POST/PUT/PATCH with bodies — to the Worker. This keeps frontend and API on the same domain, avoiding CORS issues.
+
+> ⚠️ **Important**: The Pages Function is only included when the web deploy runs from `apps/web/`. Running `wrangler pages deploy` from any other directory silently skips the function bundle and breaks all API calls (405 errors). Always use `pnpm run deploy` from `apps/web/`.
 
 ## Module Guide
 
@@ -222,33 +224,44 @@ Compliance assistant powered by Claude/Gemini.
 - Can generate policy drafts, explain controls, suggest evidence
 - Provider configurable in Settings (Anthropic or Google)
 
-### 11. Settings (`compliance.ts`, `settings.tsx`)
+### 11. Integrations (`integrations.ts`)
 
-Workspace configuration:
+Connect external tools to automate evidence collection and anomaly detection.
 
-| Section | Description |
-|---------|-------------|
-| **General** | Name, slug, description, logo |
-| **Libraries** | Browse and activate frameworks, systems, baselines, policies, employees |
-| **Custom Fields** | Define custom fields per entity (system, person, access_record) |
-| **Integrations** | Connect external tools |
-| **Trust Center** | Public trust page settings |
-| **Members** | Invite and manage workspace members |
-| **Feature Flags** | Toggle features (trust center, AI, etc.) |
+**Auth types**:
 
-### 12. Super Admin (`admin.ts`)
+| Type | Providers | How it works |
+|------|-----------|-------------|
+| `oauth_global` | GitHub, Google Workspace, Jira, Linear | One-click OAuth popup. Credentials managed by Complerer admin at `/admin/providers` |
+| `oauth_custom` | Okta, Azure AD | Workspace admin provides their own OAuth app credentials |
+| `api_key` | AWS, Applivery | Workspace admin provides API key/secret |
 
-Platform-wide management at `/admin`:
+**OAuth flow** (for `oauth_global` providers):
+1. User clicks "Connect with OAuth" → frontend calls `/api/integrations/oauth/:provider/init`
+2. API reads `client_id` from `platform_provider_configs`, generates a CSRF state token (10 min expiry), returns authorization URL
+3. Frontend opens a popup to the authorization URL
+4. Provider redirects to `/api/oauth/callback` — API validates state, exchanges code for tokens
+5. Tokens encrypted with AES-GCM (Web Crypto API) before storage
+6. Popup posts `OAUTH_SUCCESS` message to parent and closes
 
-| Section | Description |
-|---------|-------------|
-| **Workspaces** | CRUD all workspaces |
-| **Users** | Manage all users |
-| **Libraries** | CRUD frameworks, controls, crosswalks, systems, baselines, policies, employees |
-| **Email Templates** | Edit transactional email templates |
-| **Seed** | Bulk seed data |
+**Token security**:
+- Tokens stored as AES-GCM 256-bit encrypted blobs in `integrations.access_token_enc`
+- `ENCRYPTION_KEY` secret must be set (32+ char string, never committed)
+- Token columns are never returned in API list/get responses
 
-### 13. Reports (`packages/reports/`)
+**Activating OAuth providers** (super admin only):
+1. Go to `/admin/providers` → **Integration** tab
+2. Click **Show config** on a provider (e.g., GitHub)
+3. See setup guide link + copyable OAuth callback URL to register in the provider's app settings
+4. Fill in `client_id` and `client_secret`
+5. Toggle the provider **enabled**
+
+OAuth callback URL to register in each provider:
+```
+https://complerer-api-production.paulo-acb.workers.dev/api/oauth/callback
+```
+
+### 12. Reports (`packages/reports/`)
 
 Certification-grade audit report system. Built as a **Package Library** — all code lives in `packages/reports/`, mounted by the host apps with minimal glue code.
 
@@ -287,11 +300,40 @@ const ReportsPage = lazy(() => import('@/pages/reports'))
 | 8 | Advanced Blocks | Control matrices, risk heatmaps, charts, timelines, evidence galleries |
 | 9 | Cross-Framework | Evidence reuse, report comparison, bulk generation, sharing, retention |
 
+### 13. Settings (`compliance.ts`, `settings.tsx`)
+
+Workspace configuration:
+
+| Section | Description |
+|---------|-------------|
+| **General** | Name, slug, description, logo |
+| **Organization** | Address, industry, size, website, registration ID, security officer, DPO, legal rep |
+| **Libraries** | Browse and activate frameworks, systems, baselines, policies, employees |
+| **Custom Fields** | Define custom fields per entity (system, person, access_record) |
+| **Integrations** | Connect external tools |
+| **Trust Center** | Public trust page settings |
+| **Members** | Invite and manage workspace members |
+| **Feature Flags** | Toggle features (trust center, AI, etc.) |
+
+### 14. Super Admin (`admin.ts`)
+
+Platform-wide management at `/admin` (requires `is_super_admin = 1`):
+
+| Section | Description |
+|---------|-------------|
+| **Workspaces** | CRUD all workspaces |
+| **Users** | Manage all users, grant/revoke super admin |
+| **Libraries** | CRUD frameworks, controls, crosswalks, systems, baselines, policies, employees |
+| **Providers** | Configure AI, email, and OAuth integration credentials |
+| **Email Templates** | Edit transactional email templates |
+| **Feature Flags** | Platform-wide feature toggles |
+| **Seed** | Bulk seed data |
+
 ## Database Schema (Key Tables)
 
 ### Auth & Workspaces
 - `auth_users` -- User accounts (email, OTP-based auth)
-- `workspaces` -- Multi-tenant workspaces
+- `workspaces` -- Multi-tenant workspaces (+ org metadata fields)
 - `workspace_members` -- User-workspace membership with roles
 
 ### Frameworks
@@ -316,7 +358,7 @@ const ReportsPage = lazy(() => import('@/pages/reports'))
 - `access_records` -- Access junction (person + system + role + cost)
 
 ### Projects
-- `compliance_projects` -- Certification projects
+- `compliance_projects` -- Certification projects (+ auditor/firm metadata fields)
 - `project_evidence` -- Evidence linked per-project per-control
 - `project_milestones` -- Project timeline milestones
 
@@ -325,14 +367,25 @@ const ReportsPage = lazy(() => import('@/pages/reports'))
 - `employee_directory_library` -- Department/role templates
 - `baseline_library` -- Pre-built baselines
 - `policy_library` -- Pre-built policy templates
+- `report_template_library` -- Pre-built report templates (admin-managed)
 
-### Reports (planned -- `packages/reports/src/migrations/`)
-- `report_templates` -- Report templates per framework
+### Reports
+- `report_templates` -- Workspace report templates (adopted from library)
 - `reports` -- Generated reports with lifecycle status
 - `report_versions` -- Version history per report
 - `report_findings` -- Structured audit findings
 - `report_approvals` -- Sign-off audit trail
 - `report_exports` -- PDF export records (R2 storage)
+
+### Integrations
+- `integrations` -- Connected integrations (encrypted token columns: `access_token_enc`, `refresh_token_enc`)
+- `integration_sync_logs` -- Sync history
+- `anomalies` -- Detected anomalies with severity and resolution lifecycle
+- `oauth_states` -- CSRF state tokens for OAuth popup flow (10 min expiry, single-use)
+
+### Platform (admin-managed)
+- `platform_providers` -- Provider definitions (AI, email, integration)
+- `platform_provider_configs` -- Key/value config per provider (secrets stored masked)
 
 ### Custom Fields
 - `custom_field_definitions` -- Field definitions per workspace per entity type
@@ -366,7 +419,9 @@ Create `apps/api/.dev.vars`:
 BREVO_API_KEY=your-brevo-key
 ANTHROPIC_API_KEY=your-anthropic-key
 GEMINI_API_KEY=your-gemini-key
+GEMINI_API_KEY=your-gemini-key
 SUPER_ADMIN_EMAIL=admin@example.com
+ENCRYPTION_KEY=any-32-char-string-for-local-dev
 ```
 
 ## Database
@@ -375,55 +430,104 @@ SUPER_ADMIN_EMAIL=admin@example.com
 
 ```bash
 # Local
-for f in packages/db/src/migrations/*.sql; do
-  npx wrangler d1 execute complerer-db --local --file "$f"
+cd apps/api
+for f in ../../packages/db/src/migrations/*.sql; do
+  node_modules/.bin/wrangler d1 execute complerer-db --local --file "$f"
 done
 
 # Remote (production)
-for f in packages/db/src/migrations/*.sql; do
-  npx wrangler d1 execute complerer-db --remote --file "$f"
+for f in ../../packages/db/src/migrations/*.sql; do
+  node_modules/.bin/wrangler d1 execute complerer-db --remote --env production --file "$f"
 done
 ```
 
 ### Run a single migration
 
 ```bash
-npx wrangler d1 execute complerer-db --remote --file packages/db/src/migrations/0049_nullable_template_fields.sql
+cd apps/api
+node_modules/.bin/wrangler d1 execute complerer-db --remote --env production \
+  --file=../../packages/db/src/migrations/0059_seed_integration_providers.sql
 ```
 
-### Query
+### Query the DB
 
 ```bash
-npx wrangler d1 execute complerer-db --remote --command "SELECT COUNT(*) FROM frameworks"
+cd apps/api
+node_modules/.bin/wrangler d1 execute complerer-db --remote --env production \
+  --command "SELECT COUNT(*) FROM frameworks"
 ```
 
 ## Deploy
+
+> ⚠️ Always deploy the web from **`apps/web/`**. Running the Pages deploy from any other directory silently drops the `functions/` bundle, breaking all `/api/*` calls with 405 errors.
 
 ### API Worker
 
 ```bash
 cd apps/api
-pnpm wrangler deploy
-
-# First-time secrets:
-wrangler secret put BREVO_API_KEY
-wrangler secret put ANTHROPIC_API_KEY
-wrangler secret put GEMINI_API_KEY
+node_modules/.bin/wrangler deploy --env production
 ```
 
-### Frontend
+### Frontend (Pages + Function)
 
 ```bash
+# Must run from apps/web so wrangler picks up functions/api/[[path]].ts
 cd apps/web
-pnpm build
-npx wrangler pages deploy dist --project-name complerer
+pnpm run deploy   # builds + deploys in one command
 ```
 
-### Deploy Both (one-liner)
+The `deploy` script in `apps/web/package.json` is:
+```
+pnpm run build && ../api/node_modules/.bin/wrangler pages deploy dist --project-name complerer --commit-dirty=true
+```
+
+### Deploy Both
 
 ```bash
-cd apps/api && pnpm wrangler deploy && cd ../web && pnpm build && npx wrangler pages deploy dist --project-name complerer
+cd apps/api && node_modules/.bin/wrangler deploy --env production
+cd ../web && pnpm run deploy
 ```
+
+## Secrets
+
+Set these once via Wrangler. They are never committed.
+
+```bash
+cd apps/api
+
+# Required for all environments
+wrangler secret put BREVO_API_KEY --env production
+wrangler secret put ANTHROPIC_API_KEY --env production
+wrangler secret put GEMINI_API_KEY --env production
+wrangler secret put SUPER_ADMIN_EMAIL --env production
+
+# Required for token encryption (integrations OAuth)
+# Use any random 32+ character string
+wrangler secret put ENCRYPTION_KEY --env production
+```
+
+OAuth provider credentials (GitHub, Google, Jira, Linear) are **not** set as Wrangler secrets. They are managed via the admin UI at `/admin/providers` → Integration tab and stored in `platform_provider_configs`.
+
+## Activating OAuth Integrations
+
+1. Register an OAuth application with the provider:
+   - **GitHub**: github.com/settings/applications/new
+   - **Google Workspace**: console.cloud.google.com → APIs & Services → Credentials
+   - **Jira**: developer.atlassian.com → OAuth 2.0 apps
+   - **Linear**: linear.app/settings/api → OAuth applications
+
+2. Set the **callback URL** in each provider's app to:
+   ```
+   https://complerer-api-production.paulo-acb.workers.dev/api/oauth/callback
+   ```
+
+3. In Complerer, go to **`/admin/providers`** → **Integration** tab → find the provider → **Show config**
+
+4. Paste `client_id` (public) and `client_secret` (masked/secret)
+
+5. Toggle the provider **enabled**
+
+Workspace admins can now click "Connect with OAuth" on the Integrations page.
 
 ## Migrate to New Cloudflare Account
 
@@ -435,12 +539,13 @@ cd apps/api && pnpm wrangler deploy && cd ../web && pnpm build && npx wrangler p
    wrangler pages project create complerer
    ```
 3. Update `database_id` in `wrangler.toml` with the new D1 ID
-4. Run all migrations
+4. Run all migrations (see Database section above)
 5. Seed data via admin panel or API
-6. Set secrets
-7. Update worker URL in `apps/web/functions/api/[[path]].js`
-8. Deploy API + frontend
-9. Configure custom domain DNS
+6. Set all secrets (see Secrets section above)
+7. Update the worker URL in `apps/web/functions/api/[[path]].ts`
+8. Deploy API: `cd apps/api && node_modules/.bin/wrangler deploy --env production`
+9. Deploy web: `cd apps/web && pnpm run deploy`
+10. Configure custom domain DNS
 
 ## Tech Stack
 
@@ -454,3 +559,4 @@ cd apps/api && pnpm wrangler deploy && cd ../web && pnpm build && npx wrangler p
 | **Auth** | Email OTP via Brevo |
 | **AI** | Claude (Anthropic) + Gemini (Google) |
 | **Email** | Brevo transactional API |
+| **Token Encryption** | AES-GCM 256-bit via Web Crypto API (native to CF Workers) |
