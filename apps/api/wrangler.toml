@@ -22,6 +22,7 @@ bucket_name = "complerer-evidence"
 [env.development.vars]
 ENVIRONMENT = "development"
 ALLOWED_ORIGIN = "http://localhost:5173"
+APP_URL = "http://localhost:5173"
 
 # ── Staging ─────────────────────────────────────────────────────────────────
 
@@ -46,6 +47,7 @@ bucket_name = "complerer-evidence-staging"
 [env.production.vars]
 ENVIRONMENT = "production"
 ALLOWED_ORIGIN = "https://app.complerer.com"
+APP_URL = "https://app.complerer.com"
 
 [[env.production.d1_databases]]
 binding = "DB"

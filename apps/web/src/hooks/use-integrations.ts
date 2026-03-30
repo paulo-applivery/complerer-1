@@ -3,12 +3,23 @@ import { api } from '@/lib/api'
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
+export interface ProviderField {
+  key: string
+  label: string
+  placeholder?: string
+  type?: 'text' | 'password' | 'url'
+  required?: boolean
+  help?: string
+}
+
 export interface CatalogEntry {
   type: string
   name: string
   category: string
   description: string
   icon: string
+  authType: 'oauth_global' | 'oauth_custom' | 'api_key'
+  fields: ProviderField[]
 }
 
 export interface Integration {
@@ -18,7 +29,9 @@ export interface Integration {
   name: string
   status: 'connected' | 'disconnected' | 'syncing' | 'error'
   config: string
-  credentials_ref: string | null
+  auth_type: 'oauth_global' | 'oauth_custom' | 'api_key'
+  token_expires_at: string | null
+  token_scope: string | null
   last_sync_at: string | null
   last_sync_status: string | null
   last_sync_error: string | null
@@ -87,11 +100,25 @@ export function useConnectIntegration(workspaceId: string | undefined) {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (payload: { type: string; name?: string; config?: Record<string, unknown> }) =>
-      api.post(`/workspaces/${workspaceId}/integrations`, payload),
+    mutationFn: (payload: {
+      type: string
+      name?: string
+      credentials?: Record<string, string>
+      config?: Record<string, unknown>
+    }) => api.post(`/workspaces/${workspaceId}/integrations`, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['integrations', workspaceId] })
     },
+  })
+}
+
+export function useOAuthInit(workspaceId: string | undefined) {
+  return useMutation({
+    mutationFn: (provider: string) =>
+      api.get(`/workspaces/${workspaceId}/integrations/oauth/${provider}/init`) as Promise<{
+        authUrl: string
+        state: string
+      }>,
   })
 }
 

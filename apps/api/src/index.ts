@@ -7,6 +7,7 @@ import { frameworkRoutes } from './routes/frameworks.js'
 import { complianceRoutes } from './routes/compliance.js'
 import { chatRoutes } from './routes/chat.js'
 import { integrationRoutes } from './routes/integrations.js'
+import { oauthRoutes } from './routes/oauth.js'
 import { seedRoutes } from './routes/seed.js'
 import { communityRoutes, publicTrustRoutes, seedPlaybooksRoutes } from './routes/community.js'
 import { adminRoutes } from './routes/admin.js'
@@ -47,6 +48,7 @@ app.route('/api/workspaces/:workspaceId', frameworkRoutes)
 app.route('/api/workspaces/:workspaceId', complianceRoutes)
 app.route('/api/workspaces/:workspaceId/chat', chatRoutes)
 app.route('/api/workspaces/:workspaceId/integrations', integrationRoutes)
+app.route('/api/oauth', oauthRoutes)
 app.route('/api/workspaces/:workspaceId', projectRoutes)
 app.route('/api/workspaces/:workspaceId', communityRoutes)
 app.route('/api/trust', publicTrustRoutes)
