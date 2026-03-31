@@ -136,6 +136,52 @@ authRoutes.post('/verify-otp', zValidator('json', verifyOtpSchema), async (c) =>
       .bind(now, existingUser.id)
       .run()
 
+    // Check for a pending direct invitation for this email
+    const directInvitation = await c.env.DB.prepare(
+      "SELECT id, workspace_id, role FROM invitations WHERE email = ? AND status = 'pending' AND expires_at > ? ORDER BY created_at DESC LIMIT 1"
+    )
+      .bind(emailLower, now)
+      .first<{ id: string; workspace_id: string; role: string }>()
+
+    if (directInvitation) {
+      // Check not already a member
+      const alreadyMember = await c.env.DB.prepare(
+        'SELECT id FROM workspace_members WHERE workspace_id = ? AND user_id = ?'
+      )
+        .bind(directInvitation.workspace_id, existingUser.id)
+        .first()
+
+      if (!alreadyMember) {
+        const memberId = generateId()
+        await c.env.DB.batch([
+          c.env.DB.prepare(
+            'INSERT INTO workspace_members (id, workspace_id, user_id, role, invited_by, joined_at) VALUES (?, ?, ?, ?, ?, ?)'
+          ).bind(memberId, directInvitation.workspace_id, existingUser.id, directInvitation.role, existingUser.id, now),
+          c.env.DB.prepare(
+            "UPDATE invitations SET status = 'accepted' WHERE id = ?"
+          ).bind(directInvitation.id),
+        ])
+
+        const ws = await c.env.DB.prepare('SELECT name FROM workspaces WHERE id = ?')
+          .bind(directInvitation.workspace_id)
+          .first<{ name: string }>()
+
+        return c.json({
+          user: {
+            id: existingUser.id,
+            email: existingUser.email,
+            name: existingUser.name,
+            avatarUrl: existingUser.avatar_url,
+            lastLoginAt: now,
+            createdAt: existingUser.created_at,
+          },
+          status: 'joined',
+          workspaceId: directInvitation.workspace_id,
+          workspaceName: ws?.name,
+        })
+      }
+    }
+
     return c.json({
       user: {
         id: existingUser.id,
@@ -175,6 +221,36 @@ authRoutes.post('/verify-otp', zValidator('json', verifyOtpSchema), async (c) =>
     avatarUrl: null,
     lastLoginAt: now,
     createdAt: now,
+  }
+
+  // Check for a pending direct invitation first (highest priority)
+  const directInvite = await c.env.DB.prepare(
+    "SELECT id, workspace_id, role FROM invitations WHERE email = ? AND status = 'pending' AND expires_at > ? ORDER BY created_at DESC LIMIT 1"
+  )
+    .bind(emailLower, now)
+    .first<{ id: string; workspace_id: string; role: string }>()
+
+  if (directInvite) {
+    const memberId = generateId()
+    await c.env.DB.batch([
+      c.env.DB.prepare(
+        'INSERT INTO workspace_members (id, workspace_id, user_id, role, invited_by, joined_at) VALUES (?, ?, ?, ?, ?, ?)'
+      ).bind(memberId, directInvite.workspace_id, userId, directInvite.role, userId, now),
+      c.env.DB.prepare(
+        "UPDATE invitations SET status = 'accepted' WHERE id = ?"
+      ).bind(directInvite.id),
+    ])
+
+    const ws = await c.env.DB.prepare('SELECT name FROM workspaces WHERE id = ?')
+      .bind(directInvite.workspace_id)
+      .first<{ name: string }>()
+
+    return c.json({
+      user,
+      status: 'joined',
+      workspaceId: directInvite.workspace_id,
+      workspaceName: ws?.name,
+    })
   }
 
   // Check if email domain matches any workspace

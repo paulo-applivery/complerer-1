@@ -154,7 +154,7 @@ complianceRoutes.post(
       .bind(workspaceId)
       .all<{ name: string }>()
 
-    const existingNames = new Set(existing.map((e) => e.name.toLowerCase()))
+    const existingNames = new Set(existing.map((e) => e.name?.toLowerCase()).filter(Boolean))
 
     // Check which templates are already referenced
     const { results: existingRefs } = await c.env.DB.prepare(
@@ -392,6 +392,71 @@ complianceRoutes.patch(
         updatedAt: updated!.updated_at,
       },
     })
+  }
+)
+
+/**
+ * DELETE /systems/:systemId
+ * Remove a system from the workspace. Blocked if active access records exist.
+ * Requires admin+ role.
+ */
+complianceRoutes.delete(
+  '/systems/:systemId',
+  requireRole('admin'),
+  async (c) => {
+    const workspaceId = c.get('workspaceId')
+    const userId = c.get('userId')
+    const systemId = c.req.param('systemId')
+
+    const existing = await c.env.DB.prepare(
+      'SELECT id FROM systems WHERE id = ? AND workspace_id = ?'
+    )
+      .bind(systemId, workspaceId)
+      .first<{ id: string }>()
+
+    if (!existing) {
+      return c.json({ error: 'System not found' }, 404)
+    }
+
+    // Block deletion if any access records reference this system
+    const linked = await c.env.DB.prepare(
+      'SELECT COUNT(*) as cnt FROM access_records WHERE system_id = ? AND workspace_id = ?'
+    )
+      .bind(systemId, workspaceId)
+      .first<{ cnt: number }>()
+
+    if (linked && linked.cnt > 0) {
+      return c.json(
+        {
+          error: 'Cannot delete system',
+          message: `This system has ${linked.cnt} access record${linked.cnt === 1 ? '' : 's'} linked to it. Remove those records first.`,
+        },
+        409
+      )
+    }
+
+    // Also delete any custom field values for this system
+    await c.env.DB.prepare(
+      "DELETE FROM custom_field_values WHERE workspace_id = ? AND entity_type = 'system' AND entity_id = ?"
+    )
+      .bind(workspaceId, systemId)
+      .run()
+
+    await c.env.DB.prepare(
+      'DELETE FROM systems WHERE id = ? AND workspace_id = ?'
+    )
+      .bind(systemId, workspaceId)
+      .run()
+
+    await emitEvent(c.env.DB, {
+      workspaceId,
+      eventType: 'system.deleted',
+      entityType: 'system',
+      entityId: systemId,
+      actorId: userId,
+    })
+
+    return c.json({ success: true })
   }
 )
 
@@ -707,10 +772,11 @@ complianceRoutes.get('/access', async (c) => {
                         ar.updated_at, ar.updated_by,
                         ar.license_type, ar.cost_per_period, ar.cost_currency, ar.cost_frequency,
                         du.name as user_name, du.email as user_email,
-                        s.name as system_name
+                        COALESCE(s.name, sl.name) as system_name
                  FROM access_records ar
                  JOIN directory_users du ON du.id = ar.user_id
                  JOIN systems s ON s.id = ar.system_id
+                 LEFT JOIN system_library sl ON sl.id = s.template_id
                  WHERE ar.workspace_id = ?`
 
   const bindings: unknown[] = [workspaceId]

@@ -46,8 +46,8 @@ bucket_name = "complerer-evidence-staging"
 
 [env.production.vars]
 ENVIRONMENT = "production"
-ALLOWED_ORIGIN = "https://app.complerer.com"
-APP_URL = "https://app.complerer.com"
+ALLOWED_ORIGIN = "https://dash.complerer.com"
+APP_URL = "https://dash.complerer.com"
 
 [[env.production.d1_databases]]
 binding = "DB"

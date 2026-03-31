@@ -187,23 +187,24 @@ export async function sendTestEmail(
   const sampleVars: Record<string, Record<string, string>> = {
     'otp-verification': {
       code: '123456',
-      logoUrl: 'https://complerer.com/logo-color.svg',
+    },
+    'workspace-invitation': {
+      workspaceName: 'Acme Corp',
+      role: 'Member',
+      loginUrl: 'https://dash.complerer.com/login',
     },
     'invitation-approved': {
       workspaceName: 'Acme Corp',
-      loginUrl: 'https://complerer.com/login',
-      logoUrl: 'https://complerer.com/logo-color.svg',
+      loginUrl: 'https://dash.complerer.com/login',
     },
     'invitation-rejected': {
       workspaceName: 'Acme Corp',
-      logoUrl: 'https://complerer.com/logo-color.svg',
     },
     'new-invitation-request': {
       userName: 'Jane Doe',
       userEmail: 'jane@acme.com',
       workspaceName: 'Acme Corp',
-      settingsUrl: 'https://complerer.com/settings',
-      logoUrl: 'https://complerer.com/logo-color.svg',
+      settingsUrl: 'https://dash.complerer.com/settings',
     },
     'compliance-alert': {
       alertTitle: 'Access Review Overdue',
@@ -211,15 +212,13 @@ export async function sendTestEmail(
       severity: 'High',
       severityColor: '#ef4444',
       framework: 'SOC 2 — CC6.1',
-      dashboardUrl: 'https://complerer.com/dashboard',
-      logoUrl: 'https://complerer.com/logo-color.svg',
+      dashboardUrl: 'https://dash.complerer.com/dashboard',
     },
     'evidence-expiring': {
       evidenceTitle: 'Okta Access Report — Q1 2026',
       expiresAt: '2026-04-15',
       controlCount: '4',
-      evidenceUrl: 'https://complerer.com/evidence',
-      logoUrl: 'https://complerer.com/logo-color.svg',
+      evidenceUrl: 'https://dash.complerer.com/evidence',
     },
   }
 

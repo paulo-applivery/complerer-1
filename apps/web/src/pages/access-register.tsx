@@ -6,6 +6,7 @@ import {
   useSystemsList,
   useCreateSystem,
   useUpdateSystem,
+  useDeleteSystem,
   useSystemLibrary,
   useAddFromLibrary,
   useDirectoryUsers,
@@ -44,6 +45,7 @@ import {
   ClipboardIcon,
   Upload04Icon,
   Edit01Icon,
+  Delete01Icon,
 } from '@hugeicons/core-free-icons'
 
 type Tab = 'access' | 'systems' | 'people'
@@ -289,9 +291,12 @@ function SystemsSection({ workspaceId }: { workspaceId: string | undefined }) {
   const [systemSearch, setSystemSearch] = useState('')
   const [systemClassFilter, setSystemClassFilter] = useState('')
 
-  // Edit system modal
+  // Edit / delete system
   const [editingSystem, setEditingSystem] = useState<any>(null)
+  const [deletingSystem, setDeletingSystem] = useState<any>(null)
+  const [deleteSystemError, setDeleteSystemError] = useState<string | null>(null)
   const updateSystem = useUpdateSystem(workspaceId)
+  const deleteSystem = useDeleteSystem(workspaceId)
 
   // Environment options from workspace settings
   const { value: envSettingRaw } = useWorkspaceSetting(workspaceId, 'system_environments')
@@ -653,7 +658,7 @@ function SystemsSection({ workspaceId }: { workspaceId: string | undefined }) {
                   <th className="px-5 py-3 font-medium">Environment</th>
                   <th className="px-5 py-3 font-medium">MFA</th>
                   <th className="px-5 py-3 font-medium">Owner</th>
-                  <th className="w-16 px-3 py-3"></th>
+                  <th className="w-24 px-3 py-3"></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-800/50">
@@ -687,12 +692,22 @@ function SystemsSection({ workspaceId }: { workspaceId: string | undefined }) {
                     </td>
                     <td className="px-5 py-3 text-zinc-400">{system.owner ?? '—'}</td>
                     <td className="px-3 py-3">
-                      <button
-                        onClick={() => setEditingSystem(system)}
-                        className="rounded p-1.5 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"
-                      >
-                        <HugeiconsIcon icon={Edit01Icon} size={14} />
-                      </button>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => setEditingSystem(system)}
+                          className="rounded p-1.5 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"
+                          title="Edit system"
+                        >
+                          <HugeiconsIcon icon={Edit01Icon} size={14} />
+                        </button>
+                        <button
+                          onClick={() => { setDeletingSystem(system); setDeleteSystemError(null) }}
+                          className="rounded p-1.5 text-zinc-500 hover:bg-red-500/10 hover:text-red-400"
+                          title="Remove system"
+                        >
+                          <HugeiconsIcon icon={Delete01Icon} size={14} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -716,6 +731,42 @@ function SystemsSection({ workspaceId }: { workspaceId: string | undefined }) {
           }}
           isPending={updateSystem.isPending}
         />
+      )}
+
+      {/* Delete System Confirmation */}
+      {deletingSystem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setDeletingSystem(null)}>
+          <div className="w-full max-w-sm rounded-2xl border border-zinc-800 bg-zinc-900 p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-base font-semibold text-zinc-100">Remove System</h3>
+            <p className="mt-2 text-sm text-zinc-400">
+              Are you sure you want to remove <span className="font-medium text-zinc-200">{deletingSystem.name}</span> from your library? This cannot be undone.
+            </p>
+            {deleteSystemError && (
+              <p className="mt-3 rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs text-red-400">{deleteSystemError}</p>
+            )}
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                onClick={() => setDeletingSystem(null)}
+                className="rounded-lg border border-zinc-700 px-4 py-2 text-sm text-zinc-400 hover:border-zinc-600"
+              >
+                Cancel
+              </button>
+              <button
+                disabled={deleteSystem.isPending}
+                onClick={() => {
+                  setDeleteSystemError(null)
+                  deleteSystem.mutate(deletingSystem.id, {
+                    onSuccess: () => setDeletingSystem(null),
+                    onError: (err: any) => setDeleteSystemError(err.message ?? 'Failed to remove system'),
+                  })
+                }}
+                className="rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white hover:bg-red-400 disabled:opacity-50"
+              >
+                {deleteSystem.isPending ? 'Removing…' : 'Remove System'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

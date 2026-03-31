@@ -597,10 +597,17 @@ function FrameworkVersionsPanel({ frameworkId, frameworkName, expandedVer, setEx
 
   const [showCreate, setShowCreate] = useState(false)
   const [newVersion, setNewVersion] = useState({ version: '', status: 'draft', changelog: '' })
+  const [editingVer, setEditingVer] = useState<string | null>(null)
+  const [editForm, setEditForm] = useState({ version: '', status: 'draft' })
 
   const createMut = useMutation({
     mutationFn: (payload: any) => api.post(`/admin/libraries/frameworks/${frameworkId}/versions`, payload),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin-fw-versions', frameworkId] }); setShowCreate(false); setNewVersion({ version: '', status: 'draft', changelog: '' }) },
+  })
+
+  const updateMut = useMutation({
+    mutationFn: ({ verId, ...payload }: any) => api.put(`/admin/libraries/frameworks/${frameworkId}/versions/${verId}`, payload),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin-fw-versions', frameworkId] }); setEditingVer(null) },
   })
 
   const deleteMut = useMutation({
@@ -646,22 +653,55 @@ function FrameworkVersionsPanel({ frameworkId, frameworkName, expandedVer, setEx
         <div className="space-y-2">
           {versions.map((ver: any) => (
             <div key={ver.id}>
-              <div className="flex items-center justify-between rounded-lg border border-zinc-700/50 bg-zinc-800/50 px-3 py-2">
-                <button onClick={() => setExpandedVer(expandedVer === ver.id ? null : ver.id)} className="flex items-center gap-3 text-left">
-                  <code className="rounded bg-zinc-700 px-2 py-0.5 text-xs font-medium text-zinc-200">v{ver.version}</code>
-                  <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${ver.status === 'published' ? 'bg-green-500/10 text-green-400' : 'bg-zinc-500/10 text-zinc-400'}`}>{ver.status}</span>
-                  <span className="text-xs text-zinc-500">{ver.control_count ?? ver.total_controls ?? 0} controls</span>
-                </button>
-                <div className="flex items-center gap-1">
-                  <button onClick={() => setExpandedVer(expandedVer === ver.id ? null : ver.id)} className="rounded p-1 text-xs text-primary-400 hover:bg-zinc-700" title="View controls">
-                    <HugeiconsIcon icon={Settings01Icon} size={12} />
+              {editingVer === ver.id ? (
+                <div className="flex items-center gap-2 rounded-lg border border-primary-400/40 bg-zinc-800 px-3 py-2">
+                  <div className="flex-1">
+                    <label className="mb-1 block text-[10px] text-zinc-500">Version name</label>
+                    <input
+                      autoFocus
+                      value={editForm.version}
+                      onChange={(e) => setEditForm({ ...editForm, version: e.target.value })}
+                      onKeyDown={(e) => { if (e.key === 'Enter') updateMut.mutate({ verId: ver.id, ...editForm }); if (e.key === 'Escape') setEditingVer(null) }}
+                      className="w-full rounded border border-zinc-700 bg-zinc-900 px-2 py-1 text-xs text-zinc-100 focus:border-primary-400 focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-[10px] text-zinc-500">Status</label>
+                    <select value={editForm.status} onChange={(e) => setEditForm({ ...editForm, status: e.target.value })} className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 text-xs text-zinc-100 focus:border-primary-400 focus:outline-none">
+                      <option value="draft">Draft</option>
+                      <option value="published">Published</option>
+                    </select>
+                  </div>
+                  <button onClick={() => updateMut.mutate({ verId: ver.id, ...editForm })} disabled={!editForm.version.trim() || updateMut.isPending} className="mt-3 rounded bg-primary-400 px-3 py-1 text-xs font-medium text-zinc-950 hover:bg-primary-300 disabled:opacity-50">
+                    {updateMut.isPending ? '...' : 'Save'}
                   </button>
-                  <button onClick={() => { if (confirm('Delete this version and all its controls?')) deleteMut.mutate(ver.id) }} className="rounded p-1 text-xs text-red-400 hover:bg-zinc-700">
-                    <HugeiconsIcon icon={Delete02Icon} size={12} />
-                  </button>
+                  <button onClick={() => setEditingVer(null)} className="mt-3 rounded border border-zinc-700 px-2 py-1 text-xs text-zinc-400 hover:border-zinc-600">✕</button>
                 </div>
-              </div>
-              {expandedVer === ver.id && (
+              ) : (
+                <div className="flex items-center justify-between rounded-lg border border-zinc-700/50 bg-zinc-800/50 px-3 py-2">
+                  <button onClick={() => setExpandedVer(expandedVer === ver.id ? null : ver.id)} className="flex items-center gap-3 text-left">
+                    <code className="rounded bg-zinc-700 px-2 py-0.5 text-xs font-medium text-zinc-200">v{ver.version}</code>
+                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${ver.status === 'published' ? 'bg-green-500/10 text-green-400' : 'bg-zinc-500/10 text-zinc-400'}`}>{ver.status}</span>
+                    <span className="text-xs text-zinc-500">{ver.control_count ?? ver.total_controls ?? 0} controls</span>
+                  </button>
+                  <div className="flex items-center gap-1">
+                    <button onClick={() => setExpandedVer(expandedVer === ver.id ? null : ver.id)} className="rounded p-1 text-xs text-primary-400 hover:bg-zinc-700" title="View controls">
+                      <HugeiconsIcon icon={Settings01Icon} size={12} />
+                    </button>
+                    <button
+                      onClick={() => { setEditingVer(ver.id); setEditForm({ version: ver.version, status: ver.status ?? 'draft' }) }}
+                      className="rounded p-1 text-zinc-500 hover:bg-zinc-700 hover:text-zinc-300"
+                      title="Edit version name"
+                    >
+                      <HugeiconsIcon icon={Edit01Icon} size={12} />
+                    </button>
+                    <button onClick={() => { if (confirm('Delete this version and all its controls?')) deleteMut.mutate(ver.id) }} className="rounded p-1 text-xs text-red-400 hover:bg-zinc-700">
+                      <HugeiconsIcon icon={Delete02Icon} size={12} />
+                    </button>
+                  </div>
+                </div>
+              )}
+              {expandedVer === ver.id && editingVer !== ver.id && (
                 <div className="ml-4 mt-2 mb-2">
                   <FrameworkControlsPanel frameworkId={frameworkId} versionId={ver.id} versionLabel={ver.version} />
                 </div>

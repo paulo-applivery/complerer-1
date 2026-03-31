@@ -4,6 +4,7 @@ import { zValidator } from '@hono/zod-validator'
 import type { AppType } from '../types.js'
 import { generateId } from '../lib/id.js'
 import { emitEvent } from '../lib/events.js'
+import { sendEmail } from '../lib/email.js'
 import { authMiddleware } from '../middleware/auth.js'
 import { workspaceMiddleware, requireRole } from '../middleware/workspace.js'
 
@@ -271,28 +272,36 @@ workspaceRoutes.post(
       return c.json({ error: 'User is already a member of this workspace' }, 409)
     }
 
-    // Check for pending invitation
+    // Check for pending invitation — if one exists, refresh it (resend) instead of blocking
     const existingInvitation = await c.env.DB.prepare(
       "SELECT id FROM invitations WHERE workspace_id = ? AND email = ? AND status = 'pending'"
     )
       .bind(workspaceId, email)
-      .first()
+      .first<{ id: string }>()
 
-    if (existingInvitation) {
-      return c.json({ error: 'Pending invitation already exists for this email' }, 409)
-    }
-
-    const invitationId = generateId()
     const expiresAt = new Date(
       Date.now() + 7 * 24 * 60 * 60 * 1000
     ).toISOString() // 7 days
 
-    await c.env.DB.prepare(
-      `INSERT INTO invitations (id, workspace_id, email, role, invited_by, status, expires_at, created_at)
-       VALUES (?, ?, ?, ?, ?, 'pending', ?, ?)`
-    )
-      .bind(invitationId, workspaceId, email, role, userId, expiresAt, now)
-      .run()
+    let invitationId: string
+
+    if (existingInvitation) {
+      // Refresh the existing invitation with the new role and a new expiry
+      invitationId = existingInvitation.id
+      await c.env.DB.prepare(
+        "UPDATE invitations SET role = ?, invited_by = ?, expires_at = ?, created_at = ? WHERE id = ?"
+      )
+        .bind(role, userId, expiresAt, now, invitationId)
+        .run()
+    } else {
+      invitationId = generateId()
+      await c.env.DB.prepare(
+        `INSERT INTO invitations (id, workspace_id, email, role, invited_by, status, expires_at, created_at)
+         VALUES (?, ?, ?, ?, ?, 'pending', ?, ?)`
+      )
+        .bind(invitationId, workspaceId, email, role, userId, expiresAt, now)
+        .run()
+    }
 
     await emitEvent(c.env.DB, {
       workspaceId,
@@ -302,6 +311,23 @@ workspaceRoutes.post(
       data: { email, role },
       actorId: userId,
     })
+
+    // Send invitation email — must be awaited before returning (CF Workers terminate after response)
+    const workspace = await c.env.DB.prepare(
+      'SELECT name FROM workspaces WHERE id = ?'
+    )
+      .bind(workspaceId)
+      .first<{ name: string }>()
+
+    await sendEmail(c.env.DB, {
+      to: email,
+      templateSlug: 'workspace-invitation',
+      variables: {
+        workspaceName: workspace?.name ?? 'a workspace',
+        role: role.charAt(0).toUpperCase() + role.slice(1),
+        loginUrl: `${c.env.APP_URL}/login`,
+      },
+    }, c.env.ENVIRONMENT === 'development')
 
     return c.json(
       {

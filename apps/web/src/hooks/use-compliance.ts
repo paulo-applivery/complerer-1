@@ -219,6 +219,18 @@ export function useUpdateSystem(workspaceId: string | undefined) {
   })
 }
 
+export function useDeleteSystem(workspaceId: string | undefined) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (systemId: string) =>
+      api.delete(`/workspaces/${workspaceId}/systems/${systemId}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['systems', workspaceId] })
+    },
+  })
+}
+
 // ── Directory Users ─────────────────────────────────────────────────────────
 
 interface UseDirectoryUsersOptions {

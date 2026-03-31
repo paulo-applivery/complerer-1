@@ -31,7 +31,7 @@ export async function emitEvent(
       params.eventType,
       params.entityType,
       params.entityId,
-      params.data ? JSON.stringify(params.data) : null,
+      params.data ? JSON.stringify(params.data) : '{}',
       params.actorId ?? null,
       params.actorType ?? 'user',
       now
