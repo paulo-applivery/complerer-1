@@ -11,6 +11,66 @@ import { authMiddleware } from '../middleware/auth.js'
  * Framework routes — mounted at /api/workspaces/:workspaceId
  * Handles frameworks, controls, and adoptions under the workspace scope.
  */
+
+type VersionedControlRow = {
+  id: string
+  framework_version_id: string
+  control_id: string
+  domain: string | null
+  subdomain: string | null
+  title: string
+  requirement_text: string
+  guidance: string | null
+  evidence_requirements: string
+  risk_weight: number
+  implementation_group: string | null
+  supersedes: string | null
+  deprecated: number
+  deprecation_note: string | null
+  control_type: string | null
+  control_group: string | null
+  applicability_json: string | null
+  reinforcements_json: string | null
+  evaluated_aspects_json: string | null
+  aapp_only: number | null
+  created_at: string
+}
+
+function safeParseJson<T>(raw: string | null | undefined, fallback: T): T {
+  if (!raw) return fallback
+  try {
+    return JSON.parse(raw) as T
+  } catch {
+    return fallback
+  }
+}
+
+function mapVersionedControlRow(ctrl: VersionedControlRow) {
+  return {
+    id: ctrl.id,
+    frameworkVersionId: ctrl.framework_version_id,
+    controlId: ctrl.control_id,
+    domain: ctrl.domain,
+    subdomain: ctrl.subdomain,
+    title: ctrl.title,
+    requirementText: ctrl.requirement_text,
+    guidance: ctrl.guidance,
+    evidenceRequirements: safeParseJson<string[]>(ctrl.evidence_requirements, []),
+    riskWeight: ctrl.risk_weight,
+    implementationGroup: ctrl.implementation_group,
+    supersedes: ctrl.supersedes,
+    deprecated: Boolean(ctrl.deprecated),
+    deprecationNote: ctrl.deprecation_note,
+    controlType: ctrl.control_type,
+    controlGroup: ctrl.control_group,
+    applicability: safeParseJson<Record<string, string> | null>(ctrl.applicability_json, null),
+    reinforcements: safeParseJson<unknown[]>(ctrl.reinforcements_json, []),
+    evaluatedAspects: safeParseJson<unknown[]>(ctrl.evaluated_aspects_json, []),
+    aappOnly: Boolean(ctrl.aapp_only),
+    createdAt: ctrl.created_at,
+  }
+}
+
 const frameworkRoutes = new Hono<AppType>()
 
 // All routes require authentication + workspace membership
@@ -143,7 +203,10 @@ frameworkRoutes.get(
       'SELECT COUNT(*) as total FROM versioned_controls WHERE framework_version_id = ?'
     let dataSql = `SELECT id, framework_version_id, control_id, domain, subdomain, title,
                           requirement_text, guidance, evidence_requirements, risk_weight,
-                          implementation_group, supersedes, deprecated, deprecation_note, created_at
+                          implementation_group, supersedes, deprecated, deprecation_note,
+                          control_type, control_group, applicability_json,
+                          reinforcements_json, evaluated_aspects_json, aapp_only,
+                          created_at
                    FROM versioned_controls
                    WHERE framework_version_id = ?`
 
@@ -163,42 +226,10 @@ frameworkRoutes.get(
 
     const { results } = await c.env.DB.prepare(dataSql)
       .bind(...bindings, limit, offset)
-      .all<{
-        id: string
-        framework_version_id: string
-        control_id: string
-        domain: string | null
-        subdomain: string | null
-        title: string
-        requirement_text: string
-        guidance: string | null
-        evidence_requirements: string
-        risk_weight: number
-        implementation_group: string | null
-        supersedes: string | null
-        deprecated: number
-        deprecation_note: string | null
-        created_at: string
-      }>()
+      .all<VersionedControlRow>()
 
     return c.json({
-      controls: results.map((ctrl) => ({
-        id: ctrl.id,
-        frameworkVersionId: ctrl.framework_version_id,
-        controlId: ctrl.control_id,
-        domain: ctrl.domain,
-        subdomain: ctrl.subdomain,
-        title: ctrl.title,
-        requirementText: ctrl.requirement_text,
-        guidance: ctrl.guidance,
-        evidenceRequirements: JSON.parse(ctrl.evidence_requirements),
-        riskWeight: ctrl.risk_weight,
-        implementationGroup: ctrl.implementation_group,
-        supersedes: ctrl.supersedes,
-        deprecated: Boolean(ctrl.deprecated),
-        deprecationNote: ctrl.deprecation_note,
-        createdAt: ctrl.created_at,
-      })),
+      controls: results.map(mapVersionedControlRow),
       total: countResult?.total ?? 0,
       page,
       limit,
@@ -218,51 +249,104 @@ frameworkRoutes.get('/controls/:controlId', async (c) => {
   const ctrl = await c.env.DB.prepare(
     `SELECT id, framework_version_id, control_id, domain, subdomain, title,
             requirement_text, guidance, evidence_requirements, risk_weight,
-            implementation_group, supersedes, deprecated, deprecation_note, created_at
+            implementation_group, supersedes, deprecated, deprecation_note,
+            control_type, control_group, applicability_json,
+            reinforcements_json, evaluated_aspects_json, aapp_only,
+            created_at
      FROM versioned_controls
      WHERE id = ?`
   )
     .bind(controlId)
-    .first<{
-      id: string
-      framework_version_id: string
-      control_id: string
-      domain: string | null
-      subdomain: string | null
-      title: string
-      requirement_text: string
-      guidance: string | null
-      evidence_requirements: string
-      risk_weight: number
-      implementation_group: string | null
-      supersedes: string | null
-      deprecated: number
-      deprecation_note: string | null
-      created_at: string
-    }>()
+    .first<VersionedControlRow>()
 
   if (!ctrl) {
     return c.json({ error: 'Control not found' }, 404)
   }
 
+  return c.json({ control: mapVersionedControlRow(ctrl) })
+})
+
+/**
+ * GET /api/workspaces/:workspaceId/controls/:controlId/reinforcements
+ * List reinforcements for a control (relational projection of reinforcements_json).
+ */
+frameworkRoutes.get('/controls/:controlId/reinforcements', async (c) => {
+  const controlId = c.req.param('controlId')
+
+  const { results } = await c.env.DB.prepare(
+    `SELECT id, control_id, reinforcement_code, description, required_at, mode, created_at
+     FROM control_reinforcements
+     WHERE control_id = ?
+     ORDER BY reinforcement_code ASC`
+  )
+    .bind(controlId)
+    .all<{
+      id: string
+      control_id: string
+      reinforcement_code: string
+      description: string
+      required_at: string
+      mode: string
+      created_at: string
+    }>()
+
   return c.json({
-    control: {
-      id: ctrl.id,
-      frameworkVersionId: ctrl.framework_version_id,
-      controlId: ctrl.control_id,
-      domain: ctrl.domain,
-      subdomain: ctrl.subdomain,
-      title: ctrl.title,
-      requirementText: ctrl.requirement_text,
-      guidance: ctrl.guidance,
-      evidenceRequirements: JSON.parse(ctrl.evidence_requirements),
-      riskWeight: ctrl.risk_weight,
-      implementationGroup: ctrl.implementation_group,
-      supersedes: ctrl.supersedes,
-      deprecated: Boolean(ctrl.deprecated),
-      deprecationNote: ctrl.deprecation_note,
-      createdAt: ctrl.created_at,
-    },
+    reinforcements: results.map((r) => ({
+      id: r.id,
+      controlId: r.control_id,
+      code: r.reinforcement_code,
+      description: r.description,
+      requiredAt: safeParseJson<string[]>(r.required_at, []),
+      mode: r.mode,
+      createdAt: r.created_at,
+    })),
+  })
+})
+
+/**
+ * GET /api/workspaces/:workspaceId/controls/:controlId/aspects
+ * List evaluated aspects (audit checklist) for a control. Optional
+ * `?reinforcement=R1` filter scopes to questions tied to a specific
+ * reinforcement, plus the unconditional baseline aspects.
+ */
+frameworkRoutes.get('/controls/:controlId/aspects', async (c) => {
+  const controlId = c.req.param('controlId')
+  const reinforcement = c.req.query('reinforcement')
+
+  let sql = `SELECT id, control_id, aspect_id, question, reinforcement_ref, sort_order, created_at
+             FROM control_evaluated_aspects
+             WHERE control_id = ?`
+  const bindings: unknown[] = [controlId]
+
+  if (reinforcement) {
+    sql += ' AND (reinforcement_ref IS NULL OR reinforcement_ref = ?)'
+    bindings.push(reinforcement)
+  }
+
+  sql += ' ORDER BY sort_order ASC, aspect_id ASC'
+
+  const { results } = await c.env.DB.prepare(sql)
+    .bind(...bindings)
+    .all<{
+      id: string
+      control_id: string
+      aspect_id: string
+      question: string
+      reinforcement_ref: string | null
+      sort_order: number
+      created_at: string
+    }>()
+
+  return c.json({
+    aspects: results.map((a) => ({
+      id: a.id,
+      controlId: a.control_id,
+      aspectId: a.aspect_id,
+      question: a.question,
+      reinforcementRef: a.reinforcement_ref,
+      sortOrder: a.sort_order,
+      createdAt: a.created_at,
+    })),
   })
 })
 

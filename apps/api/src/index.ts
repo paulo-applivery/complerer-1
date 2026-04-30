@@ -12,6 +12,7 @@ import { seedRoutes } from './routes/seed.js'
 import { communityRoutes, publicTrustRoutes, seedPlaybooksRoutes } from './routes/community.js'
 import { adminRoutes } from './routes/admin.js'
 import { projectRoutes } from './routes/projects.js'
+import { ensRoutes } from './routes/ens-audits.js'
 import { createReportsAPI } from '@complerer/reports/api'
 
 const app = new Hono<AppType>()
@@ -56,6 +57,7 @@ app.route('/api/workspaces/:workspaceId/chat', chatRoutes)
 app.route('/api/workspaces/:workspaceId/integrations', integrationRoutes)
 app.route('/api/oauth', oauthRoutes)
 app.route('/api/workspaces/:workspaceId', projectRoutes)
+app.route('/api/workspaces/:workspaceId', ensRoutes)
 app.route('/api/workspaces/:workspaceId', communityRoutes)
 app.route('/api/trust', publicTrustRoutes)
 app.route('/api/seed', seedRoutes)

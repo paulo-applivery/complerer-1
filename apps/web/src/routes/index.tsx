@@ -34,6 +34,7 @@ const TrustCenterPage = lazy(() => import('@/pages/trust-center').then(m => ({ d
 const PlaybooksPage = lazy(() => import('@/pages/playbooks').then(m => ({ default: m.PlaybooksPage })))
 const WelcomePage = lazy(() => import('@/pages/welcome').then(m => ({ default: m.WelcomePage })))
 const ProjectsPage = lazy(() => import('@/pages/projects').then(m => ({ default: m.ProjectsPage })))
+const EnsAuditsPage = lazy(() => import('@/pages/ens-audits').then(m => ({ default: m.EnsAuditsPage })))
 const ProjectDetailPage = lazy(() => import('@/pages/project-detail').then(m => ({ default: m.ProjectDetailPage })))
 const ReportsPage = lazy(() => import('@/pages/reports').then(m => ({ default: m.ReportsPage })))
 const ReportEditorPage = lazy(() => import('@/pages/report-editor').then(m => ({ default: m.ReportEditorPage })))
@@ -300,6 +301,12 @@ const projectDetailRoute = createRoute({
   component: () => <LazyPage><ProjectDetailPage /></LazyPage>,
 })
 
+const ensAuditsRoute = createRoute({
+  getParentRoute: () => workspaceLayoutRoute,
+  path: '/ens-audits',
+  component: () => <LazyPage><EnsAuditsPage /></LazyPage>,
+})
+
 const reportsRoute = createRoute({
   getParentRoute: () => workspaceLayoutRoute,
   path: '/reports',
@@ -396,7 +403,7 @@ export const routeTree = rootRoute.addChildren([
   pendingRoute,
   workspacesRoute,
   trustCenterRoute,
-  workspaceLayoutRoute.addChildren([dashboardRoute, frameworksRoute, accessRoute, evidenceRoute, baselinesRoute, risksRoute, policiesRoute, chatRoute, settingsRoute, gapAnalysisRoute, eventsRoute, integrationsRoute, trustScoreRoute, playbooksRoute, welcomeRoute, projectsRoute, projectDetailRoute, reportsRoute, reportEditorRoute]),
+  workspaceLayoutRoute.addChildren([dashboardRoute, frameworksRoute, accessRoute, evidenceRoute, baselinesRoute, risksRoute, policiesRoute, chatRoute, settingsRoute, gapAnalysisRoute, eventsRoute, integrationsRoute, trustScoreRoute, playbooksRoute, welcomeRoute, projectsRoute, projectDetailRoute, ensAuditsRoute, reportsRoute, reportEditorRoute]),
   adminLayoutRoute.addChildren([adminDashboardRoute, adminProvidersRoute, adminEmailTemplatesRoute, adminFeatureFlagsRoute, adminWorkspacesRoute, adminMembersRoute, adminLibrariesRoute, adminReportTemplateEditorRoute]),
 ])
 
