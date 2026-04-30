@@ -1,0 +1,25 @@
+name = "complerer"
+main = "worker/index.ts"
+compatibility_date = "2024-12-01"
+
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+
+[observability]
+enabled = true
+
+[env.production]
+name = "complerer"
+
+[env.production.vars]
+API_ORIGIN = "https://complerer-api-production.paulo-acb.workers.dev"
+
+[env.production.observability]
+enabled = true
+
+[env.production.assets]
+directory = "./dist"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
