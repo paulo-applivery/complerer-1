@@ -53,7 +53,6 @@ const overviewItems: NavItem[] = [
 
 const complianceItems: NavItem[] = [
   { label: 'Projects', icon: Folder01Icon, path: '/projects' },
-  { label: 'ENS Audits', icon: SecurityCheckIcon, path: '/ens-audits' },
   { label: 'Reports', icon: FileAttachmentIcon, path: '/reports' },
   { label: 'Frameworks', icon: Layers01Icon, path: '/frameworks' },
   { label: 'Policies', icon: File01Icon, path: '/policies' },
