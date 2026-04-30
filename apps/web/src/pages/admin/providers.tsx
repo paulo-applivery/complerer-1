@@ -10,7 +10,7 @@ import {
   InformationCircleIcon,
 } from '@hugeicons/core-free-icons'
 
-const OAUTH_CALLBACK_URL = 'https://complerer-api-production.paulo-acb.workers.dev/api/oauth/callback'
+const OAUTH_CALLBACK_URL = 'https://api.complerer.com/api/oauth/callback'
 
 const INTEGRATION_HINTS: Record<string, string> = {
   github: 'Create at github.com/settings/applications/new',

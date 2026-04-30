@@ -13,7 +13,7 @@ export async function onRequest(context) {
   }
 
   const url = new URL(context.request.url);
-  const target = `https://complerer-api.paulo-acb.workers.dev${url.pathname}${url.search}`;
+  const target = `https://api.complerer.com${url.pathname}${url.search}`;
 
   const headers = new Headers(context.request.headers);
   headers.delete('host');
